@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#274060">
+<title>主播画像助手</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23274060'/%3E%3Ctext x='32' y='44' font-size='32' text-anchor='middle' fill='white' font-family='sans-serif'%3E播%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="画像助手">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap">
+<style>
+:root{
+  --ink:#1c2733;--ink2:#5c6b7a;--ink3:#8a97a5;
+  --bg:#eef1f4;--card:#fff;--line:#e7ebef;
+  --brand:#274060;--brand-soft:#eaf0f7;
+  --red:#c6453b;--red-bg:#fbeae8;--blue:#2f6fb0;--blue-bg:#e8f1f9;
+  --green:#3a8a5e;--green-bg:#e8f4ed;--amber:#c07f24;--amber-bg:#faf1e1;
+  --gray:#8a97a5;--gray-bg:#eef1f4;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;
+  background:#d9dee5;color:var(--ink);display:flex;justify-content:center;min-height:100vh;}
+.phone{width:100%;max-width:414px;background:var(--bg);min-height:100vh;position:relative;
+  box-shadow:0 0 40px rgba(20,30,45,.18);padding-bottom:84px;}
+@media(min-width:480px){.phone{min-height:880px;margin:24px 0;border-radius:28px;overflow:hidden;}}
+.topbar{background:var(--brand);color:#fff;padding:18px 18px 16px;}
+.topbar .who{display:flex;align-items:center;gap:10px;}
+.avatar{width:40px;height:40px;border-radius:50%;background:#3d5a80;color:#fff;display:flex;
+  align-items:center;justify-content:center;font-weight:700;font-size:16px;flex:none;}
+.topbar .name{font-size:17px;font-weight:700;}
+.topbar .meta{font-size:12px;opacity:.78;margin-top:2px;}
+.wrap{padding:0 14px;}
+.sec-title{display:flex;align-items:center;justify-content:space-between;margin:18px 2px 10px;}
+.sec-title h3{font-size:15px;font-weight:700;}
+.sec-title .more{font-size:12px;color:var(--ink3);}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:3px 8px;border-radius:6px;line-height:1;}
+.tag .dot{width:6px;height:6px;border-radius:50%;}
+.t-red{color:var(--red);background:var(--red-bg);}.t-red .dot{background:var(--red);}
+.t-blue{color:var(--blue);background:var(--blue-bg);}.t-blue .dot{background:var(--blue);}
+.t-green{color:var(--green);background:var(--green-bg);}.t-green .dot{background:var(--green);}
+.t-amber{color:var(--amber);background:var(--amber-bg);}.t-amber .dot{background:var(--amber);}
+.t-gray{color:var(--gray);background:var(--gray-bg);}.t-gray .dot{background:var(--gray);}
+.profile{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(20,35,55,.05);}
+.profile .head{padding:16px 16px 13px;display:flex;gap:12px;align-items:flex-start;}
+.profile .head .avatar{width:48px;height:48px;font-size:19px;background:#b3544b;}
+.profile .h-main{flex:1;min-width:0;}
+.profile .nick{font-size:17px;font-weight:700;}
+.profile .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.profile .grade{font-size:11px;color:var(--ink3);margin-top:6px;}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);}
+.grid .cell{padding:12px 8px;text-align:center;border-right:1px solid var(--line);}
+.grid .cell:last-child{border-right:none;}
+.grid .num{font-size:17px;font-weight:700;line-height:1.1;}
+.grid .num small{font-size:11px;font-weight:500;color:var(--ink2);}
+.grid .lab{font-size:11px;color:var(--ink2);margin-top:4px;}
+.grid .num.warn{color:var(--red);}
+.advice{margin:12px 16px 0;background:var(--brand-soft);border-radius:10px;padding:11px 13px;}
+.advice .at{font-size:11px;font-weight:700;color:var(--brand);margin-bottom:4px;letter-spacing:.5px;}
+.advice p{font-size:13px;line-height:1.55;color:#31445c;}
+.own{display:flex;align-items:center;gap:7px;margin:12px 16px 0;font-size:12px;padding-top:12px;border-top:1px dashed var(--line);color:var(--ink2);}
+.own b{font-weight:600;}
+.act{display:flex;gap:9px;padding:14px 16px 16px;margin-top:14px;}
+.btn{flex:1;border:none;border-radius:10px;padding:11px 0;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;}
+.btn-primary{background:var(--brand);color:#fff;}
+.btn-ghost{background:var(--gray-bg);color:var(--ink2);}
+.tier{background:var(--card);border-radius:14px;margin-bottom:10px;box-shadow:0 2px 10px rgba(20,35,55,.04);overflow:hidden;}
+.tier .t-head{display:flex;align-items:center;gap:9px;padding:13px 14px;}
+.tier .t-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex:none;}
+.tier .t-name{font-size:14px;font-weight:700;}
+.tier .t-sub{font-size:11px;color:var(--ink3);margin-top:1px;}
+.tier .t-cnt{margin-left:auto;font-size:14px;font-weight:700;}
+.tier .t-cnt small{font-weight:400;color:var(--ink3);font-size:10px;}
+.urow{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line);cursor:pointer;}
+.urow .avatar{width:32px;height:32px;font-size:13px;}
+.urow .u-nick{font-size:13px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.urow .u-val{font-size:12px;color:var(--ink2);font-weight:600;}
+.tier .t-foot{padding:10px 14px;border-top:1px solid var(--line);font-size:12px;color:var(--brand);font-weight:600;text-align:center;cursor:pointer;}
+.tier.l1 .t-ico{background:var(--gray-bg);color:var(--gray);}.tier.l1 .t-cnt{color:var(--gray);}
+.tier.l2 .t-ico{background:var(--amber-bg);color:var(--amber);}.tier.l2 .t-cnt{color:var(--amber);}
+.tier.l3 .t-ico{background:var(--red-bg);color:var(--red);}.tier.l3 .t-cnt{color:var(--red);}
+.cross{background:var(--blue-bg);border-radius:12px;padding:11px 13px;display:flex;gap:9px;align-items:center;margin-bottom:10px;}
+.cross .c-txt{font-size:12px;line-height:1.5;color:#2b5b8c;}
+.cross .c-txt b{font-weight:700;}
+.churn-row{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px;}
+.churn-card{flex:none;width:148px;background:#fff;border-radius:12px;padding:11px;box-shadow:0 2px 8px rgba(20,35,55,.05);cursor:pointer;}
+.churn-card .cc-nick{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.churn-card .cc-gap{font-size:20px;font-weight:800;margin:6px 0 1px;}
+.churn-card .cc-lab{font-size:10px;color:var(--ink3);}
+.churn-card .cc-val{font-size:11px;margin-top:7px;color:var(--ink2);}
+.ca .cc-gap{color:var(--red);}.cb .cc-gap{color:var(--amber);}.cc2 .cc-gap{color:var(--gray);}
+.sbar{background:#fff;border-radius:12px;display:flex;align-items:center;gap:9px;padding:11px 13px;box-shadow:0 4px 14px rgba(20,35,55,.07);}
+.sbar input{border:none;outline:none;flex:1;font-size:14px;font-family:inherit;background:transparent;color:var(--ink);}
+.slist{margin-top:12px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(20,35,55,.04);}
+.srow{display:flex;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--line);cursor:pointer;}
+.srow:first-child{border-top:none;}
+.srow .s-nick{font-size:14px;font-weight:500;flex:1;min-width:0;white:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.srow .s-sub{font-size:11px;color:var(--ink3);}
+.empty{text-align:center;color:var(--ink3);font-size:13px;padding:60px 20px;line-height:1.7;}
+.me-card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(20,35,55,.04);}
+.me-row{display:flex;justify-content:space-between;font-size:13px;padding:10px 0;border-top:1px solid var(--line);}
+.me-row:first-of-type{border-top:none;}
+.pview{position:absolute;inset:0;background:var(--bg);z-index:40;overflow-y:auto;display:none;}
+.pview.show{display:block;}
+.pv-back{display:flex;align-items:center;gap:6px;padding:14px 16px;font-size:15px;color:var(--brand);font-weight:600;background:var(--bg);position:sticky;top:0;z-index:2;cursor:pointer;}
+.view{display:none;}.view.show{display:block;}
+.tabbar{position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;padding:8px 0 calc(10px + env(safe-area-inset-bottom));}
+.tabbar .tb{flex:1;text-align:center;font-size:10px;color:var(--ink3);background:none;border:none;cursor:pointer;font-family:inherit;}
+.tabbar .tb svg{margin:0 auto 3px;display:block;}
+.tabbar .tb.on{color:var(--brand);font-weight:600;}
+#toast{position:absolute;left:50%;bottom:108px;transform:translateX(-50%) translateY(16px);background:rgba(28,39,51,.94);color:#fff;font-size:13px;padding:11px 18px;border-radius:10px;max-width:82%;text-align:center;opacity:0;transition:all .25s;pointer-events:none;z-index:60;}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div id="root"><div class="empty">加载中…</div></div>
+  <div id="toast"></div>
+</div>
+<script>
+const root=document.getElementById('root');
+let DATA=null;
+const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
+function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS.length];}
+function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
+function daysBetween(d1,d2){return Math.round((new Date(d2)-new Date(d1))/86400000);}
+function tag(cls,txt){return `<span class="tag t-${cls}"><span class="dot"></span>${txt}</span>`;}
+function churnLab(ch){return ch==='A'?'高价值流失':ch==='B'?'老客流失':'长尾流失';}
+function rowTags(u){let t=[];if(u.nf)t.push(tag('red','新客'));if(u.cr)t.push(tag('blue','跨团'));
+  if(u.w>1200)t.push(tag('green','高陪伴'));return t.join('');}
+function topbar(){const a=DATA.anchor;return `<div class="topbar"><div class="who">
+  <div class="avatar">${a.name[0]}</div><div><div class="name">${a.teamName} · ${a.name}</div>
+  <div class="meta">${a.date} · 主播专属</div></div></div></div>`;}
+const GLOBE=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f6fb0" stroke-width="2" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>`;
+
+function tier(cls,code,name,sub,secs,foot){if(!secs.length)return '';
+ const rows=secs.slice(0,5).map(s=>{const u=DATA.users[s];return `<div class="urow" data-sec="${s}">
+  <div class="avatar" style="background:${colorOf(u.n||s)}">${(u.n||'?')[0]}</div>
+  <div class="u-nick">${u.n||''}</div>${rowTags(u)}<div class="u-val">${yuan(u.tv)}</div></div>`;}).join('');
+ return `<div class="tier ${cls}"><div class="t-head"><div class="t-ico">${code}</div>
+  <div><div class="t-name">${name}</div><div class="t-sub">${sub}</div></div>
+  <div class="t-cnt">${secs.length}<small> 人</small></div></div>${rows}
+  <div class="t-foot" data-act="foot">${secs.length>5?('查看全部 '+secs.length+' 人 · '):''}${foot}</div></div>`;}
+function churnCard(s,cls,lab){const u=DATA.users[s];return `<div class="churn-card ${cls}" data-sec="${s}">
+  <div class="cc-nick">${u.n}</div><div class="cc-gap">${daysBetween(u.last,DATA.anchor.date)}天</div>
+  <div class="cc-lab">${lab}</div><div class="cc-val">给我 ${yuan(u.sv)}</div></div>`;}
+function viewToday(){const c=DATA.counts,ch=DATA.churn;
+ const cross=DATA.crossToday.length?`<div class="cross">${GLOBE}
+  <div class="c-txt">今天有 <b>${DATA.crossToday.length} 位跨团用户</b>给你送礼，也在其他团消费，注意客情；<b>不显示对方归属</b>。</div></div>`:'';
+ let churn='';const tot=ch.a.length+ch.b.length+ch.c.length;
+ if(tot)churn=`<div class="sec-title"><h3>该唤醒了</h3><span class="more">今天没来 · 共${tot}人</span></div>
+  <div class="churn-row">${ch.a.slice(0,2).map(s=>churnCard(s,'ca','高价值流失')).join('')}
+  ${ch.b.slice(0,2).map(s=>churnCard(s,'cb','老客流失')).join('')}
+  ${ch.c.slice(0,1).map(s=>churnCard(s,'cc2','长尾')).join('')}</div>`;
+ return `<div class="view show" id="v-today">${topbar()}<div class="wrap">
+  <div class="sec-title"><h3>今日维护</h3><span class="more">按对我消费分层</span></div>${cross}
+  ${tier('l3','L3','重点维护','消费 > 99 元 · 今天必聊',DATA.l3,'去私信')}
+  ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2,'一键拉群')}
+  ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1,'公屏感谢')}${churn}</div></div>`;}
+function viewSearch(){return `<div class="view" id="v-search">${topbar()}<div class="wrap">
+  <div class="sbar"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8a97a5" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+  <input id="q" type="search" placeholder="搜索昵称，查看用户情况" autocomplete="off"></div>
+  <div id="sresult"></div></div></div>`;}
+function renderSearch(q){const box=document.getElementById('sresult');if(!box)return;
+ q=(q||'').trim().toLowerCase();
+ let list=Object.keys(DATA.users).filter(s=>!q||(DATA.users[s].n||'').toLowerCase().includes(q));
+ list.sort((a,b)=>DATA.users[b].sv-DATA.users[a].sv);
+ if(!list.length){box.innerHTML=`<div class="empty">没有找到相关用户<br>只能查到给你刷过礼物的用户</div>`;return;}
+ box.innerHTML=`<div class="slist">${list.slice(0,60).map(s=>{const u=DATA.users[s];return `<div class="srow" data-sec="${s}">
+  <div class="avatar" style="background:${colorOf(u.n||s)};width:36px;height:36px;font-size:14px">${(u.n||'?')[0]}</div>
+  <div class="s-nick">${u.n} ${rowTags(u)}</div>
+  <div class="s-sub">${u.ch?churnLab(u.ch):(u.tv?('今天'+yuan(u.tv)):'')}</div></div>`;}).join('')}</div>
+  ${list.length>60?'<div class="empty">仅显示前 60 人，请细化关键词</div>':''}`;}
+function viewMe(){const a=DATA.anchor,c=DATA.counts,total=Object.keys(DATA.users).length;
+ return `<div class="view" id="v-me">${topbar()}<div class="wrap"><div class="sec-title"><h3>我的</h3></div>
+  <div class="me-card">
+  <div class="me-row"><span>我的客群（给我刷过）</span><b>${total} 人</b></div>
+  <div class="me-row"><span>今日重点 L3</span><b>${c.l3} 人</b></div>
+  <div class="me-row"><span>今日拉群 L2</span><b>${c.l2} 人</b></div>
+  <div class="me-row"><span>今日感谢 L1</span><b>${c.l1} 人</b></div>
+  <div class="me-row"><span>需唤醒 A/B/C</span><b>${c.chA}/${c.chB}/${c.chC}</b></div>
+  <div class="me-row"><span>今日跨团用户</span><b>${c.crossToday} 人</b></div></div>
+  <div class="empty" style="padding:30px">数据每场下播后自动更新<br>口径只与你自己相关</div></div></div>`;}
+function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
+ const gap=u.last?daysBetween(u.last,DATA.anchor.date):'';
+ let tags=[];if(u.nf)tags.push(tag('red','新客'));if(u.cr)tags.push(tag('blue','跨团'));
+ if(u.w>1200)tags.push(tag('green','高陪伴'));if(u.ch)tags.push(tag(u.ch==='A'?'red':u.ch==='B'?'amber':'gray',churnLab(u.ch)));
+ const info=[u.gr&&('荣耀'+u.gr),u.l,u.g&&(u.g===1?'男':'女'),u.a&&(u.a+'岁')].filter(x=>x).join(' · ');
+ return `<div class="pview show" id="pv"><div class="pv-back" data-back="1">‹ 返回</div><div class="wrap">
+  <div class="profile"><div class="head">
+  <div class="avatar" style="background:${colorOf(u.n||sec)};width:48px;height:48px;font-size:19px">${(u.n||'?')[0]}</div>
+  <div class="h-main"><div class="nick">${u.n}</div><div class="tags">${tags.join('')}</div>
+  <div class="grade">${info}</div></div></div>
+  <div class="grid">
+  <div class="cell"><div class="num"><small>¥</small>${Math.round(u.sv/10*10)/10}</div><div class="lab">给我累计</div></div>
+  <div class="cell"><div class="num"><small>¥</small>${Math.round(u.tv/10*10)/10}</div><div class="lab">本场</div></div>
+  <div class="cell"><div class="num ${u.ch?'warn':''}">${gap}<small>天</small></div><div class="lab">没来了</div></div>
+  <div class="cell"><div class="num">${(u.last||'—').slice(5)}</div><div class="lab">上次来</div></div>
+  <div class="cell"><div class="num">${u.cnt}<small>场</small></div><div class="lab">给我到场</div></div>
+  <div class="cell"><div class="num">${u.w?Math.round(u.w/60):0}<small>分</small></div><div class="lab">今日观看</div></div>
+  </div>
+  ${u.adv?`<div class="advice"><div class="at">维护提示</div><p>${u.adv}</p></div>`:''}
+  <div class="own"><span class="tag t-green"><span class="dot"></span>自己人</span><span>主归属：<b>我</b></span></div>
+  <div class="act">
+  <button class="btn btn-primary" data-act="dm">去私信</button>
+  <button class="btn btn-ghost" data-act="group">拉群</button>
+  <button class="btn btn-ghost" data-act="note">备注</button></div></div></div></div>`;}
+function switchTab(t){['today','search','me'].forEach(x=>{const v=document.getElementById('v-'+x);if(v)v.classList.toggle('show',x===t);});
+ document.querySelectorAll('.tabbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+ if(t==='search'){const q=document.getElementById('q');if(q){q.focus();renderSearch(q.value);}}}
+function render(){root.innerHTML=viewToday()+viewSearch()+viewMe();switchTab('today');}
+function openProfile(sec){closeProfile();root.insertAdjacentHTML('beforeend',viewProfile(sec));}
+function closeProfile(){const pv=document.getElementById('pv');if(pv)pv.remove();}
+let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.opacity='1';
+ t.style.transform='translateX(-50%) translateY(0)';clearTimeout(tt);
+ tt=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(16px)';},1900);}
+document.addEventListener('click',e=>{
+ if(e.target.closest('[data-back]')){closeProfile();return;}
+ const se=e.target.closest('[data-sec]');if(se){openProfile(se.dataset.sec);return;}
+ const tb=e.target.closest('.tabbar .tb');if(tb){switchTab(tb.dataset.tab);return;}
+ const ac=e.target.closest('[data-act]');if(ac){toast({dm:'看完画像，回抖音私信该用户',group:'引导用户进粉丝群',
+  note:'可在运营后台记录备注',foot:'演示：正式版执行该动作'}[ac.dataset.act]||'演示动作');}});
+document.addEventListener('input',e=>{if(e.target.id==='q')renderSearch(e.target.value);});
+const TABBAR=`<div class="tabbar">
+ <button class="tb on" data-tab="today"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>今日</button>
+ <button class="tb" data-tab="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>查用户</button>
+ <button class="tb" data-tab="me"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>我的</button></div>`;
+const token=new URLSearchParams(location.search).get('t');
+function boot(){if(!token){root.innerHTML='<div class="empty">链接无效<br>请使用发给你的专属链接</div>';return;}
+ fetch(`data/${token}.json`).then(r=>{if(!r.ok)throw 0;return r.json();}).then(d=>{DATA=d;
+  document.title='画像·'+d.anchor.name;root.insertAdjacentHTML('afterend',TABBAR);render();})
+ .catch(()=>root.innerHTML='<div class="empty">数据加载失败<br>请检查网络后重新打开链接</div>');
+ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});}
+boot();
+</script>
+</body>
+</html>
