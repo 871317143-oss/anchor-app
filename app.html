@@ -128,6 +128,26 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .tabbar .tb svg{margin:0 auto 3px;display:block;}
 .tabbar .tb.on{color:var(--brand);font-weight:600;}
 #toast{position:absolute;left:50%;bottom:108px;transform:translateX(-50%) translateY(16px);background:rgba(28,39,51,.94);color:#fff;font-size:13px;padding:11px 18px;border-radius:10px;max-width:82%;text-align:center;opacity:0;transition:all .25s;pointer-events:none;z-index:60;}
+/* 回传 chip */
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{font-size:13px;font-weight:500;padding:8px 14px;border-radius:999px;background:var(--gray-bg);color:var(--ink2);cursor:pointer;border:1px solid transparent;user-select:none;}
+.chip.on{background:var(--brand);color:#fff;}
+.chip.gS.on{background:var(--red)}.chip.gA.on{background:var(--amber)}.chip.gB.on{background:var(--blue)}.chip.gC.on{background:var(--green)}.chip.gD.on{background:var(--gray)}
+/* 底部弹层 sheet */
+.sheet{position:absolute;inset:0;z-index:70;background:rgba(20,30,45,.45);display:none;align-items:flex-end;}
+.sheet.show{display:flex;}
+.sheet-card{width:100%;background:var(--bg);border-radius:20px 20px 0 0;max-height:92vh;display:flex;flex-direction:column;}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 12px;}
+.sheet-title{font-size:16px;font-weight:700;}
+.sheet-x{font-size:24px;color:var(--ink3);cursor:pointer;line-height:1;padding:0 4px;}
+.sheet-body{padding:0 18px;overflow-y:auto;flex:1;}
+.sheet-foot{padding:12px 18px calc(16px + env(safe-area-inset-bottom));}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:7px;}
+.field input,.field textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:14px;font-family:inherit;outline:none;background:#fff;color:var(--ink);}
+.field input:focus,.field textarea:focus{border-color:var(--brand);}
+.field textarea{resize:none;}
+.fb-hint{font-size:11px;color:var(--ink3);margin:2px 0 14px;line-height:1.5;}
 </style>
 </head>
 <body>
@@ -241,9 +261,10 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
   :`<div class="own" style="color:var(--blue)"><span class="tag t-blue"><span class="dot"></span>跨团用户</span><span>主归属在<b>别家</b>，不可跳转主页</span></div>`}
   <div class="act">
   ${u.mine
-  ?`<button class="btn btn-primary" data-act="dm" style="flex:1">去私信 · 打开 TA 主页</button>`
-  :`<button class="btn btn-ghost" disabled style="flex:1;opacity:.5;cursor:not-allowed">主归属别家·不可私信</button>`}
-  <button class="btn btn-ghost" data-act="note" style="flex:1">备注</button></div></div></div></div>`;}
+  ?`<button class="btn btn-primary" data-act="dm" style="flex:1">去私信</button>`
+  :`<button class="btn btn-ghost" disabled style="flex:1;opacity:.5;cursor:not-allowed">归属别家</button>`}
+  <button class="btn btn-primary" data-act="feedback" style="flex:1">回传</button>
+  <button class="btn btn-ghost" data-act="correct" style="flex:1">纠错</button></div></div></div></div>`;}
 function switchTab(t){['today','search','me'].forEach(x=>{const v=document.getElementById('v-'+x);if(v)v.classList.toggle('show',x===t);});
  document.querySelectorAll('.tabbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
  if(t==='search'){const q=document.getElementById('q');if(q){q.focus();renderSearch(q.value);}}}
@@ -273,8 +294,99 @@ function openNoteEditor(sec){
  box.querySelector('#noteCancel').onclick=()=>box.remove();
  box.querySelector('#noteDel').onclick=()=>{localStorage.removeItem('note_'+sec);closeProfile();openProfile(sec);};
  box.querySelector('#noteSave').onclick=()=>{const v=ta.value;if(v.trim())localStorage.setItem('note_'+sec,v);else localStorage.removeItem('note_'+sec);closeProfile();openProfile(sec);};}
+/* ============ 主播回传（上云） ============ */
+const FB_URL='https://fb.menghualu.com.co/api/feedback';
+function escapeHtml(s){return (s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+function bindChipGroup(box,multi){
+ box.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
+  if(multi)c.classList.toggle('on');
+  else{box.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');}});}
+function getChipVals(box){return [...box.querySelectorAll('.chip.on')].map(x=>x.dataset.v);}
+function closeSheet(){const s=document.getElementById('sheet');if(s)s.remove();}
+function openSheet(title,inner){
+ closeSheet();
+ const s=document.createElement('div');s.id='sheet';s.className='sheet';
+ s.innerHTML=`<div class="sheet-card">
+  <div class="sheet-head"><span class="sheet-title">${title}</span><span class="sheet-x" id="sheetX">×</span></div>
+  <div class="sheet-body">${inner}</div>
+  <div class="sheet-foot"><button class="btn btn-primary" id="sheetSubmit" style="width:100%">提交回传</button></div></div>`;
+ document.getElementById('phone').appendChild(s);
+ requestAnimationFrame(()=>s.classList.add('show'));
+ s.querySelector('#sheetX').onclick=closeSheet;
+ s.addEventListener('click',e=>{if(e.target===s)closeSheet();});
+ return s;}
+function openFeedbackSheet(sec){
+ const u=DATA.users[sec];const localNote=localStorage.getItem('note_'+sec)||'';
+ const s=openSheet(`回传 · ${u.n}`,
+  `<div class="field"><label>维护动作（可多选）</label>
+   <div class="chips" id="fbActions">
+    <span class="chip" data-v="已私信">已私信</span>
+    <span class="chip" data-v="对方已回复">对方已回复</span>
+    <span class="chip" data-v="已拉群">已拉群</span>
+    <span class="chip" data-v="已互关">已互关</span></div></div>
+  <div class="field"><label>等级建议（对标运营 SABCD）</label>
+   <div class="chips" id="fbGrade">
+    <span class="chip gS" data-v="S">S</span><span class="chip gA" data-v="A">A</span>
+    <span class="chip gB" data-v="B">B</span><span class="chip gC" data-v="C">C</span>
+    <span class="chip gD" data-v="D">D</span></div></div>
+  <div class="field"><label>客情备注</label>
+   <textarea id="fbNote" rows="3" placeholder="聊到的近况、关系进展…">${escapeHtml(localNote)}</textarea></div>
+  <div class="field"><label>联系方式（微信/手机）</label>
+   <input id="fbContact" type="text" placeholder="选填，对方愿意给的联系方式"></div>
+  <div class="field"><label>用户诉求</label>
+   <textarea id="fbDemand" rows="2" placeholder="对方想要什么、有什么问题"></textarea></div>
+  <div class="field"><label>生日</label><input id="fbBirth" type="date"></div>
+  <div class="fb-hint">回传后运营可见；等级只作建议，不会覆盖运营评定。</div>`);
+ bindChipGroup(s.querySelector('#fbActions'),true);
+ bindChipGroup(s.querySelector('#fbGrade'),false);
+ s.querySelector('#sheetSubmit').onclick=()=>{
+  const actions=getChipVals(s.querySelector('#fbActions'));
+  const grade=getChipVals(s.querySelector('#fbGrade'))[0]||'';
+  const note=s.querySelector('#fbNote').value.trim();
+  const contact=s.querySelector('#fbContact').value.trim();
+  const demand=s.querySelector('#fbDemand').value.trim();
+  const birthday=s.querySelector('#fbBirth').value;
+  if(!actions.length&&!note&&!contact&&!demand&&!birthday&&!grade){toast('请至少填写一项');return;}
+  const body={token:storedToken(),sec,room_id:DATA.anchor.room_id||'',kind:'日常维护',actions,grade,note,contact,demand,birthday};
+  doSubmit(body,()=>{if(note)localStorage.setItem('note_'+sec,note);closeSheet();});};}
+function openCorrectSheet(sec){
+ const u=DATA.users[sec];
+ const s=openSheet(`归属纠错 · ${u.n}`,
+  `<div class="field"><label>归属异议</label>
+   <textarea id="fbAppeal" rows="4" placeholder="如认为该用户主归属应是你/某位团员，说明理由与依据"></textarea></div>
+  <div class="fb-hint">提交后运营会核对，不会自动改归属。</div>
+  <div class="field"><label>提名为本场大哥</label>
+   <textarea id="fbNominate" rows="3" placeholder="如该用户本场贡献大但未被识别，说明情况"></textarea></div>`);
+ s.querySelector('#sheetSubmit').onclick=()=>{
+  const appeal=s.querySelector('#fbAppeal').value.trim();
+  const nom=s.querySelector('#fbNominate').value.trim();
+  if(!appeal&&!nom){toast('请至少填写一项');return;}
+  if(appeal)doSubmit({token:storedToken(),sec,room_id:DATA.anchor.room_id||'',kind:'归属异议',appeal},()=>{});
+  if(nom)doSubmit({token:storedToken(),sec,room_id:DATA.anchor.room_id||'',kind:'提名大哥',appeal:nom},()=>{});
+  closeSheet();};}
+function doSubmit(body,ok){
+ body.sub_id=storedToken()+'_'+(body.sec||'all')+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+ const btn=document.getElementById('sheetSubmit');if(btn){btn.disabled=true;btn.textContent='提交中…';}
+ submitToWorker(body).then(()=>{try{ok();}catch(e){}toast('已回传，运营可见');})
+ .catch(()=>{enqueueOffline(body);try{ok();}catch(e){}toast('已保存，联网后自动上传');});}
+async function submitToWorker(body){
+ const r=await fetch(FB_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ let d={};try{d=await r.json();}catch(e){}
+ if(!r.ok)throw new Error(d.error||'fail');
+ return d;}
+function loadQueue(){try{return JSON.parse(localStorage.getItem('fb_queue')||'[]');}catch(e){return[]}}
+function saveQueue(q){localStorage.setItem('fb_queue',JSON.stringify(q))}
+function enqueueOffline(b){const q=loadQueue();q.push(b);saveQueue(q)}
+async function flushQueue(){
+ const q=loadQueue();if(!q.length)return;const remain=[];
+ for(const b of q){try{await submitToWorker(b);}catch(e){remain.push(b);}}
+ saveQueue(remain);
+ if(q.length!==remain.length)toast('已同步 '+(q.length-remain.length)+' 条回传');}
+window.addEventListener('online',flushQueue);
+window.addEventListener('load',flushQueue);
 document.addEventListener('click',e=>{
  if(e.target.closest('#noteEdit'))return;
+ if(e.target.closest('#sheet'))return;
  if(e.target.closest('[data-back]')){closeProfile();return;}
  const ac=e.target.closest('[data-act]');
  const se=e.target.closest('[data-sec]');
@@ -287,6 +399,8 @@ document.addEventListener('click',e=>{
  if(act==='dm'){const u=DATA.users[k];
   if(!u||!u.mine){toast('主归属在别家，不可跳转 TA 主页');return;}
   window.location.href='https://www.douyin.com/user/'+k;return;}
+ if(act==='feedback'){openFeedbackSheet(k);return;}
+ if(act==='correct'){openCorrectSheet(k);return;}
  if(act==='note'){openNoteEditor(k);return;}
  return;}
  if(se){openProfile(se.dataset.sec);return;}
