@@ -163,6 +163,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
+const APP_VERSION='v13';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -242,7 +243,7 @@ function viewMe(){const a=DATA.anchor,c=DATA.counts,total=Object.keys(DATA.users
   <div class="me-row"><span>今日跨团用户</span><b>${c.crossToday} 人</b></div>
   <div class="me-row"><span>今日回归老客</span><b>${c.ret} 人</b></div></div>
   <div style="padding:16px 2px 0"><button class="btn btn-ghost" data-act="logout" style="width:100%">退出登录 / 换账号</button></div>
-  <div class="empty" style="padding:30px">数据每场下播后自动更新<br>口径只与你自己相关</div></div></div>`;}
+  <div class="empty" style="padding:24px 10px 10px">版本 ${APP_VERSION}　数据每场下播后自动更新<br>口径只与你自己相关</div></div></div>`;}
 function pvNote(sec){const v=localStorage.getItem('note_'+sec);
  return v?`<div class="advice" style="background:var(--gray-bg)"><div class="at" style="color:var(--ink2)">我的备注（仅本手机）</div><p style="color:var(--ink2)">${v.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</p></div>`:'';}
 function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
@@ -457,7 +458,27 @@ function loadData(tok){
   document.title='画像·'+d.anchor.name;root.insertAdjacentHTML('afterend',TABBAR);render();})
  .catch(()=>{localStorage.removeItem('anchor_token');
    showLogin('访问码无效或已失效，请重新输入或找运营补发');});
- if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});}
+ setupSW();}
+function setupSW(){
+ if(!('serviceWorker' in navigator))return;
+ let refreshing=false;
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{
+   if(refreshing)return;refreshing=true;location.reload();});
+ navigator.serviceWorker.register('sw.js').then(reg=>{
+   const check=()=>{try{reg.update();}catch(e){}
+     fetch('app.html?cv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{
+       const m=t.match(/APP_VERSION='(v\d+)'/);
+       if(m&&m[1]!==APP_VERSION)showUpdateBar();}).catch(()=>{});};
+   document.addEventListener('visibilitychange',()=>{if(!document.hidden)check();});
+   setInterval(check,20*60*1000);}).catch(()=>{});}
+let _updateBar;
+function showUpdateBar(){
+ if(_updateBar)return;
+ _updateBar=document.createElement('div');
+ _updateBar.style.cssText='position:absolute;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 10px);z-index:90;background:var(--brand);color:#fff;padding:11px 14px;border-radius:12px;font-size:14px;font-weight:600;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.22);cursor:pointer';
+ _updateBar.textContent='发现新版本，点击更新';
+ _updateBar.onclick=()=>location.reload();
+ document.getElementById('phone').appendChild(_updateBar);}
 function boot(){
  const urlT=new URLSearchParams(location.search).get('t');
  if(urlT){localStorage.setItem('anchor_token',urlT);

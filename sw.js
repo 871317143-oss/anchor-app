@@ -1,4 +1,4 @@
-const CACHE='anchor-v12';
+const CACHE='anchor-v13';
 const SHELL=['app.html','manifest.json','assets/icon-192.png','assets/icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE)
   .then(c=>Promise.all(SHELL.map(s=>fetch(s,{cache:'reload'}).then(r=>c.put(s,r)))))
