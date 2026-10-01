@@ -69,6 +69,15 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .btn{flex:1;border:none;border-radius:10px;padding:11px 0;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;}
 .btn-primary{background:var(--brand);color:#fff;}
 .btn-ghost{background:var(--gray-bg);color:var(--ink2);}
+.btn-danger{background:var(--red-bg);color:var(--red);}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+.login-card{width:100%;max-width:340px;background:#fff;border-radius:18px;padding:30px 24px;box-shadow:0 6px 26px rgba(20,35,55,.1);text-align:center;}
+.login-logo{width:64px;height:64px;border-radius:16px;background:var(--brand);color:#fff;font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
+.login-title{font-size:19px;font-weight:800;}
+.login-sub{font-size:13px;color:var(--ink3);margin:6px 0 18px;}
+.login-input{width:100%;border:1px solid var(--line);border-radius:11px;padding:13px 14px;font-size:15px;font-family:inherit;outline:none;text-align:center;}
+.login-input:focus{border-color:var(--brand);}
+.login-err{font-size:12px;color:var(--red);margin-top:10px;min-height:14px;}
 .tier{background:var(--card);border-radius:14px;margin-bottom:10px;box-shadow:0 2px 10px rgba(20,35,55,.04);overflow:hidden;}
 .tier .t-head{display:flex;align-items:center;gap:9px;padding:13px 14px;}
 .tier .t-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex:none;}
@@ -190,6 +199,7 @@ function viewMe(){const a=DATA.anchor,c=DATA.counts,total=Object.keys(DATA.users
   <div class="me-row"><span>今日感谢 L1</span><b>${c.l1} 人</b></div>
   <div class="me-row"><span>需唤醒 A/B/C</span><b>${c.chA}/${c.chB}/${c.chC}</b></div>
   <div class="me-row"><span>今日跨团用户</span><b>${c.crossToday} 人</b></div></div>
+  <div style="padding:16px 2px 0"><button class="btn btn-ghost" data-act="logout" style="width:100%">退出登录 / 换账号</button></div>
   <div class="empty" style="padding:30px">数据每场下播后自动更新<br>口径只与你自己相关</div></div></div>`;}
 function pvNote(sec){const v=localStorage.getItem('note_'+sec);
  return v?`<div class="advice" style="background:var(--gray-bg)"><div class="at" style="color:var(--ink2)">我的备注（仅本手机）</div><p style="color:var(--ink2)">${v.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</p></div>`:'';}
@@ -244,12 +254,15 @@ function openNoteEditor(sec){
  box.innerHTML=`<textarea id="noteTA" rows="3" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font-family:inherit;font-size:14px;resize:none;outline:none"></textarea>
   <div style="display:flex;gap:9px;margin-top:8px">
   <button id="noteCancel" class="btn btn-ghost" style="flex:1">取消</button>
+  <button id="noteDel" class="btn btn-danger" style="flex:1">删除</button>
   <button id="noteSave" class="btn btn-primary" style="flex:1">保存</button></div>`;
  pv.querySelector('.act').before(box);
- const ta=box.querySelector('#noteTA');ta.value=localStorage.getItem('note_'+sec)||'';
+ const ta=box.querySelector('#noteTA');const oldv=localStorage.getItem('note_'+sec);ta.value=oldv||'';
+ box.querySelector('#noteDel').style.display=oldv?'':'none';
  setTimeout(()=>{try{ta.focus();}catch(e){}},60);
  box.querySelector('#noteCancel').onclick=()=>box.remove();
- box.querySelector('#noteSave').onclick=()=>{localStorage.setItem('note_'+sec,ta.value);closeProfile();openProfile(sec);};}
+ box.querySelector('#noteDel').onclick=()=>{localStorage.removeItem('note_'+sec);closeProfile();openProfile(sec);};
+ box.querySelector('#noteSave').onclick=()=>{const v=ta.value;if(v.trim())localStorage.setItem('note_'+sec,v);else localStorage.removeItem('note_'+sec);closeProfile();openProfile(sec);};}
 document.addEventListener('click',e=>{
  if(e.target.closest('#noteEdit'))return;
  if(e.target.closest('[data-back]')){closeProfile();return;}
@@ -257,6 +270,7 @@ document.addEventListener('click',e=>{
  const se=e.target.closest('[data-sec]');
  const tb=e.target.closest('.tabbar .tb');
  if(ac){const act=ac.dataset.act;
+ if(act==='logout'){localStorage.removeItem('anchor_token');location.reload();return;}
  if(act==='expand'){const tEl=ac.closest('.tier');const closed=tEl.classList.toggle('closed');
   ac.textContent=closed?ac.textContent.replace('收起','查看全部').replace('▴','▾'):ac.textContent.replace('查看全部','收起').replace('▾','▴');return;}
  const pv=document.getElementById('pv');if(!pv)return;const k=pv.dataset.sec;
@@ -273,12 +287,33 @@ const TABBAR=`<div class="tabbar">
  <button class="tb on" data-tab="today"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>今日</button>
  <button class="tb" data-tab="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>查用户</button>
  <button class="tb" data-tab="me"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>我的</button></div>`;
-const token=new URLSearchParams(location.search).get('t');
-function boot(){if(!token){root.innerHTML='<div class="empty">链接无效<br>请使用发给你的专属链接</div>';return;}
- fetch(`data/${token}.json`).then(r=>{if(!r.ok)throw 0;return r.json();}).then(d=>{DATA=d;
+function storedToken(){return localStorage.getItem('anchor_token')||'';}
+function showLogin(err){
+ root.innerHTML=`<div class="login-wrap"><div class="login-card">
+  <div class="login-logo">播</div>
+  <div class="login-title">主播画像助手</div>
+  <div class="login-sub">请输入发给你的访问码</div>
+  <input id="loginCode" class="login-input" type="text" autocapitalize="off" autocomplete="off" placeholder="粘贴访问码">
+  <button id="loginBtn" class="btn btn-primary" style="width:100%;margin-top:8px">进入</button>
+  <div id="loginErr" class="login-err">${err||''}</div></div></div>`;
+ const code=document.getElementById('loginCode'),btn=document.getElementById('loginBtn');
+ const go=()=>{const v=(code.value||'').trim().toLowerCase();
+   if(!v){document.getElementById('loginErr').textContent='请输入访问码';return;}
+   localStorage.setItem('anchor_token',v);loadData(v);};
+ btn.onclick=go;code.onkeydown=e=>{if(e.key==='Enter')go();};setTimeout(()=>code.focus(),60);}
+function loadData(tok){
+ fetch(`data/${tok}.json`).then(r=>{if(!r.ok)throw 0;return r.json();}).then(d=>{DATA=d;
   document.title='画像·'+d.anchor.name;root.insertAdjacentHTML('afterend',TABBAR);render();})
- .catch(()=>root.innerHTML='<div class="empty">数据加载失败<br>请检查网络后重新打开链接</div>');
+ .catch(()=>{localStorage.removeItem('anchor_token');
+   showLogin('访问码无效或已失效，请重新输入或找运营补发');});
  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});}
+function boot(){
+ const urlT=new URLSearchParams(location.search).get('t');
+ if(urlT){localStorage.setItem('anchor_token',urlT);
+   history.replaceState({},'',location.pathname);}
+ const tok=storedToken();
+ if(!tok){showLogin();return;}
+ loadData(tok);}
 boot();
 </script>
 </body>
