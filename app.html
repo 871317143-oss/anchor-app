@@ -167,6 +167,7 @@ function churnLab(ch){return ch==='A'?'高价值流失':ch==='B'?'老客流失':
 function gradeTag(u){const m={S:'red',A:'amber',B:'blue',C:'green',D:'gray'};return u.t?tag(m[u.t],u.t+'级'):'';}
 function rowTags(u){let t=[gradeTag(u)];if(u.nf)t.push(tag('red','新客'));
   if(u.cr)t.push(u.mine?tag('green','跨团·归我'):tag('blue','跨团'));
+  if(u.ret)t.push(tag('amber','回归用户'));
   if(u.w>1200)t.push(tag('green','高陪伴'));return t.join('');}
 function topbar(){const a=DATA.anchor;return `<div class="topbar"><div class="who">
   <div class="avatar">${a.name[0]}</div><div><div class="name">${a.teamName} · ${a.name}</div>
@@ -192,6 +193,11 @@ function greetBlock(){const g=DATA.greet;if(!g||!g.length)return '';
  return `<div class="tier closed"><div class="t-head"><div class="t-ico" style="background:var(--amber-bg);color:var(--amber)">★</div>
   <div><div class="t-name">主动问候</div><div class="t-sub">S/A/B 级本场没刷 · 也要维系</div></div>
   <div class="t-cnt">${g.length}<small> 人</small></div></div><div class="trows">${rows}</div>${foot}</div>`;}
+const RETURNICO=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e8930c" stroke-width="2" style="flex:none"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>`;
+function returnedBanner(){const r=DATA.returned;if(!r||!r.length)return '';
+ const names=r.slice(0,5).map(s=>DATA.users[s].n).join('、');
+ return `<div class="cross" style="border-left:4px solid var(--amber)">${RETURNICO}
+  <div class="c-txt"><b>${r.length} 位「已流失」老客今天回来给你刷礼物了</b>（${names}${r.length>5?' 等':''}），已标记<b>回归</b>，重点走心接待、给足独宠感。</div></div>`;}
 function viewToday(){const c=DATA.counts,ch=DATA.churn;
  const cross=DATA.crossToday.length?`<div class="cross">${GLOBE}
   <div class="c-txt">今天有 <b>${DATA.crossToday.length} 位跨团用户</b>给你送礼，也在其他团消费，注意客情；<b>不显示对方归属</b>。</div></div>`:'';
@@ -201,7 +207,7 @@ function viewToday(){const c=DATA.counts,ch=DATA.churn;
   ${ch.b.slice(0,2).map(s=>churnCard(s,'cb','老客流失')).join('')}
   ${ch.c.slice(0,1).map(s=>churnCard(s,'cc2','长尾')).join('')}</div>`;
  return `<div class="view show" id="v-today">${topbar()}<div class="wrap">
-  <div class="sec-title"><h3>今日维护</h3><span class="more">按对我消费分层</span></div>${cross}
+  <div class="sec-title"><h3>今日维护</h3><span class="more">按对我消费分层</span></div>${cross}${returnedBanner()}
   ${tier('l3','L3','重点维护','消费 > 99 元 · 今天必聊',DATA.l3)}
   ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2)}
   ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1)}${greetBlock()}${churn}</div></div>`;}
@@ -228,7 +234,8 @@ function viewMe(){const a=DATA.anchor,c=DATA.counts,total=Object.keys(DATA.users
   <div class="me-row"><span>今日感谢 L1</span><b>${c.l1} 人</b></div>
   <div class="me-row"><span>主动问候 SAB</span><b>${c.greet} 人</b></div>
   <div class="me-row"><span>需唤醒 A/B/C</span><b>${c.chA}/${c.chB}/${c.chC}</b></div>
-  <div class="me-row"><span>今日跨团用户</span><b>${c.crossToday} 人</b></div></div>
+  <div class="me-row"><span>今日跨团用户</span><b>${c.crossToday} 人</b></div>
+  <div class="me-row"><span>今日回归老客</span><b>${c.ret} 人</b></div></div>
   <div style="padding:16px 2px 0"><button class="btn btn-ghost" data-act="logout" style="width:100%">退出登录 / 换账号</button></div>
   <div class="empty" style="padding:30px">数据每场下播后自动更新<br>口径只与你自己相关</div></div></div>`;}
 function pvNote(sec){const v=localStorage.getItem('note_'+sec);
@@ -237,6 +244,7 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
  const gap=u.last?daysBetween(u.last,DATA.anchor.date):'';
  let tags=[gradeTag(u)];if(u.nf)tags.push(tag('red','新客'));
  if(u.cr)tags.push(u.mine?tag('green','跨团·归我'):tag('blue','跨团'));
+ if(u.ret)tags.push(tag('amber','回归用户'));
  if(u.w>1200)tags.push(tag('green','高陪伴'));if(u.ch)tags.push(tag(u.ch==='A'?'red':u.ch==='B'?'amber':'gray',churnLab(u.ch)));
  const info=[u.gr&&('荣耀'+u.gr),u.l,u.g&&(u.g===1?'男':'女'),u.a&&(u.a+'岁')].filter(x=>x).join(' · ');
  return `<div class="pview show" id="pv" data-sec="${sec}"><div class="pv-back" data-back="1">‹ 返回</div><div class="wrap">
