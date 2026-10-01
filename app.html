@@ -135,7 +135,8 @@ function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.roun
 function daysBetween(d1,d2){return Math.round((new Date(d2)-new Date(d1))/86400000);}
 function tag(cls,txt){return `<span class="tag t-${cls}"><span class="dot"></span>${txt}</span>`;}
 function churnLab(ch){return ch==='A'?'高价值流失':ch==='B'?'老客流失':'长尾流失';}
-function rowTags(u){let t=[];if(u.nf)t.push(tag('red','新客'));if(u.cr)t.push(tag('blue','跨团'));
+function rowTags(u){let t=[];if(u.nf)t.push(tag('red','新客'));
+  if(u.cr)t.push(u.mine?tag('green','跨团·归我'):tag('blue','跨团'));
   if(u.w>1200)t.push(tag('green','高陪伴'));return t.join('');}
 function topbar(){const a=DATA.anchor;return `<div class="topbar"><div class="who">
   <div class="avatar">${a.name[0]}</div><div><div class="name">${a.teamName} · ${a.name}</div>
@@ -194,7 +195,8 @@ function pvNote(sec){const v=localStorage.getItem('note_'+sec);
  return v?`<div class="advice" style="background:var(--gray-bg)"><div class="at" style="color:var(--ink2)">我的备注（仅本手机）</div><p style="color:var(--ink2)">${v.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</p></div>`:'';}
 function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
  const gap=u.last?daysBetween(u.last,DATA.anchor.date):'';
- let tags=[];if(u.nf)tags.push(tag('red','新客'));if(u.cr)tags.push(tag('blue','跨团'));
+ let tags=[];if(u.nf)tags.push(tag('red','新客'));
+ if(u.cr)tags.push(u.mine?tag('green','跨团·归我'):tag('blue','跨团'));
  if(u.w>1200)tags.push(tag('green','高陪伴'));if(u.ch)tags.push(tag(u.ch==='A'?'red':u.ch==='B'?'amber':'gray',churnLab(u.ch)));
  const info=[u.gr&&('荣耀'+u.gr),u.l,u.g&&(u.g===1?'男':'女'),u.a&&(u.a+'岁')].filter(x=>x).join(' · ');
  return `<div class="pview show" id="pv" data-sec="${sec}"><div class="pv-back" data-back="1">‹ 返回</div><div class="wrap">
@@ -212,13 +214,15 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
   </div>
   ${u.adv?`<div class="advice"><div class="at">维护提示</div><p>${u.adv}</p></div>`:''}
   ${pvNote(sec)}
-  ${u.cr
-  ?`<div class="own" style="color:var(--blue)"><span class="tag t-blue"><span class="dot"></span>跨团用户</span><span>也在其他团消费，<b>不可跳转主页</b></span></div>`
-  :`<div class="own"><span class="tag t-green"><span class="dot"></span>自己人</span><span>主归属：<b>我</b></span></div>`}
+  ${u.mine
+  ?(u.cr
+    ?`<div class="own" style="color:var(--green)"><span class="tag t-green"><span class="dot"></span>跨团·归我</span><span>也在别家消费，但主归属是<b>我</b>，可私信</span></div>`
+    :`<div class="own"><span class="tag t-green"><span class="dot"></span>自己人</span><span>主归属：<b>我</b></span></div>`)
+  :`<div class="own" style="color:var(--blue)"><span class="tag t-blue"><span class="dot"></span>跨团用户</span><span>主归属在<b>别家</b>，不可跳转主页</span></div>`}
   <div class="act">
-  ${u.cr
-  ?`<button class="btn btn-ghost" disabled style="flex:1;opacity:.5;cursor:not-allowed">跨团用户不可私信</button>`
-  :`<button class="btn btn-primary" data-act="dm" style="flex:1">去私信 · 打开 TA 主页</button>`}
+  ${u.mine
+  ?`<button class="btn btn-primary" data-act="dm" style="flex:1">去私信 · 打开 TA 主页</button>`
+  :`<button class="btn btn-ghost" disabled style="flex:1;opacity:.5;cursor:not-allowed">主归属别家·不可私信</button>`}
   <button class="btn btn-ghost" data-act="note" style="flex:1">备注</button></div></div></div></div>`;}
 function switchTab(t){['today','search','me'].forEach(x=>{const v=document.getElementById('v-'+x);if(v)v.classList.toggle('show',x===t);});
  document.querySelectorAll('.tabbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
@@ -257,7 +261,7 @@ document.addEventListener('click',e=>{
   ac.textContent=closed?ac.textContent.replace('收起','查看全部').replace('▴','▾'):ac.textContent.replace('查看全部','收起').replace('▾','▴');return;}
  const pv=document.getElementById('pv');if(!pv)return;const k=pv.dataset.sec;
  if(act==='dm'){const u=DATA.users[k];
-  if(!u||u.cr){toast('跨团用户，不可跳转 TA 主页');return;}
+  if(!u||!u.mine){toast('主归属在别家，不可跳转 TA 主页');return;}
   window.location.href='https://www.douyin.com/user/'+k;return;}
  if(act==='note'){openNoteEditor(k);return;}
  return;}
