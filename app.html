@@ -142,15 +142,14 @@ function topbar(){const a=DATA.anchor;return `<div class="topbar"><div class="wh
   <div class="meta">${a.date} · 主播专属</div></div></div></div>`;}
 const GLOBE=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f6fb0" stroke-width="2" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>`;
 
-function tier(cls,code,name,sub,secs,actLabel){if(!secs.length)return '';
+function tier(cls,code,name,sub,secs){if(!secs.length)return '';
  const rows=secs.map(s=>{const u=DATA.users[s];return `<div class="urow" data-sec="${s}">
   <div class="avatar" style="background:${colorOf(u.n||s)}">${(u.n||'?')[0]}</div>
   <div class="u-nick">${u.n||''}</div>${rowTags(u)}<div class="u-val">${yuan(u.tv)}</div></div>`;}).join('');
- const exp=secs.length>5?`<span class="tf exp" data-act="expand">查看全部 ${secs.length} 人 ▾</span>`:'';
+ const foot=secs.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${secs.length} 人 ▾</span></div>`:'';
  return `<div class="tier ${cls} closed"><div class="t-head"><div class="t-ico">${code}</div>
   <div><div class="t-name">${name}</div><div class="t-sub">${sub}</div></div>
-  <div class="t-cnt">${secs.length}<small> 人</small></div></div><div class="trows">${rows}</div>
-  <div class="t-foot">${exp}<span class="tf cp" data-act="copylist">${actLabel} · 复制名单</span></div></div>`;}
+  <div class="t-cnt">${secs.length}<small> 人</small></div></div><div class="trows">${rows}</div>${foot}</div>`;}
 function churnCard(s,cls,lab){const u=DATA.users[s];return `<div class="churn-card ${cls}" data-sec="${s}">
   <div class="cc-nick">${u.n}</div><div class="cc-gap">${daysBetween(u.last,DATA.anchor.date)}天</div>
   <div class="cc-lab">${lab}</div><div class="cc-val">给我 ${yuan(u.sv)}</div></div>`;}
@@ -164,9 +163,9 @@ function viewToday(){const c=DATA.counts,ch=DATA.churn;
   ${ch.c.slice(0,1).map(s=>churnCard(s,'cc2','长尾')).join('')}</div>`;
  return `<div class="view show" id="v-today">${topbar()}<div class="wrap">
   <div class="sec-title"><h3>今日维护</h3><span class="more">按对我消费分层</span></div>${cross}
-  ${tier('l3','L3','重点维护','消费 > 99 元 · 今天必聊',DATA.l3,'去私信')}
-  ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2,'去拉群')}
-  ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1,'去感谢')}${churn}</div></div>`;}
+  ${tier('l3','L3','重点维护','消费 > 99 元 · 今天必聊',DATA.l3)}
+  ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2)}
+  ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1)}${churn}</div></div>`;}
 function viewSearch(){return `<div class="view" id="v-search">${topbar()}<div class="wrap">
   <div class="sbar"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8a97a5" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
   <input id="q" type="search" placeholder="搜索昵称，查看用户情况" autocomplete="off"></div>
@@ -213,11 +212,14 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
   </div>
   ${u.adv?`<div class="advice"><div class="at">维护提示</div><p>${u.adv}</p></div>`:''}
   ${pvNote(sec)}
-  <div class="own"><span class="tag t-green"><span class="dot"></span>自己人</span><span>主归属：<b>我</b></span></div>
+  ${u.cr
+  ?`<div class="own" style="color:var(--blue)"><span class="tag t-blue"><span class="dot"></span>跨团用户</span><span>也在其他团消费，<b>不可跳转主页</b></span></div>`
+  :`<div class="own"><span class="tag t-green"><span class="dot"></span>自己人</span><span>主归属：<b>我</b></span></div>`}
   <div class="act">
-  <button class="btn btn-primary" data-act="dm">去私信</button>
-  <button class="btn btn-ghost" data-act="group">拉群</button>
-  <button class="btn btn-ghost" data-act="note">备注</button></div></div></div></div>`;}
+  ${u.cr
+  ?`<button class="btn btn-ghost" disabled style="flex:1;opacity:.5;cursor:not-allowed">跨团用户不可私信</button>`
+  :`<button class="btn btn-primary" data-act="dm" style="flex:1">去私信 · 打开 TA 主页</button>`}
+  <button class="btn btn-ghost" data-act="note" style="flex:1">备注</button></div></div></div></div>`;}
 function switchTab(t){['today','search','me'].forEach(x=>{const v=document.getElementById('v-'+x);if(v)v.classList.toggle('show',x===t);});
  document.querySelectorAll('.tabbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
  if(t==='search'){const q=document.getElementById('q');if(q){q.focus();renderSearch(q.value);}}}
@@ -232,7 +234,20 @@ function fallbackCopy(t){const ta=document.createElement('textarea');ta.value=t;
 function copyText(t){try{fallbackCopy(t);}catch(e){}
  if(navigator.clipboard&&navigator.clipboard.writeText){try{navigator.clipboard.writeText(t).catch(()=>{});}catch(e){}}
  return Promise.resolve();}
+function openNoteEditor(sec){
+ const pv=document.getElementById('pv');if(!pv||pv.querySelector('#noteEdit'))return;
+ const box=document.createElement('div');box.id='noteEdit';box.style.cssText='margin:12px 16px 0';
+ box.innerHTML=`<textarea id="noteTA" rows="3" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font-family:inherit;font-size:14px;resize:none;outline:none"></textarea>
+  <div style="display:flex;gap:9px;margin-top:8px">
+  <button id="noteCancel" class="btn btn-ghost" style="flex:1">取消</button>
+  <button id="noteSave" class="btn btn-primary" style="flex:1">保存</button></div>`;
+ pv.querySelector('.act').before(box);
+ const ta=box.querySelector('#noteTA');ta.value=localStorage.getItem('note_'+sec)||'';
+ setTimeout(()=>{try{ta.focus();}catch(e){}},60);
+ box.querySelector('#noteCancel').onclick=()=>box.remove();
+ box.querySelector('#noteSave').onclick=()=>{localStorage.setItem('note_'+sec,ta.value);closeProfile();openProfile(sec);};}
 document.addEventListener('click',e=>{
+ if(e.target.closest('#noteEdit'))return;
  if(e.target.closest('[data-back]')){closeProfile();return;}
  const ac=e.target.closest('[data-act]');
  const se=e.target.closest('[data-sec]');
@@ -240,14 +255,11 @@ document.addEventListener('click',e=>{
  if(ac){const act=ac.dataset.act;
  if(act==='expand'){const tEl=ac.closest('.tier');const closed=tEl.classList.toggle('closed');
   ac.textContent=closed?ac.textContent.replace('收起','查看全部').replace('▴','▾'):ac.textContent.replace('查看全部','收起').replace('▾','▴');return;}
- if(act==='copylist'){const tEl=ac.closest('.tier');
-  const lines=[...tEl.querySelectorAll('.urow')].map(r=>{const u=DATA.users[r.dataset.sec];return (u.n||'')+(u.tv?(' '+yuan(u.tv)):'');});
-  copyText(lines.join('\n')).then(()=>toast('已复制 '+lines.length+' 人名单，回抖音逐个处理'));return;}
  const pv=document.getElementById('pv');if(!pv)return;const k=pv.dataset.sec;
- if(act==='dm'||act==='group'){const u=DATA.users[k];
-  copyText(u?(u.n||''):'').then(()=>toast(act==='dm'?'已复制昵称，回抖音私信 TA':'已复制昵称，引导 TA 进群'));return;}
- if(act==='note'){const v=prompt('记录备注（仅存在本手机）',localStorage.getItem('note_'+k)||'');
-  if(v!==null){localStorage.setItem('note_'+k,v);closeProfile();openProfile(k);}return;}
+ if(act==='dm'){const u=DATA.users[k];
+  if(!u||u.cr){toast('跨团用户，不可跳转 TA 主页');return;}
+  window.location.href='https://www.douyin.com/user/'+k;return;}
+ if(act==='note'){openNoteEditor(k);return;}
  return;}
  if(se){openProfile(se.dataset.sec);return;}
  if(tb){switchTab(tb.dataset.tab);return;}
