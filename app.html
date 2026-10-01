@@ -144,7 +144,8 @@ function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.roun
 function daysBetween(d1,d2){return Math.round((new Date(d2)-new Date(d1))/86400000);}
 function tag(cls,txt){return `<span class="tag t-${cls}"><span class="dot"></span>${txt}</span>`;}
 function churnLab(ch){return ch==='A'?'高价值流失':ch==='B'?'老客流失':'长尾流失';}
-function rowTags(u){let t=[];if(u.nf)t.push(tag('red','新客'));
+function gradeTag(u){const m={S:'red',A:'amber',B:'blue',C:'green',D:'gray'};return u.t?tag(m[u.t],u.t+'级'):'';}
+function rowTags(u){let t=[gradeTag(u)];if(u.nf)t.push(tag('red','新客'));
   if(u.cr)t.push(u.mine?tag('green','跨团·归我'):tag('blue','跨团'));
   if(u.w>1200)t.push(tag('green','高陪伴'));return t.join('');}
 function topbar(){const a=DATA.anchor;return `<div class="topbar"><div class="who">
@@ -163,6 +164,14 @@ function tier(cls,code,name,sub,secs){if(!secs.length)return '';
 function churnCard(s,cls,lab){const u=DATA.users[s];return `<div class="churn-card ${cls}" data-sec="${s}">
   <div class="cc-nick">${u.n}</div><div class="cc-gap">${daysBetween(u.last,DATA.anchor.date)}天</div>
   <div class="cc-lab">${lab}</div><div class="cc-val">给我 ${yuan(u.sv)}</div></div>`;}
+function greetBlock(){const g=DATA.greet;if(!g||!g.length)return '';
+ const rows=g.map(s=>{const u=DATA.users[s];return `<div class="urow" data-sec="${s}">
+  <div class="avatar" style="background:${colorOf(u.n||s)}">${(u.n||'?')[0]}</div>
+  <div class="u-nick">${u.n||''}</div>${gradeTag(u)}<div class="u-val">给我 ${yuan(u.sv)}</div></div>`;}).join('');
+ const foot=g.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${g.length} 人 ▾</span></div>`:'';
+ return `<div class="tier closed"><div class="t-head"><div class="t-ico" style="background:var(--amber-bg);color:var(--amber)">★</div>
+  <div><div class="t-name">主动问候</div><div class="t-sub">S/A/B 级本场没刷 · 也要维系</div></div>
+  <div class="t-cnt">${g.length}<small> 人</small></div></div><div class="trows">${rows}</div>${foot}</div>`;}
 function viewToday(){const c=DATA.counts,ch=DATA.churn;
  const cross=DATA.crossToday.length?`<div class="cross">${GLOBE}
   <div class="c-txt">今天有 <b>${DATA.crossToday.length} 位跨团用户</b>给你送礼，也在其他团消费，注意客情；<b>不显示对方归属</b>。</div></div>`:'';
@@ -175,7 +184,7 @@ function viewToday(){const c=DATA.counts,ch=DATA.churn;
   <div class="sec-title"><h3>今日维护</h3><span class="more">按对我消费分层</span></div>${cross}
   ${tier('l3','L3','重点维护','消费 > 99 元 · 今天必聊',DATA.l3)}
   ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2)}
-  ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1)}${churn}</div></div>`;}
+  ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1)}${greetBlock()}${churn}</div></div>`;}
 function viewSearch(){return `<div class="view" id="v-search">${topbar()}<div class="wrap">
   <div class="sbar"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8a97a5" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
   <input id="q" type="search" placeholder="搜索昵称，查看用户情况" autocomplete="off"></div>
@@ -197,6 +206,7 @@ function viewMe(){const a=DATA.anchor,c=DATA.counts,total=Object.keys(DATA.users
   <div class="me-row"><span>今日重点 L3</span><b>${c.l3} 人</b></div>
   <div class="me-row"><span>今日拉群 L2</span><b>${c.l2} 人</b></div>
   <div class="me-row"><span>今日感谢 L1</span><b>${c.l1} 人</b></div>
+  <div class="me-row"><span>主动问候 SAB</span><b>${c.greet} 人</b></div>
   <div class="me-row"><span>需唤醒 A/B/C</span><b>${c.chA}/${c.chB}/${c.chC}</b></div>
   <div class="me-row"><span>今日跨团用户</span><b>${c.crossToday} 人</b></div></div>
   <div style="padding:16px 2px 0"><button class="btn btn-ghost" data-act="logout" style="width:100%">退出登录 / 换账号</button></div>
@@ -205,7 +215,7 @@ function pvNote(sec){const v=localStorage.getItem('note_'+sec);
  return v?`<div class="advice" style="background:var(--gray-bg)"><div class="at" style="color:var(--ink2)">我的备注（仅本手机）</div><p style="color:var(--ink2)">${v.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</p></div>`:'';}
 function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
  const gap=u.last?daysBetween(u.last,DATA.anchor.date):'';
- let tags=[];if(u.nf)tags.push(tag('red','新客'));
+ let tags=[gradeTag(u)];if(u.nf)tags.push(tag('red','新客'));
  if(u.cr)tags.push(u.mine?tag('green','跨团·归我'):tag('blue','跨团'));
  if(u.w>1200)tags.push(tag('green','高陪伴'));if(u.ch)tags.push(tag(u.ch==='A'?'red':u.ch==='B'?'amber':'gray',churnLab(u.ch)));
  const info=[u.gr&&('荣耀'+u.gr),u.l,u.g&&(u.g===1?'男':'女'),u.a&&(u.a+'岁')].filter(x=>x).join(' · ');
