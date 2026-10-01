@@ -62,7 +62,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .grid .num.warn{color:var(--red);}
 .advice{margin:12px 16px 0;background:var(--brand-soft);border-radius:10px;padding:11px 13px;}
 .advice .at{font-size:11px;font-weight:700;color:var(--brand);margin-bottom:4px;letter-spacing:.5px;}
-.advice p{font-size:13px;line-height:1.55;color:#31445c;}
+.advice p{font-size:13px;line-height:1.55;color:#31445c;word-break:break-word;}
 .own{display:flex;align-items:center;gap:7px;margin:12px 16px 0;font-size:12px;padding-top:12px;border-top:1px dashed var(--line);color:var(--ink2);}
 .own b{font-weight:600;}
 .act{display:flex;gap:9px;padding:14px 16px 16px;margin-top:14px;}
@@ -76,11 +76,16 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .tier .t-sub{font-size:11px;color:var(--ink3);margin-top:1px;}
 .tier .t-cnt{margin-left:auto;font-size:14px;font-weight:700;}
 .tier .t-cnt small{font-weight:400;color:var(--ink3);font-size:10px;}
-.urow{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line);cursor:pointer;}
+.urow{display:flex;align-items:center;gap:10px;padding:10px 14px;}
 .urow .avatar{width:32px;height:32px;font-size:13px;}
 .urow .u-nick{font-size:13px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .urow .u-val{font-size:12px;color:var(--ink2);font-weight:600;}
-.tier .t-foot{padding:10px 14px;border-top:1px solid var(--line);font-size:12px;color:var(--brand);font-weight:600;text-align:center;cursor:pointer;}
+.trows .urow{border-top:1px solid var(--line);}
+.tier.closed .trows .urow:nth-child(n+6){display:none;}
+.tier .t-foot{display:flex;gap:8px;padding:9px 12px;border-top:1px solid var(--line);}
+.tier .tf{flex:1;text-align:center;font-size:12px;font-weight:600;padding:8px 4px;border-radius:8px;cursor:pointer;}
+.tier .tf.exp{color:var(--brand);background:var(--brand-soft);}
+.tier .tf.cp{color:var(--ink2);background:var(--gray-bg);}
 .tier.l1 .t-ico{background:var(--gray-bg);color:var(--gray);}.tier.l1 .t-cnt{color:var(--gray);}
 .tier.l2 .t-ico{background:var(--amber-bg);color:var(--amber);}.tier.l2 .t-cnt{color:var(--amber);}
 .tier.l3 .t-ico{background:var(--red-bg);color:var(--red);}.tier.l3 .t-cnt{color:var(--red);}
@@ -88,7 +93,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .cross .c-txt{font-size:12px;line-height:1.5;color:#2b5b8c;}
 .cross .c-txt b{font-weight:700;}
 .churn-row{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px;}
-.churn-card{flex:none;width:148px;background:#fff;border-radius:12px;padding:11px;box-shadow:0 2px 8px rgba(20,35,55,.05);cursor:pointer;}
+.churn-card{flex:none;width:148px;background:#fff;border-radius:12px;padding:11px;box-shadow:0 2px 8px rgba(20,30,55,.05);cursor:pointer;}
 .churn-card .cc-nick{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .churn-card .cc-gap{font-size:20px;font-weight:800;margin:6px 0 1px;}
 .churn-card .cc-lab{font-size:10px;color:var(--ink3);}
@@ -99,7 +104,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .slist{margin-top:12px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(20,35,55,.04);}
 .srow{display:flex;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--line);cursor:pointer;}
 .srow:first-child{border-top:none;}
-.srow .s-nick{font-size:14px;font-weight:500;flex:1;min-width:0;white:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.srow .s-nick{font-size:14px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .srow .s-sub{font-size:11px;color:var(--ink3);}
 .empty{text-align:center;color:var(--ink3);font-size:13px;padding:60px 20px;line-height:1.7;}
 .me-card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(20,35,55,.04);}
@@ -125,7 +130,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
-function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS.length];}
+function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
 function daysBetween(d1,d2){return Math.round((new Date(d2)-new Date(d1))/86400000);}
 function tag(cls,txt){return `<span class="tag t-${cls}"><span class="dot"></span>${txt}</span>`;}
@@ -137,14 +142,15 @@ function topbar(){const a=DATA.anchor;return `<div class="topbar"><div class="wh
   <div class="meta">${a.date} · 主播专属</div></div></div></div>`;}
 const GLOBE=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f6fb0" stroke-width="2" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>`;
 
-function tier(cls,code,name,sub,secs,foot){if(!secs.length)return '';
- const rows=secs.slice(0,5).map(s=>{const u=DATA.users[s];return `<div class="urow" data-sec="${s}">
+function tier(cls,code,name,sub,secs,actLabel){if(!secs.length)return '';
+ const rows=secs.map(s=>{const u=DATA.users[s];return `<div class="urow" data-sec="${s}">
   <div class="avatar" style="background:${colorOf(u.n||s)}">${(u.n||'?')[0]}</div>
   <div class="u-nick">${u.n||''}</div>${rowTags(u)}<div class="u-val">${yuan(u.tv)}</div></div>`;}).join('');
- return `<div class="tier ${cls}"><div class="t-head"><div class="t-ico">${code}</div>
+ const exp=secs.length>5?`<span class="tf exp" data-act="expand">查看全部 ${secs.length} 人 ▾</span>`:'';
+ return `<div class="tier ${cls} closed"><div class="t-head"><div class="t-ico">${code}</div>
   <div><div class="t-name">${name}</div><div class="t-sub">${sub}</div></div>
-  <div class="t-cnt">${secs.length}<small> 人</small></div></div>${rows}
-  <div class="t-foot" data-act="foot">${secs.length>5?('查看全部 '+secs.length+' 人 · '):''}${foot}</div></div>`;}
+  <div class="t-cnt">${secs.length}<small> 人</small></div></div><div class="trows">${rows}</div>
+  <div class="t-foot">${exp}<span class="tf cp" data-act="copylist">${actLabel} · 复制名单</span></div></div>`;}
 function churnCard(s,cls,lab){const u=DATA.users[s];return `<div class="churn-card ${cls}" data-sec="${s}">
   <div class="cc-nick">${u.n}</div><div class="cc-gap">${daysBetween(u.last,DATA.anchor.date)}天</div>
   <div class="cc-lab">${lab}</div><div class="cc-val">给我 ${yuan(u.sv)}</div></div>`;}
@@ -159,8 +165,8 @@ function viewToday(){const c=DATA.counts,ch=DATA.churn;
  return `<div class="view show" id="v-today">${topbar()}<div class="wrap">
   <div class="sec-title"><h3>今日维护</h3><span class="more">按对我消费分层</span></div>${cross}
   ${tier('l3','L3','重点维护','消费 > 99 元 · 今天必聊',DATA.l3,'去私信')}
-  ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2,'一键拉群')}
-  ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1,'公屏感谢')}${churn}</div></div>`;}
+  ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2,'去拉群')}
+  ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1,'去感谢')}${churn}</div></div>`;}
 function viewSearch(){return `<div class="view" id="v-search">${topbar()}<div class="wrap">
   <div class="sbar"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8a97a5" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
   <input id="q" type="search" placeholder="搜索昵称，查看用户情况" autocomplete="off"></div>
@@ -185,12 +191,14 @@ function viewMe(){const a=DATA.anchor,c=DATA.counts,total=Object.keys(DATA.users
   <div class="me-row"><span>需唤醒 A/B/C</span><b>${c.chA}/${c.chB}/${c.chC}</b></div>
   <div class="me-row"><span>今日跨团用户</span><b>${c.crossToday} 人</b></div></div>
   <div class="empty" style="padding:30px">数据每场下播后自动更新<br>口径只与你自己相关</div></div></div>`;}
+function pvNote(sec){const v=localStorage.getItem('note_'+sec);
+ return v?`<div class="advice" style="background:var(--gray-bg)"><div class="at" style="color:var(--ink2)">我的备注（仅本手机）</div><p style="color:var(--ink2)">${v.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</p></div>`:'';}
 function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
  const gap=u.last?daysBetween(u.last,DATA.anchor.date):'';
  let tags=[];if(u.nf)tags.push(tag('red','新客'));if(u.cr)tags.push(tag('blue','跨团'));
  if(u.w>1200)tags.push(tag('green','高陪伴'));if(u.ch)tags.push(tag(u.ch==='A'?'red':u.ch==='B'?'amber':'gray',churnLab(u.ch)));
  const info=[u.gr&&('荣耀'+u.gr),u.l,u.g&&(u.g===1?'男':'女'),u.a&&(u.a+'岁')].filter(x=>x).join(' · ');
- return `<div class="pview show" id="pv"><div class="pv-back" data-back="1">‹ 返回</div><div class="wrap">
+ return `<div class="pview show" id="pv" data-sec="${sec}"><div class="pv-back" data-back="1">‹ 返回</div><div class="wrap">
   <div class="profile"><div class="head">
   <div class="avatar" style="background:${colorOf(u.n||sec)};width:48px;height:48px;font-size:19px">${(u.n||'?')[0]}</div>
   <div class="h-main"><div class="nick">${u.n}</div><div class="tags">${tags.join('')}</div>
@@ -204,6 +212,7 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
   <div class="cell"><div class="num">${u.w?Math.round(u.w/60):0}<small>分</small></div><div class="lab">今日观看</div></div>
   </div>
   ${u.adv?`<div class="advice"><div class="at">维护提示</div><p>${u.adv}</p></div>`:''}
+  ${pvNote(sec)}
   <div class="own"><span class="tag t-green"><span class="dot"></span>自己人</span><span>主归属：<b>我</b></span></div>
   <div class="act">
   <button class="btn btn-primary" data-act="dm">去私信</button>
@@ -218,12 +227,31 @@ function closeProfile(){const pv=document.getElementById('pv');if(pv)pv.remove()
 let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.opacity='1';
  t.style.transform='translateX(-50%) translateY(0)';clearTimeout(tt);
  tt=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(16px)';},1900);}
+function fallbackCopy(t){const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';
+ document.body.appendChild(ta);ta.focus();ta.select();let ok=1;try{ok=document.execCommand('copy');}catch(e){ok=0;}ta.remove();return ok;}
+function copyText(t){try{fallbackCopy(t);}catch(e){}
+ if(navigator.clipboard&&navigator.clipboard.writeText){try{navigator.clipboard.writeText(t).catch(()=>{});}catch(e){}}
+ return Promise.resolve();}
 document.addEventListener('click',e=>{
  if(e.target.closest('[data-back]')){closeProfile();return;}
- const se=e.target.closest('[data-sec]');if(se){openProfile(se.dataset.sec);return;}
- const tb=e.target.closest('.tabbar .tb');if(tb){switchTab(tb.dataset.tab);return;}
- const ac=e.target.closest('[data-act]');if(ac){toast({dm:'看完画像，回抖音私信该用户',group:'引导用户进粉丝群',
-  note:'可在运营后台记录备注',foot:'演示：正式版执行该动作'}[ac.dataset.act]||'演示动作');}});
+ const ac=e.target.closest('[data-act]');
+ const se=e.target.closest('[data-sec]');
+ const tb=e.target.closest('.tabbar .tb');
+ if(ac){const act=ac.dataset.act;
+ if(act==='expand'){const tEl=ac.closest('.tier');const closed=tEl.classList.toggle('closed');
+  ac.textContent=closed?ac.textContent.replace('收起','查看全部').replace('▴','▾'):ac.textContent.replace('查看全部','收起').replace('▾','▴');return;}
+ if(act==='copylist'){const tEl=ac.closest('.tier');
+  const lines=[...tEl.querySelectorAll('.urow')].map(r=>{const u=DATA.users[r.dataset.sec];return (u.n||'')+(u.tv?(' '+yuan(u.tv)):'');});
+  copyText(lines.join('\n')).then(()=>toast('已复制 '+lines.length+' 人名单，回抖音逐个处理'));return;}
+ const pv=document.getElementById('pv');if(!pv)return;const k=pv.dataset.sec;
+ if(act==='dm'||act==='group'){const u=DATA.users[k];
+  copyText(u?(u.n||''):'').then(()=>toast(act==='dm'?'已复制昵称，回抖音私信 TA':'已复制昵称，引导 TA 进群'));return;}
+ if(act==='note'){const v=prompt('记录备注（仅存在本手机）',localStorage.getItem('note_'+k)||'');
+  if(v!==null){localStorage.setItem('note_'+k,v);closeProfile();openProfile(k);}return;}
+ return;}
+ if(se){openProfile(se.dataset.sec);return;}
+ if(tb){switchTab(tb.dataset.tab);return;}
+});
 document.addEventListener('input',e=>{if(e.target.id==='q')renderSearch(e.target.value);});
 const TABBAR=`<div class="tabbar">
  <button class="tb on" data-tab="today"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>今日</button>
