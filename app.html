@@ -89,6 +89,10 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .urow .avatar{width:32px;height:32px;font-size:13px;}
 .urow .u-nick{font-size:13px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .urow .u-val{font-size:12px;color:var(--ink2);font-weight:600;}
+.urow.done{opacity:.52;}
+.urow.done .avatar{filter:grayscale(.75);}
+.urow.done .u-nick{color:var(--ink3);}
+.urow .done-tag{flex:none;}
 .trows .urow{border-top:1px solid var(--line);}
 .tier.closed .trows .urow:nth-child(n+6){display:none;}
 .tier .t-foot{display:flex;gap:8px;padding:9px 12px;border-top:1px solid var(--line);}
@@ -163,7 +167,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v14';
+const APP_VERSION='v15';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -181,9 +185,9 @@ function topbar(){const a=DATA.anchor;return `<div class="topbar"><div class="wh
 const GLOBE=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2f6fb0" stroke-width="2" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>`;
 
 function tier(cls,code,name,sub,secs){if(!secs.length)return '';
- const rows=secs.map(s=>{const u=DATA.users[s];return `<div class="urow" data-sec="${s}">
+ const rows=secs.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow${dn?' done':''}" data-sec="${s}">
   <div class="avatar" style="background:${colorOf(u.n||s)}">${(u.n||'?')[0]}</div>
-  <div class="u-nick">${u.n||''}</div>${rowTags(u)}<div class="u-val">${yuan(u.tv)}</div></div>`;}).join('');
+  <div class="u-nick">${u.n||''}</div>${rowTags(u)}${doneTagHTML(s)}<div class="u-val">${yuan(u.tv)}</div></div>`;}).join('');
  const foot=secs.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${secs.length} 人 ▾</span></div>`:'';
  return `<div class="tier ${cls} closed"><div class="t-head"><div class="t-ico">${code}</div>
   <div><div class="t-name">${name}</div><div class="t-sub">${sub}</div></div>
@@ -192,9 +196,9 @@ function churnCard(s,cls,lab){const u=DATA.users[s];return `<div class="churn-ca
   <div class="cc-nick">${u.n}</div><div class="cc-gap">${daysBetween(u.last,DATA.anchor.date)}天</div>
   <div class="cc-lab">${lab}</div><div class="cc-val">给我 ${yuan(u.sv)}</div></div>`;}
 function greetBlock(){const g=DATA.greet;if(!g||!g.length)return '';
- const rows=g.map(s=>{const u=DATA.users[s];return `<div class="urow" data-sec="${s}">
+ const rows=g.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow${dn?' done':''}" data-sec="${s}">
   <div class="avatar" style="background:${colorOf(u.n||s)}">${(u.n||'?')[0]}</div>
-  <div class="u-nick">${u.n||''}</div>${gradeTag(u)}<div class="u-val">给我 ${yuan(u.sv)}</div></div>`;}).join('');
+  <div class="u-nick">${u.n||''}</div>${gradeTag(u)}${doneTagHTML(s)}<div class="u-val">给我 ${yuan(u.sv)}</div></div>`;}).join('');
  const foot=g.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${g.length} 人 ▾</span></div>`:'';
  return `<div class="tier closed"><div class="t-head"><div class="t-ico" style="background:var(--amber-bg);color:var(--amber)">★</div>
   <div><div class="t-name">主动问候</div><div class="t-sub">S/A/B 级本场没刷 · 也要维系</div></div>
@@ -392,10 +396,20 @@ function openCorrectSheet(sec){
   if(appeal)doSubmit({token:storedToken(),sec,room_id:DATA.anchor.room_id||'',kind:'归属异议',appeal},()=>{});
   if(nom)doSubmit({token:storedToken(),sec,room_id:DATA.anchor.room_id||'',kind:'提名大哥',appeal:nom},()=>{});
   closeSheet();};}
+function fbDoneKey(){return 'fb_done_'+(DATA&&DATA.anchor?DATA.anchor.date:'nodate');}
+function loadFbDone(){try{return JSON.parse(localStorage.getItem(fbDoneKey())||'[]');}catch(e){return[];}}
+function saveFbDone(a){localStorage.setItem(fbDoneKey(),JSON.stringify(a));}
+function markFeedbackDone(sec){if(!sec)return;var a=loadFbDone();if(a.indexOf(sec)<0){a.push(sec);saveFbDone(a);}
+ document.querySelectorAll('.urow[data-sec="'+sec+'"]').forEach(r=>{
+   r.classList.add('done');
+   if(!r.querySelector('.done-tag'))r.querySelector('.u-val').insertAdjacentHTML('beforebegin','<span class="tag t-gray done-tag"><span class="dot"></span>已回传</span>');
+ });}
+function isFeedbackDone(sec){return loadFbDone().indexOf(sec)>=0;}
+function doneTagHTML(s){return isFeedbackDone(s)?'<span class="tag t-gray done-tag"><span class="dot"></span>已回传</span>':'';}
 function doSubmit(body,ok){
  body.sub_id=storedToken()+'_'+(body.sec||'all')+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
  const btn=document.getElementById('sheetSubmit');if(btn){btn.disabled=true;btn.textContent='提交中…';}
- submitToWorker(body).then(()=>{try{ok();}catch(e){}toast('已回传，运营可见');})
+ submitToWorker(body).then(()=>{if(body.sec)markFeedbackDone(body.sec);try{ok();}catch(e){}toast('已回传，运营可见');})
  .catch(()=>{enqueueOffline(body);try{ok();}catch(e){}toast('已保存，联网后自动上传');});}
 async function submitToWorker(body){
  const r=await fetch(FB_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -407,7 +421,7 @@ function saveQueue(q){localStorage.setItem('fb_queue',JSON.stringify(q))}
 function enqueueOffline(b){const q=loadQueue();q.push(b);saveQueue(q)}
 async function flushQueue(){
  const q=loadQueue();if(!q.length)return;const remain=[];
- for(const b of q){try{await submitToWorker(b);}catch(e){remain.push(b);}}
+ for(const b of q){try{await submitToWorker(b);if(b.sec)markFeedbackDone(b.sec);}catch(e){remain.push(b);}}
  saveQueue(remain);
  if(q.length!==remain.length)toast('已同步 '+(q.length-remain.length)+' 条回传');}
 window.addEventListener('online',flushQueue);
