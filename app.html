@@ -136,10 +136,10 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .chip.on{background:var(--brand);color:#fff;}
 .chip.gS.on{background:var(--red)}.chip.gA.on{background:var(--amber)}.chip.gB.on{background:var(--blue)}.chip.gC.on{background:var(--green)}.chip.gD.on{background:var(--gray)}
 /* 底部弹层 sheet */
-.sheet{position:absolute;inset:0;z-index:70;background:rgba(20,30,45,.45);display:none;align-items:flex-end;}
+.sheet{position:absolute;inset:0;z-index:70;background:var(--bg);display:none;align-items:stretch;}
 .sheet.show{display:flex;}
-.sheet-card{width:100%;background:var(--bg);border-radius:20px 20px 0 0;max-height:96vh;display:flex;flex-direction:column;}
-.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 8px;}
+.sheet-card{width:100%;background:var(--bg);border-radius:0;max-height:100%;height:100%;display:flex;flex-direction:column;}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:calc(12px + env(safe-area-inset-top)) 16px 9px;}
 .sheet-title{font-size:16px;font-weight:700;}
 .sheet-x{font-size:24px;color:var(--ink3);cursor:pointer;line-height:1;padding:0 4px;}
 .sheet-body{padding:0 14px;overflow-y:auto;flex:1;}
@@ -163,7 +163,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v13';
+const APP_VERSION='v14';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -347,8 +347,8 @@ function openFeedbackSheet(sec){
     <span class="chip gS" data-v="S">S</span><span class="chip gA" data-v="A">A</span>
     <span class="chip gB" data-v="B">B</span><span class="chip gC" data-v="C">C</span>
     <span class="chip gD" data-v="D">D</span></div></div>
-  <div class="field"><label>客情备注</label>
-   <textarea id="fbNote" rows="2" placeholder="聊到的近况、关系进展…">${escapeHtml(localNote)}</textarea></div>
+  <div class="field"><label>客情备注（主要填写区）</label>
+   <textarea id="fbNote" rows="3" placeholder="聊到的近况、关系进展…">${escapeHtml(localNote)}</textarea></div>
   <div class="fb-more">
    <div class="fb-more-toggle" id="fbMoreToggle">更多信息：联系方式 / 诉求 / 生日　▾</div>
    <div class="fb-more-body" id="fbMoreBody" style="display:none">
