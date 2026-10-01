@@ -65,6 +65,9 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .advice p{font-size:13px;line-height:1.55;color:#31445c;word-break:break-word;}
 .own{display:flex;align-items:center;gap:7px;margin:12px 16px 0;font-size:12px;padding-top:12px;border-top:1px dashed var(--line);color:var(--ink2);}
 .own b{font-weight:600;}
+.pv-info{display:flex;align-items:center;gap:8px;margin:8px 16px 0;font-size:12px;color:var(--ink2);}
+.pv-info .pvi-label{flex:none;min-width:42px;color:var(--ink3);font-size:11px;}
+.pv-info span:last-child{word-break:break-all;}
 .act{display:flex;gap:9px;padding:14px 16px 16px;margin-top:14px;}
 .btn{flex:1;border:none;border-radius:10px;padding:11px 0;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;}
 .btn-primary{background:var(--brand);color:#fff;}
@@ -172,7 +175,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v18';
+const APP_VERSION='v19';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -272,7 +275,7 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
   <div class="cell"><div class="num"><small>¥</small>${Math.round(u.tv/10*10)/10}</div><div class="lab">本场</div></div>
   <div class="cell"><div class="num ${u.ch?'warn':''}">${gap}<small>天</small></div><div class="lab">没来了</div></div>
   <div class="cell"><div class="num">${(u.last||'—').slice(5)}</div><div class="lab">上次来</div></div>
-  <div class="cell"><div class="num">${u.cnt}<small>场</small></div><div class="lab">给我到场</div></div>
+  <div class="cell"><div class="num">${u.days||0}<small>天</small></div><div class="lab">陪伴我的天数</div></div>
   <div class="cell"><div class="num">${u.w?Math.round(u.w/60):0}<small>分</small></div><div class="lab">今日观看</div></div>
   </div>
   ${u.adv?`<div class="advice"><div class="at">维护提示</div><p>${u.adv}</p></div>`:''}
@@ -282,6 +285,8 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
     ?`<div class="own" style="color:var(--green)"><span class="tag t-green"><span class="dot"></span>跨团·归我</span><span>也在别家消费，但主归属是<b>我</b>，可私信</span></div>`
     :`<div class="own"><span class="tag t-green"><span class="dot"></span>自己人</span><span>主归属：<b>我</b></span></div>`)
   :`<div class="own" style="color:var(--blue)"><span class="tag t-blue"><span class="dot"></span>跨团用户</span><span>主归属在<b>别家</b>，不可跳转主页</span></div>`}
+  ${u.birth?`<div class="pv-info"><span class="pvi-label">生日</span><span>${escapeHtml(String(u.birth).slice(0,10))}</span></div>`:''}
+  ${u.former?`<div class="pv-info"><span class="pvi-label">曾用名</span><span>${escapeHtml(u.former)}</span></div>`:''}
   <div class="pv-spacer"></div>
   <div class="act">
   ${u.mine
@@ -353,7 +358,7 @@ function openFeedbackSheet(sec){
   `<div class="field"><label>维护动作（可多选）</label>
    <div class="chips" id="fbActions">
     <span class="chip" data-v="已私信">已私信</span>
-    <span class="chip" data-v="对方已回复">对方已回复</span>
+    <span class="chip" data-v="已回复">已回复</span>
     <span class="chip" data-v="已拉群">已拉群</span>
     <span class="chip" data-v="已互关">已互关</span>
     <span class="chip" data-v="已流失">已流失</span></div></div>
