@@ -172,7 +172,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v17';
+const APP_VERSION='v18';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -341,19 +341,22 @@ function openSheet(title,inner){
  const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
  if(!isStandalone)s.querySelector('.sheet-card').classList.add('in-browser');
  requestAnimationFrame(()=>s.classList.add('show'));
+ setTimeout(()=>s.classList.add('show'),120);  // 兜底：个别 webview/自动化环境 rAF 不触发
  s.querySelector('#sheetX').onclick=closeSheet;
  s.querySelector('#sheetCancel').onclick=closeSheet;
  s.addEventListener('click',e=>{if(e.target===s)closeSheet();});
  return s;}
 function openFeedbackSheet(sec){
  const u=DATA.users[sec];const localNote=localStorage.getItem('note_'+sec)||'';
+ const pv=(k)=>{const v=u[k];return v?escapeHtml(v):'';};
  const s=openSheet(`回传 · ${u.n}`,
   `<div class="field"><label>维护动作（可多选）</label>
    <div class="chips" id="fbActions">
     <span class="chip" data-v="已私信">已私信</span>
     <span class="chip" data-v="对方已回复">对方已回复</span>
     <span class="chip" data-v="已拉群">已拉群</span>
-    <span class="chip" data-v="已互关">已互关</span></div></div>
+    <span class="chip" data-v="已互关">已互关</span>
+    <span class="chip" data-v="已流失">已流失</span></div></div>
   <div class="field"><label>等级建议（对标运营 SABCD）</label>
    <div class="chips" id="fbGrade">
     <span class="chip gS" data-v="S">S</span><span class="chip gA" data-v="A">A</span>
@@ -362,13 +365,23 @@ function openFeedbackSheet(sec){
   <div class="field"><label>客情备注（主要填写区）</label>
    <textarea id="fbNote" rows="3" placeholder="聊到的近况、关系进展…">${escapeHtml(localNote)}</textarea></div>
   <div class="fb-more">
-   <div class="fb-more-toggle" id="fbMoreToggle">更多信息：联系方式 / 诉求 / 生日　▾</div>
+   <div class="fb-more-toggle" id="fbMoreToggle">更多信息：联系方式 / 老家 / 爱好 / 职业 / 地址 / 生日　▾</div>
    <div class="fb-more-body" id="fbMoreBody" style="display:none">
     <div class="field"><label>联系方式（微信/手机）</label>
-     <input id="fbContact" type="text" placeholder="选填，对方愿意给的联系方式"></div>
+     <input id="fbContact" type="text" value="${pv('contact')}" placeholder="选填，对方愿意给的联系方式"></div>
+    <div class="field"><label>老家</label>
+     <input id="fbHometown" type="text" value="${pv('hometown')}" placeholder="选填，老家/籍贯"></div>
+    <div class="field"><label>爱好</label>
+     <input id="fbHobby" type="text" value="${pv('hobby')}" placeholder="选填，平时喜欢什么"></div>
+    <div class="field"><label>职业</label>
+     <input id="fbJob" type="text" value="${pv('job')}" placeholder="选填，做什么工作"></div>
+    <div class="field"><label>地址</label>
+     <input id="fbAddress" type="text" value="${pv('address')}" placeholder="选填，所在城市/收货地址"></div>
+    <div class="field"><label>关键事件（直播中）</label>
+     <textarea id="fbKeyevent" rows="2" placeholder="选填，重要的事/关系节点/承诺">${pv('keyevent')}</textarea></div>
     <div class="field"><label>用户诉求</label>
      <textarea id="fbDemand" rows="2" placeholder="对方想要什么、有什么问题"></textarea></div>
-    <div class="field"><label>生日</label><input id="fbBirth" type="date"></div>
+    <div class="field"><label>生日</label><input id="fbBirth" type="date" value="${pv('birth')}"></div>
    </div></div>
   <div class="fb-hint">回传后运营可见；等级只作建议，不会覆盖运营评定。</div>`);
  bindChipGroup(s.querySelector('#fbActions'),true);
@@ -376,18 +389,25 @@ function openFeedbackSheet(sec){
  s.querySelector('#fbMoreToggle').onclick=()=>{
    const body=s.querySelector('#fbMoreBody');const hide=body.style.display!=='none';
    body.style.display=hide?'none':'block';
-   s.querySelector('#fbMoreToggle').textContent=hide?'更多信息：联系方式 / 诉求 / 生日　▾':'收起　▴';
+   s.querySelector('#fbMoreToggle').textContent=hide?'更多信息：联系方式 / 老家 / 爱好 / 职业 / 地址 / 生日　▾':'收起　▴';
    if(!hide){const sc=document.getElementById('sheet');if(sc)sc.querySelector('.sheet-card').scrollTop=0;}
  };
  s.querySelector('#sheetSubmit').onclick=()=>{
+  const gv=id=>s.querySelector(id).value.trim();
   const actions=getChipVals(s.querySelector('#fbActions'));
   const grade=getChipVals(s.querySelector('#fbGrade'))[0]||'';
-  const note=s.querySelector('#fbNote').value.trim();
-  const contact=s.querySelector('#fbContact').value.trim();
-  const demand=s.querySelector('#fbDemand').value.trim();
+  const note=gv('#fbNote');
+  const contact=gv('#fbContact');
+  const demand=gv('#fbDemand');
   const birthday=s.querySelector('#fbBirth').value;
-  if(!actions.length&&!note&&!contact&&!demand&&!birthday&&!grade){toast('请至少填写一项');return;}
-  const body={token:storedToken(),sec,room_id:DATA.anchor.room_id||'',kind:'日常维护',actions,grade,note,contact,demand,birthday};
+  const hometown=gv('#fbHometown');
+  const hobby=gv('#fbHobby');
+  const keyevent=gv('#fbKeyevent');
+  const address=gv('#fbAddress');
+  const job=gv('#fbJob');
+  if(!actions.length&&!note&&!contact&&!demand&&!birthday&&!hometown&&!hobby&&!keyevent&&!address&&!job&&!grade){toast('请至少填写一项');return;}
+  const body={token:storedToken(),sec,room_id:DATA.anchor.room_id||'',kind:'日常维护',actions,grade,note,contact,demand,birthday,
+    hometown,hobby,keyevent,address,job};
   doSubmit(body,()=>{if(note)localStorage.setItem('note_'+sec,note);closeSheet();});};}
 function openCorrectSheet(sec){
  const u=DATA.users[sec];
