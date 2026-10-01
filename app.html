@@ -140,7 +140,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .chip.on{background:var(--brand);color:#fff;}
 .chip.gS.on{background:var(--red)}.chip.gA.on{background:var(--amber)}.chip.gB.on{background:var(--blue)}.chip.gC.on{background:var(--green)}.chip.gD.on{background:var(--gray)}
 /* 底部弹层 sheet */
-.sheet{position:absolute;inset:0;z-index:70;background:var(--bg);display:none;align-items:stretch;}
+.sheet{position:fixed;inset:0;z-index:70;background:var(--bg);display:none;align-items:stretch;}
 .sheet.show{display:flex;}
 .sheet-card{width:100%;background:var(--bg);border-radius:0;max-height:100%;height:100%;display:flex;flex-direction:column;}
 .sheet-head{display:flex;align-items:center;justify-content:space-between;padding:calc(12px + env(safe-area-inset-top)) 16px 9px;}
@@ -148,6 +148,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .sheet-x{font-size:24px;color:var(--ink3);cursor:pointer;line-height:1;padding:0 4px;}
 .sheet-body{padding:0 14px;overflow-y:auto;flex:1;}
 .sheet-foot{display:flex;gap:9px;padding:10px 14px calc(12px + env(safe-area-inset-bottom));}
+.sheet-card.in-browser .sheet-foot{padding-bottom:calc(88px + env(safe-area-inset-bottom));}
 .field{margin-bottom:10px;}
 .field label{display:block;font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:5px;}
 .field input,.field textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:14px;font-family:inherit;outline:none;background:#fff;color:var(--ink);}
@@ -167,7 +168,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v15';
+const APP_VERSION='v16';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -332,6 +333,8 @@ function openSheet(title,inner){
   <div class="sheet-foot"><button class="btn btn-ghost" id="sheetCancel" style="flex:1">取消</button>
   <button class="btn btn-primary" id="sheetSubmit" style="flex:2">提交回传</button></div></div>`;
  document.getElementById('phone').appendChild(s);
+ const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+ if(!isStandalone)s.querySelector('.sheet-card').classList.add('in-browser');
  requestAnimationFrame(()=>s.classList.add('show'));
  s.querySelector('#sheetX').onclick=closeSheet;
  s.querySelector('#sheetCancel').onclick=closeSheet;
