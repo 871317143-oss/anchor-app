@@ -73,6 +73,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
 .login-card{width:100%;max-width:340px;background:#fff;border-radius:18px;padding:30px 24px;box-shadow:0 6px 26px rgba(20,35,55,.1);text-align:center;}
 .login-logo{width:64px;height:64px;border-radius:16px;background:var(--brand);color:#fff;font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
+.login-img{width:124px;height:auto;display:block;margin:0 auto 4px;}
 .login-title{font-size:19px;font-weight:800;}
 .login-sub{font-size:13px;color:var(--ink3);margin:6px 0 18px;}
 .login-input{width:100%;border:1px solid var(--line);border-radius:11px;padding:13px 14px;font-size:15px;font-family:inherit;outline:none;text-align:center;}
@@ -120,10 +121,13 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .srow .s-nick{font-size:14px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .srow .s-sub{font-size:11px;color:var(--ink3);}
 .empty{text-align:center;color:var(--ink3);font-size:13px;padding:60px 20px;line-height:1.7;}
+.me-brand{display:flex;justify-content:center;padding:4px 0 12px;}
+.me-brand img{width:92px;height:auto;}
 .me-card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(20,35,55,.04);}
 .me-row{display:flex;justify-content:space-between;font-size:13px;padding:10px 0;border-top:1px solid var(--line);}
 .me-row:first-of-type{border-top:none;}
-.pview{position:absolute;inset:0;background:var(--bg);z-index:40;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch;}
+.pview{position:fixed;inset:0;background:var(--bg);z-index:40;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch;}
+@media(min-width:480){.pview{position:absolute;}}
 .pview.show{display:block;}
 .pv-back{display:flex;align-items:center;gap:6px;height:calc(44px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 16px 0;font-size:15px;color:var(--brand);font-weight:600;background:var(--bg);position:sticky;top:0;z-index:2;cursor:pointer;}
 .profile{display:flex;flex-direction:column;min-height:calc(100vh - 44px - env(safe-area-inset-top));}
@@ -168,7 +172,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v16';
+const APP_VERSION='v17';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -237,7 +241,7 @@ function renderSearch(q){const box=document.getElementById('sresult');if(!box)re
   <div class="s-sub">${u.ch?churnLab(u.ch):(u.tv?('今天'+yuan(u.tv)):'')}</div></div>`;}).join('')}</div>
   ${list.length>60?'<div class="empty">仅显示前 60 人，请细化关键词</div>':''}`;}
 function viewMe(){const a=DATA.anchor,c=DATA.counts,total=Object.keys(DATA.users).length;
- return `<div class="view" id="v-me">${topbar()}<div class="wrap"><div class="sec-title"><h3>我的</h3></div>
+ return `<div class="view" id="v-me">${topbar()}<div class="wrap"><div class="me-brand"><img src="assets/logo-full.png" alt="梦华录"></div>
   <div class="me-card">
   <div class="me-row"><span>我的客群（给我刷过）</span><b>${total} 人</b></div>
   <div class="me-row"><span>今日重点 L3</span><b>${c.l3} 人</b></div>
@@ -287,8 +291,9 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
   <button class="btn btn-ghost" data-act="correct">纠错</button></div>
   </div></div></div>`;}
 function switchTab(t){['today','search','me'].forEach(x=>{const v=document.getElementById('v-'+x);if(v)v.classList.toggle('show',x===t);});
+ try{window.scrollTo(0,0);const r=document.getElementById('root');if(r)r.scrollTop=0;}catch(e){}
  document.querySelectorAll('.tabbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
- if(t==='search'){const q=document.getElementById('q');if(q){q.focus();renderSearch(q.value);}}}
+ if(t==='search'){const q=document.getElementById('q');if(q){renderSearch(q.value);}}}
 function render(){root.innerHTML=viewToday()+viewSearch()+viewMe();switchTab('today');}
 function openProfile(sec){closeProfile();root.insertAdjacentHTML('beforeend',viewProfile(sec));}
 function closeProfile(){const pv=document.getElementById('pv');if(pv)pv.remove();}
@@ -400,19 +405,23 @@ function openCorrectSheet(sec){
   if(nom)doSubmit({token:storedToken(),sec,room_id:DATA.anchor.room_id||'',kind:'提名大哥',appeal:nom},()=>{});
   closeSheet();};}
 function fbDoneKey(){return 'fb_done_'+(DATA&&DATA.anchor?DATA.anchor.date:'nodate');}
-function loadFbDone(){try{return JSON.parse(localStorage.getItem(fbDoneKey())||'[]');}catch(e){return[];}}
+function fbStatus(kind){return (kind==='归属异议'||kind==='提名大哥')?{cls:'blue',txt:'已纠错'}:{cls:'gray',txt:'已回传'};}
+function fbTagHTML(st){return '<span class="tag t-'+st.cls+' done-tag"><span class="dot"></span>'+st.txt+'</span>';}
+function loadFbDone(){try{var v=JSON.parse(localStorage.getItem(fbDoneKey())||'{}');return (v&&typeof v==='object'&&!Array.isArray(v))?v:{};}catch(e){return{};}}
 function saveFbDone(a){localStorage.setItem(fbDoneKey(),JSON.stringify(a));}
-function markFeedbackDone(sec){if(!sec)return;var a=loadFbDone();if(a.indexOf(sec)<0){a.push(sec);saveFbDone(a);}
+function markFeedbackDone(sec,kind){if(!sec)return;var st=fbStatus(kind);var a=loadFbDone();a[sec]=st;saveFbDone(a);
  document.querySelectorAll('.urow[data-sec="'+sec+'"]').forEach(r=>{
    r.classList.add('done');
-   if(!r.querySelector('.done-tag'))r.querySelector('.u-val').insertAdjacentHTML('beforebegin','<span class="tag t-gray done-tag"><span class="dot"></span>已回传</span>');
+   var ex=r.querySelector('.done-tag');if(ex)ex.remove();
+   r.querySelector('.u-val').insertAdjacentHTML('beforebegin',fbTagHTML(st));
  });}
-function isFeedbackDone(sec){return loadFbDone().indexOf(sec)>=0;}
-function doneTagHTML(s){return isFeedbackDone(s)?'<span class="tag t-gray done-tag"><span class="dot"></span>已回传</span>':'';}
+function isFeedbackDone(sec){return !!loadFbDone()[sec];}
+function doneTagHTML(sec){var st=loadFbDone()[sec];return st?fbTagHTML(st):'';}
 function doSubmit(body,ok){
  body.sub_id=storedToken()+'_'+(body.sec||'all')+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
  const btn=document.getElementById('sheetSubmit');if(btn){btn.disabled=true;btn.textContent='提交中…';}
- submitToWorker(body).then(()=>{if(body.sec)markFeedbackDone(body.sec);try{ok();}catch(e){}toast('已回传，运营可见');})
+ submitToWorker(body).then(()=>{if(body.sec)markFeedbackDone(body.sec,body.kind);try{ok();}catch(e){}
+   toast((body.kind==='归属异议'||body.kind==='提名大哥')?'已提交，运营会核对':'已回传，运营可见');})
  .catch(()=>{enqueueOffline(body);try{ok();}catch(e){}toast('已保存，联网后自动上传');});}
 async function submitToWorker(body){
  const r=await fetch(FB_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -424,7 +433,7 @@ function saveQueue(q){localStorage.setItem('fb_queue',JSON.stringify(q))}
 function enqueueOffline(b){const q=loadQueue();q.push(b);saveQueue(q)}
 async function flushQueue(){
  const q=loadQueue();if(!q.length)return;const remain=[];
- for(const b of q){try{await submitToWorker(b);if(b.sec)markFeedbackDone(b.sec);}catch(e){remain.push(b);}}
+ for(const b of q){try{await submitToWorker(b);if(b.sec)markFeedbackDone(b.sec,b.kind);}catch(e){remain.push(b);}}
  saveQueue(remain);
  if(q.length!==remain.length)toast('已同步 '+(q.length-remain.length)+' 条回传');}
 window.addEventListener('online',flushQueue);
@@ -459,7 +468,7 @@ const TABBAR=`<div class="tabbar">
 function storedToken(){return localStorage.getItem('anchor_token')||'';}
 function showLogin(err){
  root.innerHTML=`<div class="login-wrap"><div class="login-card">
-  <div class="login-logo">播</div>
+  <img class="login-img" src="assets/logo-full.png" alt="梦华录">
   <div class="login-title">主播画像助手</div>
   <div class="login-sub">请输入发给你的访问码</div>
   <input id="loginCode" class="login-input" type="text" autocapitalize="off" autocomplete="off" placeholder="粘贴访问码">
