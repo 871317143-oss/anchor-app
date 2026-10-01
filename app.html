@@ -119,9 +119,13 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .me-card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(20,35,55,.04);}
 .me-row{display:flex;justify-content:space-between;font-size:13px;padding:10px 0;border-top:1px solid var(--line);}
 .me-row:first-of-type{border-top:none;}
-.pview{position:absolute;inset:0;background:var(--bg);z-index:40;overflow-y:auto;display:none;}
-.pview.show{display:block;}
-.pv-back{display:flex;align-items:center;gap:6px;padding:14px 16px;font-size:15px;color:var(--brand);font-weight:600;background:var(--bg);position:sticky;top:0;z-index:2;cursor:pointer;}
+.pview{position:absolute;inset:0;background:var(--bg);z-index:40;display:none;flex-direction:column;}
+.pview.show{display:flex;}
+.pv-scroll{flex:1;overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch;}
+.pv-back{display:flex;align-items:center;gap:6px;padding:12px 16px;font-size:15px;color:var(--brand);font-weight:600;background:var(--bg);position:sticky;top:0;z-index:2;cursor:pointer;}
+.pv-bottom-bar{flex:none;background:#fff;border-top:1px solid var(--line);display:flex;gap:8px;
+  padding:9px 12px calc(9px + env(safe-area-inset-bottom));}
+.pv-bottom-bar .btn{padding:11px 0;font-size:14px;}
 .view{display:none;}.view.show{display:block;}
 .tabbar{position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;padding:8px 0 calc(10px + env(safe-area-inset-bottom));}
 .tabbar .tb{flex:1;text-align:center;font-size:10px;color:var(--ink3);background:none;border:none;cursor:pointer;font-family:inherit;}
@@ -129,25 +133,25 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .tabbar .tb.on{color:var(--brand);font-weight:600;}
 #toast{position:absolute;left:50%;bottom:108px;transform:translateX(-50%) translateY(16px);background:rgba(28,39,51,.94);color:#fff;font-size:13px;padding:11px 18px;border-radius:10px;max-width:82%;text-align:center;opacity:0;transition:all .25s;pointer-events:none;z-index:60;}
 /* 回传 chip */
-.chips{display:flex;flex-wrap:wrap;gap:8px;}
-.chip{font-size:13px;font-weight:500;padding:8px 14px;border-radius:999px;background:var(--gray-bg);color:var(--ink2);cursor:pointer;border:1px solid transparent;user-select:none;}
+.chips{display:flex;flex-wrap:wrap;gap:7px;}
+.chip{font-size:12px;font-weight:500;padding:7px 13px;border-radius:999px;background:var(--gray-bg);color:var(--ink2);cursor:pointer;border:1px solid transparent;user-select:none;}
 .chip.on{background:var(--brand);color:#fff;}
 .chip.gS.on{background:var(--red)}.chip.gA.on{background:var(--amber)}.chip.gB.on{background:var(--blue)}.chip.gC.on{background:var(--green)}.chip.gD.on{background:var(--gray)}
 /* 底部弹层 sheet */
 .sheet{position:absolute;inset:0;z-index:70;background:rgba(20,30,45,.45);display:none;align-items:flex-end;}
 .sheet.show{display:flex;}
-.sheet-card{width:100%;background:var(--bg);border-radius:20px 20px 0 0;max-height:92vh;display:flex;flex-direction:column;}
-.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 12px;}
+.sheet-card{width:100%;background:var(--bg);border-radius:20px 20px 0 0;max-height:96vh;display:flex;flex-direction:column;}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 8px;}
 .sheet-title{font-size:16px;font-weight:700;}
 .sheet-x{font-size:24px;color:var(--ink3);cursor:pointer;line-height:1;padding:0 4px;}
-.sheet-body{padding:0 18px;overflow-y:auto;flex:1;}
-.sheet-foot{padding:12px 18px calc(16px + env(safe-area-inset-bottom));}
-.field{margin-bottom:14px;}
-.field label{display:block;font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:7px;}
-.field input,.field textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:14px;font-family:inherit;outline:none;background:#fff;color:var(--ink);}
+.sheet-body{padding:0 14px;overflow-y:auto;flex:1;}
+.sheet-foot{display:flex;gap:9px;padding:10px 14px calc(12px + env(safe-area-inset-bottom));}
+.field{margin-bottom:10px;}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:5px;}
+.field input,.field textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:14px;font-family:inherit;outline:none;background:#fff;color:var(--ink);}
 .field input:focus,.field textarea:focus{border-color:var(--brand);}
 .field textarea{resize:none;}
-.fb-hint{font-size:11px;color:var(--ink3);margin:2px 0 14px;line-height:1.5;}
+.fb-hint{font-size:11px;color:var(--ink3);margin:1px 0 10px;line-height:1.5;}
 </style>
 </head>
 <body>
@@ -247,7 +251,7 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
  if(u.ret)tags.push(tag('amber','回归用户'));
  if(u.w>1200)tags.push(tag('green','高陪伴'));if(u.ch)tags.push(tag(u.ch==='A'?'red':u.ch==='B'?'amber':'gray',churnLab(u.ch)));
  const info=[u.gr&&('荣耀'+u.gr),u.l,u.g&&(u.g===1?'男':'女'),u.a&&(u.a+'岁')].filter(x=>x).join(' · ');
- return `<div class="pview show" id="pv" data-sec="${sec}"><div class="pv-back" data-back="1">‹ 返回</div><div class="wrap">
+ return `<div class="pview show" id="pv" data-sec="${sec}"><div class="pv-scroll"><div class="pv-back" data-back="1">‹ 返回</div><div class="wrap">
   <div class="profile"><div class="head">
   <div class="avatar" style="background:${colorOf(u.n||sec)};width:48px;height:48px;font-size:19px">${(u.n||'?')[0]}</div>
   <div class="h-main"><div class="nick">${u.n}</div><div class="tags">${tags.join('')}</div>
@@ -267,12 +271,14 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
     ?`<div class="own" style="color:var(--green)"><span class="tag t-green"><span class="dot"></span>跨团·归我</span><span>也在别家消费，但主归属是<b>我</b>，可私信</span></div>`
     :`<div class="own"><span class="tag t-green"><span class="dot"></span>自己人</span><span>主归属：<b>我</b></span></div>`)
   :`<div class="own" style="color:var(--blue)"><span class="tag t-blue"><span class="dot"></span>跨团用户</span><span>主归属在<b>别家</b>，不可跳转主页</span></div>`}
-  <div class="act">
+  </div></div></div>
+  <div class="pv-bottom-bar">
+  <button class="btn btn-ghost" data-back="1" style="flex:0 0 48px" aria-label="返回">‹</button>
   ${u.mine
-  ?`<button class="btn btn-primary" data-act="dm" style="flex:1">去私信</button>`
+  ?`<button class="btn btn-primary" data-act="dm" style="flex:1">私信</button>`
   :`<button class="btn btn-ghost" disabled style="flex:1;opacity:.5;cursor:not-allowed">归属别家</button>`}
   <button class="btn btn-primary" data-act="feedback" style="flex:1">回传</button>
-  <button class="btn btn-ghost" data-act="correct" style="flex:1">纠错</button></div></div></div></div>`;}
+  <button class="btn btn-ghost" data-act="correct" style="flex:1">纠错</button></div></div>`;}
 function switchTab(t){['today','search','me'].forEach(x=>{const v=document.getElementById('v-'+x);if(v)v.classList.toggle('show',x===t);});
  document.querySelectorAll('.tabbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
  if(t==='search'){const q=document.getElementById('q');if(q){q.focus();renderSearch(q.value);}}}
@@ -289,13 +295,13 @@ function copyText(t){try{fallbackCopy(t);}catch(e){}
  return Promise.resolve();}
 function openNoteEditor(sec){
  const pv=document.getElementById('pv');if(!pv||pv.querySelector('#noteEdit'))return;
- const box=document.createElement('div');box.id='noteEdit';box.style.cssText='margin:12px 16px 0';
+ const box=document.createElement('div');box.id='noteEdit';box.style.cssText='margin:12px 0 0';
  box.innerHTML=`<textarea id="noteTA" rows="3" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font-family:inherit;font-size:14px;resize:none;outline:none"></textarea>
   <div style="display:flex;gap:9px;margin-top:8px">
   <button id="noteCancel" class="btn btn-ghost" style="flex:1">取消</button>
   <button id="noteDel" class="btn btn-danger" style="flex:1">删除</button>
   <button id="noteSave" class="btn btn-primary" style="flex:1">保存</button></div>`;
- pv.querySelector('.act').before(box);
+ pv.querySelector('.profile').after(box);
  const ta=box.querySelector('#noteTA');const oldv=localStorage.getItem('note_'+sec);ta.value=oldv||'';
  box.querySelector('#noteDel').style.display=oldv?'':'none';
  setTimeout(()=>{try{ta.focus();}catch(e){}},60);
@@ -317,10 +323,12 @@ function openSheet(title,inner){
  s.innerHTML=`<div class="sheet-card">
   <div class="sheet-head"><span class="sheet-title">${title}</span><span class="sheet-x" id="sheetX">×</span></div>
   <div class="sheet-body">${inner}</div>
-  <div class="sheet-foot"><button class="btn btn-primary" id="sheetSubmit" style="width:100%">提交回传</button></div></div>`;
+  <div class="sheet-foot"><button class="btn btn-ghost" id="sheetCancel" style="flex:1">取消</button>
+  <button class="btn btn-primary" id="sheetSubmit" style="flex:2">提交回传</button></div></div>`;
  document.getElementById('phone').appendChild(s);
  requestAnimationFrame(()=>s.classList.add('show'));
  s.querySelector('#sheetX').onclick=closeSheet;
+ s.querySelector('#sheetCancel').onclick=closeSheet;
  s.addEventListener('click',e=>{if(e.target===s)closeSheet();});
  return s;}
 function openFeedbackSheet(sec){
@@ -338,7 +346,7 @@ function openFeedbackSheet(sec){
     <span class="chip gB" data-v="B">B</span><span class="chip gC" data-v="C">C</span>
     <span class="chip gD" data-v="D">D</span></div></div>
   <div class="field"><label>客情备注</label>
-   <textarea id="fbNote" rows="3" placeholder="聊到的近况、关系进展…">${escapeHtml(localNote)}</textarea></div>
+   <textarea id="fbNote" rows="2" placeholder="聊到的近况、关系进展…">${escapeHtml(localNote)}</textarea></div>
   <div class="field"><label>联系方式（微信/手机）</label>
    <input id="fbContact" type="text" placeholder="选填，对方愿意给的联系方式"></div>
   <div class="field"><label>用户诉求</label>
@@ -361,10 +369,10 @@ function openCorrectSheet(sec){
  const u=DATA.users[sec];
  const s=openSheet(`归属纠错 · ${u.n}`,
   `<div class="field"><label>归属异议</label>
-   <textarea id="fbAppeal" rows="4" placeholder="如认为该用户主归属应是你/某位团员，说明理由与依据"></textarea></div>
+   <textarea id="fbAppeal" rows="3" placeholder="如认为该用户主归属应是你/某位团员，说明理由与依据"></textarea></div>
   <div class="fb-hint">提交后运营会核对，不会自动改归属。</div>
   <div class="field"><label>提名为本场大哥</label>
-   <textarea id="fbNominate" rows="3" placeholder="如该用户本场贡献大但未被识别，说明情况"></textarea></div>`);
+   <textarea id="fbNominate" rows="2" placeholder="如该用户本场贡献大但未被识别，说明情况"></textarea></div>`);
  s.querySelector('#sheetSubmit').onclick=()=>{
   const appeal=s.querySelector('#fbAppeal').value.trim();
   const nom=s.querySelector('#fbNominate').value.trim();
