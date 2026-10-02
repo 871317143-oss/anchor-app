@@ -205,7 +205,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v20';
+const APP_VERSION='v21';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -497,6 +497,7 @@ window.addEventListener('load',flushQueue);
 document.addEventListener('click',e=>{
  if(e.target.closest('#noteEdit'))return;
  if(e.target.closest('#sheet'))return;
+ if(e.target.closest('#aiCard'))return;
  if(e.target.closest('[data-back]')){closeProfile();return;}
  const ac=e.target.closest('[data-act]');
  const se=e.target.closest('[data-sec]');
