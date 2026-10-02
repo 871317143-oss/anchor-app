@@ -734,6 +734,7 @@ function aiShowFive(sec,box,mode){
   }catch(e){fb.innerHTML='<div class="ai-err">'+escapeHtml(e.message)+'</div>';}
  };
 }
+function stripLab(s,lab){s=String(s||'');return s.startsWith(lab+'：')?s.slice(lab.length+1):(s.startsWith(lab+':')?s.slice(lab.length+1):s);}
 function fivePlansHtml(plans){
  if(!plans||!plans.length)return '';
  return plans.map((p,i)=>`<div class="ai-item"><div class="ai-st">${escapeHtml(p.style||'')}${p.style?' · ':''}${escapeHtml(p.name||'')}</div>
@@ -751,7 +752,7 @@ function renderFive(box,r,isHome){
    .filter(x=>x[1]).map(x=>`<div>· ${x[0]}：${escapeHtml(x[1])}</div>`).join('')}</div></div>`;
   if(r.ammo&&r.ammo.length)h+=`<div class="ai-item"><div class="ai-st">破冰弹药库</div>${r.ammo.map(a=>`<div class="ai-txt">· ${escapeHtml(a.detail||'')}<span style="color:var(--ink3)">（${escapeHtml(a.why||'')}）</span></div>`).join('')}</div>`;
  }
- if(!isHome&&r.scene)h+=`<div class="ai-item"><div class="ai-st">局面速判</div><div class="ai-txt">${escapeHtml(r.scene)}</div></div>`;
+ if(!isHome&&r.scene)h+=`<div class="ai-item"><div class="ai-st">局面速判</div><div class="ai-txt">${escapeHtml(stripLab(r.scene,'局面速判'))}</div></div>`;
  if(!isHome&&r.read&&r.read.length)h+=`<div class="ai-item"><div class="ai-st">读心翻译</div>${r.read.map(x=>`<div class="ai-txt">他说「${escapeHtml(x.said||'')}」→ ${escapeHtml(x.means||'')}<span style="color:var(--ink3)">（${escapeHtml(x.point||'')}）</span></div>`).join('')}</div>`;
  h+=`<div class="ai-item"><div class="ai-st">${isHome?'破冰话术 · 三套方案':'维护话术 · 三套方案'}（改成你的语气再发）</div></div>`+fivePlansHtml(r.plans);
  if(r.taboos&&r.taboos.length)h+=`<div class="ai-item"><div class="ai-st">雷区警报</div>${r.taboos.map(x=>`<div class="ai-txt" style="color:var(--red)">⚠ ${escapeHtml(x)}</div>`).join('')}</div>`;
