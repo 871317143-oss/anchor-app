@@ -209,7 +209,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v23';
+const APP_VERSION='v24';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -325,6 +325,13 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
   ${u.former?`<div class="pv-info"><span class="pvi-label">曾用名</span><span>${escapeHtml(u.former)}</span></div>`:''}
   ${u.mbti?`<div class="pv-info"><span class="pvi-label">MBTI</span><span>${escapeHtml(u.mbti)}</span></div>`:''}
   ${u.taboo?`<div class="pv-info"><span class="pvi-label">禁忌</span><span style="color:var(--red)">${escapeHtml(u.taboo)}</span></div>`:''}
+  ${u.hometown?`<div class="pv-info"><span class="pvi-label">老家</span><span>${escapeHtml(u.hometown)}</span></div>`:''}
+  ${u.hobby?`<div class="pv-info"><span class="pvi-label">爱好</span><span>${escapeHtml(u.hobby)}</span></div>`:''}
+  ${u.job?`<div class="pv-info"><span class="pvi-label">职业</span><span>${escapeHtml(u.job)}</span></div>`:''}
+  ${u.address?`<div class="pv-info"><span class="pvi-label">地址</span><span>${escapeHtml(u.address)}</span></div>`:''}
+  ${u.contact?`<div class="pv-info"><span class="pvi-label">联系方式</span><span>${escapeHtml(u.contact)}</span></div>`:''}
+  ${u.keyevent?`<div class="pv-info"><span class="pvi-label">关键事件</span><span style="color:var(--amber)">${escapeHtml(u.keyevent)}</span></div>`:''}
+  ${u.sign?`<div class="pv-info"><span class="pvi-label">个性签名</span><span>${escapeHtml(u.sign)}</span></div>`:''}
   ${u.fs0?`<div class="pv-info"><span class="pvi-label">首次到场</span><span>${escapeHtml(u.fs0)}${u.first&&u.first!==u.fs0?`（首次消费 ${escapeHtml(u.first)}）`:''}</span></div>`:''}
   ${u.gd?`<div class="pv-info"><span class="pvi-label">等级变化</span><span>${escapeHtml(u.gd)}</span></div>`:''}
   ${u.rh?`<div class="pv-info"><span class="pvi-label">消费节奏</span><span>${escapeHtml(u.rh)}</span></div>`:''}
@@ -622,15 +629,16 @@ function bindAiFb(scope,sec,txtOverride){
 function aiPanel(sec){
   const gray=DATA.anchor.team==='menghualu_xingzhou';
   return `<div class="ai-card" id="aiCard" data-sec="${sec}">
-   <div class="ai-head">AI 客情助手 · 基于该用户档案</div>
+   <div class="ai-head">维护军师 · 基于 TA 的档案</div>
    <div class="ai-nav">
+    ${gray?'<button class="ai-tab" data-ai="strategy">作战建议</button>':''}
     <button class="ai-tab" data-ai="opening">开场话题</button>
     <button class="ai-tab" data-ai="extract">整理备注</button>
     ${gray?'<button class="ai-tab" data-ai="analyze">截图分析</button>':''}
     ${gray?'<button class="ai-tab" data-ai="reply">帮我代回</button>':''}
     <button class="ai-tab" data-ai="timeline">维护记录</button>
    </div>
-   <div class="ai-body" id="aiBody"><div class="ai-ph">点上方功能，AI 实时生成</div></div>
+   <div class="ai-body" id="aiBody"><div class="ai-ph">点「作战建议」，军师帮你分析 TA 怎么维护</div></div>
   </div>`;
 }
 function bindAiPanel(sec){
@@ -638,14 +646,30 @@ function bindAiPanel(sec){
   const box=card.querySelector('#aiBody');
   card.querySelectorAll('.ai-tab').forEach(t=>t.onclick=()=>{
     card.querySelectorAll('.ai-tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');
-    const k=t.dataset.ai;box.innerHTML='<div class="ai-ph">生成中…</div>';let p;
-    if(k==='opening')p=aiShowOpening(sec,box);
+    const k=t.dataset.ai;box.innerHTML='<div class="ai-ph">军师思考中…</div>';let p;
+    if(k==='strategy')p=aiShowStrategy(sec,box);
+    else if(k==='opening')p=aiShowOpening(sec,box);
     else if(k==='extract')p=aiShowExtract(sec,box);
     else if(k==='analyze')p=aiShowAnalyze(sec,box);
     else if(k==='reply')p=aiShowReply(sec,box);
     else if(k==='timeline')p=aiShowTimeline(sec,box);
     if(p)p.catch(e=>{box.innerHTML='<div class="ai-err">'+escapeHtml(String(e.message||e))+'</div>';});
   });
+}
+// 维护军师·作战建议（行舟灰度）：军师只给判断和建议，话术由主播自己说
+async function aiShowStrategy(sec,box){
+  const r=await aiPost('/strategy',{token:storedToken(),sec,user:DATA.users[sec]});
+  const item=(t,inner)=>inner?`<div class="ai-item"><div class="ai-st">${t}</div>${inner}</div>`:'';
+  const list=(arr)=>arr&&arr.length?arr.map(x=>`<div class="ai-txt">· ${escapeHtml(x)}</div>`).join(''):'';
+  const txt=(s)=>s?`<div class="ai-txt">${escapeHtml(s)}</div>`:'';
+  const h=item('TA 是谁',txt(r.who))
+    +item('吃什么内容 · 话题由头',list(r.hooks))
+    +item('怎么切入',txt(r.approach))
+    +item('可聊的具体话题',list(r.topics))
+    +item('禁忌雷区',list(r.taboos))
+    +item('可做的非文字动作',list(r.actions))
+    +item('还缺什么信息',txt(r.gap));
+  box.innerHTML=h||'<div class="ai-ph">没生成，重试</div>';
 }
 async function aiShowOpening(sec,box){
   const r=await aiPost('/opening',{token:storedToken(),sec,user:DATA.users[sec]});
