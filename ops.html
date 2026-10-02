@@ -58,6 +58,9 @@ const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='';
+const name2team={};
+const teamOf=n=>name2team[n]||'';
+const inT=n=>!_tf||teamOf(n)===_tf;
 function esc(s){return (s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
 function storedToken(){return localStorage.getItem('ops_token')||'';}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',1800);}
@@ -124,8 +127,7 @@ function todoHtml(){
  return h;
 }
 function render(){
- const name2team={};(D.anchors||[]).forEach(a=>name2team[a.name]=a.team);
- const teamOf=n=>name2team[n]||'';
+ Object.keys(name2team).forEach(k=>delete name2team[k]);(D.anchors||[]).forEach(a=>name2team[a.name]=a.team);
  const teams=['梦华录寻音','梦华录行舟','梦华录水月'];
  const tchipHtml=['',...teams].map(t=>`<span class="chip${t===_tf?' on':''}" data-tf="${t}">${t?t.replace('梦华录',''):'全部团'}</span>`).join('');
  let anchors=[...new Set((D.subs||[]).map(s=>s.anchor))];
