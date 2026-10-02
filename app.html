@@ -218,7 +218,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v32';
+const APP_VERSION='v33';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -230,7 +230,7 @@ function rowTags(u){let t=[gradeTag(u)];
   if(u.ff&&u.ff.includes('已拉群'))t.push('<span class="tag t-green badge">群</span>');
   if(u.ff&&u.ff.includes('已互关'))t.push('<span class="tag t-blue badge">互</span>');
   if(u.nf)t.push(tag('red','新客'));
-  if(u.cr)t.push(u.mine?tag('green','跨团·归我'):tag('blue','跨团'));
+  if(u.cr&&!u.mine)t.push(tag('blue','别家'));   // 跨团且归属别家才提示；归我的不再打标（老板口径）
   if(u.ret)t.push(tag('amber','回归用户'));
   if(u.w>1200)t.push(tag('green','高陪伴'));return t.join('');}
 function topbar(){const a=DATA.anchor;return `<div class="topbar"><div class="who">
@@ -322,7 +322,7 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
  if(u.ff&&u.ff.includes('已拉群'))tags.push(tag('green','已拉群'));
  if(u.ff&&u.ff.includes('已互关'))tags.push(tag('blue','已互关'));
  if(u.nf)tags.push(tag('red','新客'));
- if(u.cr)tags.push(u.mine?tag('green','跨团·归我'):tag('blue','跨团'));
+ if(u.cr&&!u.mine)tags.push(tag('blue','别家'));
  if(u.ret)tags.push(tag('amber','回归用户'));
  if(u.w>1200)tags.push(tag('green','高陪伴'));if(u.ch)tags.push(tag(u.ch==='A'?'red':u.ch==='B'?'amber':'gray',churnLab(u.ch)));
  const info=[u.gr&&('荣耀'+u.gr),u.fl&&('灯牌'+u.fl),u.l,u.g&&(u.g===1?'男':'女'),u.a&&(u.a+'岁')].filter(x=>x).join(' · ');
@@ -480,6 +480,8 @@ function openFeedbackSheet(sec){
   <div class="fb-hint">回传后运营可见；等级只作建议，不会覆盖运营评定。</div>`);
  bindChipGroup(s.querySelector('#fbActions'),true);
  bindChipGroup(s.querySelector('#fbGrade'),false);
+ // 已点亮（已拉群/已互关）的预设选中——主播一眼看到现状，避免重复回传
+ s.querySelectorAll('#fbActions .chip').forEach(c=>{if(u.ff&&u.ff.includes(c.dataset.v))c.classList.add('on');});
  s.querySelector('#fbMoreToggle').onclick=()=>{
    const body=s.querySelector('#fbMoreBody');const hide=body.style.display!=='none';
    body.style.display=hide?'none':'block';
