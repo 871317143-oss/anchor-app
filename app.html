@@ -213,7 +213,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v27';
+const APP_VERSION='v28';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -267,20 +267,30 @@ function viewToday(){const c=DATA.counts,ch=DATA.churn;
   ${tier('l3','L3','重点维护','消费 > 99 元 · 今天必聊',DATA.l3)}
   ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2)}
   ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1)}${greetBlock()}${churn}</div></div>`;}
+const TIERS=['S','A','B','C','D',''];
+function tierCounts(){const c={};TIERS.forEach(t=>c[t]=0);
+ for(const s in DATA.users){const t=DATA.users[s].t||'';c[t]=(c[t]||0)+1;}return c;}
 function viewSearch(){return `<div class="view" id="v-search">${topbar()}<div class="wrap">
-  <div class="sbar"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8a97a5" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-  <input id="q" type="search" placeholder="搜索昵称，查看用户情况" autocomplete="off"></div>
+  <div class="chips" id="tierChips" style="margin:2px 0 10px"></div>
   <div id="sresult"></div></div></div>`;}
-function renderSearch(q){const box=document.getElementById('sresult');if(!box)return;
- q=(q||'').trim().toLowerCase();
- let list=Object.keys(DATA.users).filter(s=>!q||(DATA.users[s].n||'').toLowerCase().includes(q));
- list.sort((a,b)=>DATA.users[b].sv-DATA.users[a].sv);
- if(!list.length){box.innerHTML=`<div class="empty">没有找到相关用户<br>只能查到给你刷过礼物的用户</div>`;return;}
- box.innerHTML=`<div class="slist">${list.slice(0,60).map(s=>{const u=DATA.users[s];return `<div class="srow" data-sec="${s}">
+let _curTier='S';
+function renderList(t){
+ _curTier=t;
+ const box=document.getElementById('sresult');if(!box)return;
+ const cc=tierCounts();
+ const chips=document.getElementById('tierChips');
+ if(chips)chips.innerHTML=TIERS.map(x=>`<span class="chip${x===t?' on':''}" data-t="${x}">${x||'未评级'} ${cc[x]||0}</span>`).join('');
+ if(chips)chips.querySelectorAll('.chip').forEach(c=>c.onclick=()=>renderList(c.dataset.t));
+ let list=Object.keys(DATA.users).filter(s=>(DATA.users[s].t||'')===t);
+ list.sort((a,b)=>(DATA.users[b].sv||0)-(DATA.users[a].sv||0));
+ if(!list.length){box.innerHTML='<div class="empty">这个等级还没有用户</div>';return;}
+ const total=list.length;list=list.slice(0,200);
+ box.innerHTML=`<div class="slist">${list.map(s=>{const u=DATA.users[s];return `<div class="srow" data-sec="${s}">
   <div class="avatar" style="background:${colorOf(u.n||s)};width:36px;height:36px;font-size:14px">${(u.n||'?')[0]}</div>
   <div class="s-nick">${u.n} ${rowTags(u)}</div>
-  <div class="s-sub">${u.ch?churnLab(u.ch):(u.tv?('今天'+yuan(u.tv)):'')}</div></div>`;}).join('')}</div>
-  ${list.length>60?'<div class="empty">仅显示前 60 人，请细化关键词</div>':''}`;}
+  <div class="s-sub">累计${yuan(u.sv)}${u.tv?(' · 今天'+yuan(u.tv)):''}${u.last?(' · 上次'+u.last.slice(5)):''}${u.ch?(' · '+churnLab(u.ch)):''}</div></div>`;}).join('')}</div>
+  ${total>200?`<div class="empty">共 ${total} 人，仅显示前 200（按累计排序）</div>`:''}`;}
+function renderSearch(q){renderList(_curTier);}  // 兼容旧引用
 function viewMe(){const a=DATA.anchor,c=DATA.counts,total=Object.keys(DATA.users).length;
  return `<div class="view" id="v-me">${topbar()}<div class="wrap"><div class="me-brand"><img src="assets/logo-full.png" alt="梦华录"></div>
   <div class="me-card">
@@ -352,7 +362,7 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
 function switchTab(t){['today','search','me'].forEach(x=>{const v=document.getElementById('v-'+x);if(v)v.classList.toggle('show',x===t);});
  try{window.scrollTo(0,0);const r=document.getElementById('root');if(r)r.scrollTop=0;}catch(e){}
  document.querySelectorAll('.tabbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
- if(t==='search'){const q=document.getElementById('q');if(q){renderSearch(q.value);}}}
+ if(t==='search'){renderList(_curTier);}}
 function render(){root.innerHTML=viewToday()+viewSearch()+viewMe();switchTab('today');}
 function openProfile(sec){closeProfile();root.insertAdjacentHTML('beforeend',viewProfile(sec));
  const _pv=document.getElementById('pv');
@@ -558,7 +568,7 @@ document.addEventListener('click',e=>{
 document.addEventListener('input',e=>{if(e.target.id==='q')renderSearch(e.target.value);});
 const TABBAR=`<div class="tabbar">
  <button class="tb on" data-tab="today"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>今日</button>
- <button class="tb" data-tab="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>查用户</button>
+ <button class="tb" data-tab="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.3"/><circle cx="3.5" cy="12" r="1.3"/><circle cx="3.5" cy="18" r="1.3"/></svg>清单</button>
  <button class="tb" data-tab="me"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>我的</button></div>`;
 function storedToken(){return localStorage.getItem('anchor_token')||'';}
 function showLogin(err){
@@ -633,17 +643,7 @@ function bindAiFb(scope,sec,txtOverride){
   });
  });
 }
-function aiPanel(sec){
-  const gray=DATA.anchor.team==='menghualu_xingzhou';
-  if(!gray)return '';   // 维护军师仅灰度团；其余团不显示此卡片
-  return `<div class="ai-card" id="aiCard" data-sec="${sec}">
-   <div class="ai-head">维护军师 · 基于 TA 的档案</div>
-   <div class="ai-nav">
-    <button class="ai-tab" data-ai="strategy">作战建议</button>
-   </div>
-   <div class="ai-body" id="aiBody"><div class="ai-ph">点「作战建议」，军师帮你分析 TA 怎么维护</div></div>
-  </div>`;
-}
+function aiPanel(sec){return '';}  // 维护军师先下线（2026-10-03 老板拍板：讨论清楚怎么优化再上；Worker 路由保留未删）
 function bindAiPanel(sec){
   const card=document.getElementById('aiCard');if(!card)return;
   const box=card.querySelector('#aiBody');
