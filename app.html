@@ -93,10 +93,15 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .tier .t-sub{font-size:11px;color:var(--ink3);margin-top:1px;}
 .tier .t-cnt{margin-left:auto;font-size:14px;font-weight:700;}
 .tier .t-cnt small{font-weight:400;color:var(--ink3);font-size:10px;}
-.urow{display:flex;align-items:center;gap:10px;padding:10px 14px;}
-.urow .avatar{width:32px;height:32px;font-size:13px;}
+.urow{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;}
+.urow .avatar{width:32px;height:32px;font-size:13px;flex:none;}
+.urow .u-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;}
+.urow .u-line1{display:flex;align-items:baseline;gap:8px;}
 .urow .u-nick{font-size:13px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.urow .u-val{font-size:12px;color:var(--ink2);font-weight:600;}
+.urow .u-val{font-size:12px;color:var(--ink2);font-weight:600;flex:none;}
+.urow .u-tags{display:flex;flex-wrap:wrap;gap:4px;}
+.urow .u-tags:empty{display:none;}
+.tag.badge{padding:2px 5px;font-size:10px;gap:0;line-height:1.1;}
 .urow.done{opacity:.52;}
 .urow.done .avatar{filter:grayscale(.75);}
 .urow.done .u-nick{color:var(--ink3);}
@@ -213,7 +218,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v31';
+const APP_VERSION='v32';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -222,8 +227,8 @@ function tag(cls,txt){return `<span class="tag t-${cls}"><span class="dot"></spa
 function churnLab(ch){return ch==='A'?'高价值流失':ch==='B'?'老客流失':'长尾流失';}
 function gradeTag(u){const m={S:'red',A:'amber',B:'blue',C:'green',D:'gray'};return u.t?tag(m[u.t],u.t+'级'):'';}
 function rowTags(u){let t=[gradeTag(u)];
-  if(u.ff&&u.ff.includes('已拉群'))t.push(tag('green','已拉群'));
-  if(u.ff&&u.ff.includes('已互关'))t.push(tag('blue','已互关'));
+  if(u.ff&&u.ff.includes('已拉群'))t.push('<span class="tag t-green badge">群</span>');
+  if(u.ff&&u.ff.includes('已互关'))t.push('<span class="tag t-blue badge">互</span>');
   if(u.nf)t.push(tag('red','新客'));
   if(u.cr)t.push(u.mine?tag('green','跨团·归我'):tag('blue','跨团'));
   if(u.ret)t.push(tag('amber','回归用户'));
@@ -236,7 +241,7 @@ const GLOBE=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke=
 function tier(cls,code,name,sub,secs){if(!secs.length)return '';
  const rows=secs.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow${dn?' done':''}" data-sec="${s}">
   <div class="avatar" style="background:${colorOf(u.n||s)}">${(u.n||'?')[0]}</div>
-  <div class="u-nick">${u.n||''}</div>${rowTags(u)}${doneTagHTML(s)}<div class="u-val">${yuan(u.tv)}</div></div>`;}).join('');
+  <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span><span class="u-val">${yuan(u.tv)}</span></div><div class="u-tags">${rowTags(u)}${doneTagHTML(s)}</div></div></div>`;}).join('');
  const foot=secs.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${secs.length} 人 ▾</span></div>`:'';
  return `<div class="tier ${cls} closed"><div class="t-head"><div class="t-ico">${code}</div>
   <div><div class="t-name">${name}</div><div class="t-sub">${sub}</div></div>
@@ -247,7 +252,7 @@ function churnCard(s,cls,lab){const u=DATA.users[s];return `<div class="churn-ca
 function greetBlock(){const g=DATA.greet;if(!g||!g.length)return '';
  const rows=g.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow${dn?' done':''}" data-sec="${s}">
   <div class="avatar" style="background:${colorOf(u.n||s)}">${(u.n||'?')[0]}</div>
-  <div class="u-nick">${u.n||''}</div>${gradeTag(u)}${doneTagHTML(s)}<div class="u-val">给我 ${yuan(u.sv)}</div></div>`;}).join('');
+  <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span><span class="u-val">给我 ${yuan(u.sv)}</span></div><div class="u-tags">${gradeTag(u)}${doneTagHTML(s)}</div></div></div>`;}).join('');
  const foot=g.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${g.length} 人 ▾</span></div>`:'';
  return `<div class="tier closed"><div class="t-head"><div class="t-ico" style="background:var(--amber-bg);color:var(--amber)">★</div>
   <div><div class="t-name">主动问候</div><div class="t-sub">S/A/B 级本场没刷 · 也要维系</div></div>
@@ -519,7 +524,7 @@ function openCorrectSheet(sec){
 function fbDoneKey(){return 'fb_done_'+(DATA&&DATA.anchor?DATA.anchor.date:'nodate');}
 function fbStatus(kind,actions){
  if(kind==='归属异议'||kind==='提名大哥')return{cls:'blue',txt:'已纠错'};
- const a=(actions||[]).filter(x=>x);
+ const a=(actions||[]).filter(x=>x&&x!=='已拉群'&&x!=='已互关');  // 常驻点亮项不重复进动作标签
  return{cls:'gray',txt:a.length?a.join('·'):'已回传'};}
 function fbTagHTML(st){return '<span class="tag t-'+st.cls+' done-tag"><span class="dot"></span>'+st.txt+'</span>';}
 function loadFbDone(){try{var v=JSON.parse(localStorage.getItem(fbDoneKey())||'{}');return (v&&typeof v==='object'&&!Array.isArray(v))?v:{};}catch(e){return{};}}
@@ -528,7 +533,7 @@ function markFeedbackDone(sec,kind,actions){if(!sec)return;var st=fbStatus(kind,
  document.querySelectorAll('.urow[data-sec="'+sec+'"]').forEach(r=>{
    r.classList.add('done');
    var ex=r.querySelector('.done-tag');if(ex)ex.remove();
-   r.querySelector('.u-val').insertAdjacentHTML('beforebegin',fbTagHTML(st));
+   const _tg=r.querySelector('.u-tags');if(_tg)_tg.insertAdjacentHTML('beforeend',fbTagHTML(st));
  });}
 function isFeedbackDone(sec){return !!(_fbCloud[sec]||loadFbDone()[sec]);}
 function doneTagHTML(sec){
