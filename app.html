@@ -165,6 +165,36 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .fb-more{margin:2px 0 8px;border:1px solid var(--line);border-radius:11px;background:#fff;overflow:hidden;}
 .fb-more-toggle{padding:11px 12px;font-size:13px;font-weight:600;color:var(--brand);cursor:pointer;}
 .fb-more-body{padding:3px 12px 1px;}
+/* AI 客情助手 */
+.ai-card{margin:12px 16px 0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;}
+.ai-head{padding:11px 14px;font-size:13px;font-weight:700;background:var(--brand);color:#fff;letter-spacing:.5px;}
+.ai-nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line);}
+.ai-tab{font-size:12px;font-weight:600;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--brand);font-family:inherit;cursor:pointer;}
+.ai-tab.on{background:var(--brand);color:#fff;}
+.ai-body{padding:12px 14px;min-height:56px;}
+.ai-ph{font-size:12px;color:var(--ink3);text-align:center;padding:14px 0;}
+.ai-item{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px;}
+.ai-st{font-size:11px;font-weight:700;color:var(--brand);margin-bottom:4px;}
+.ai-txt{font-size:13px;line-height:1.55;color:var(--ink);margin-bottom:8px;word-break:break-word;}
+.ai-cp{font-size:12px;font-weight:600;border:none;border-radius:8px;padding:6px 14px;background:var(--brand-soft);color:var(--brand);font-family:inherit;cursor:pointer;}
+.ai-body textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:13px;font-family:inherit;resize:none;outline:none;}
+.ai-go{display:block;width:100%;margin-top:8px;padding:9px;border:none;border-radius:10px;background:var(--brand);color:#fff;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;}
+.ai-frow{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px;}
+.ai-frow>span{flex:none;width:52px;color:var(--ink2);font-weight:600;}
+.ai-frow input{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12px;font-family:inherit;}
+.ai-frow>div{flex:1;min-width:0;color:var(--ink);line-height:1.4;}
+.ai-up{display:block;text-align:center;border:1px dashed var(--brand);border-radius:10px;padding:16px;font-size:13px;color:var(--brand);font-weight:600;cursor:pointer;}
+.ai-up input{display:none;}
+.ai-sub{font-size:11px;font-weight:700;color:var(--ink2);margin:10px 0 6px;}
+.ai-snap{font-size:12px;color:var(--ink);line-height:1.5;padding:6px 0;border-top:1px dashed var(--line);}
+.ai-status{color:var(--ink3);font-size:10px;margin-left:4px;}
+.ai-msg{font-size:12px;line-height:1.5;padding:6px 9px;border-radius:9px;margin-bottom:5px;max-width:88%;word-break:break-word;}
+.ai-msg.user{background:var(--gray-bg);color:var(--ink);}
+.ai-msg.anchor{background:var(--brand-soft);color:var(--brand);margin-left:auto;}
+.ai-intent{background:var(--brand-soft);border-radius:10px;padding:10px 11px;font-size:12px;line-height:1.7;margin-bottom:8px;}
+.ai-intent b{color:var(--brand);}
+.ai-adv{font-size:12px;line-height:1.6;margin:3px 0;}
+.ai-err{font-size:12px;color:var(--red);padding:8px 0;text-align:center;}
 </style>
 </head>
 <body>
@@ -175,7 +205,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v19';
+const APP_VERSION='v20';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -280,6 +310,7 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
   </div>
   ${u.adv?`<div class="advice"><div class="at">维护提示</div><p>${u.adv}</p></div>`:''}
   ${pvNote(sec)}
+  ${aiPanel(sec)}
   ${u.mine
   ?(u.cr
     ?`<div class="own" style="color:var(--green)"><span class="tag t-green"><span class="dot"></span>跨团·归我</span><span>也在别家消费，但主归属是<b>我</b>，可私信</span></div>`
@@ -300,7 +331,7 @@ function switchTab(t){['today','search','me'].forEach(x=>{const v=document.getEl
  document.querySelectorAll('.tabbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
  if(t==='search'){const q=document.getElementById('q');if(q){renderSearch(q.value);}}}
 function render(){root.innerHTML=viewToday()+viewSearch()+viewMe();switchTab('today');}
-function openProfile(sec){closeProfile();root.insertAdjacentHTML('beforeend',viewProfile(sec));}
+function openProfile(sec){closeProfile();root.insertAdjacentHTML('beforeend',viewProfile(sec));bindAiPanel(sec);}
 function closeProfile(){const pv=document.getElementById('pv');if(pv)pv.remove();}
 let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.opacity='1';
  t.style.transform='translateX(-50%) translateY(0)';clearTimeout(tt);
@@ -530,6 +561,157 @@ function showUpdateBar(){
  _updateBar.textContent='发现新版本，点击更新';
  _updateBar.onclick=()=>location.reload();
  document.getElementById('phone').appendChild(_updateBar);}
+/* ============ AI 客情助手（动态 API） ============ */
+const AI_BASE='https://fb.menghualu.com.co/api/ai';
+async function aiPost(path,body){
+  const r=await fetch(AI_BASE+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  let d={};try{d=await r.json();}catch(e){}
+  if(!r.ok)throw new Error(d.error||'AI 请求失败');
+  return d;
+}
+function fileToDataURL(f){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(f);});}
+function aiPanel(sec){
+  const gray=DATA.anchor.team==='menghualu_xingzhou';
+  return `<div class="ai-card" id="aiCard" data-sec="${sec}">
+   <div class="ai-head">AI 客情助手 · 基于该用户档案</div>
+   <div class="ai-nav">
+    <button class="ai-tab" data-ai="opening">开场话题</button>
+    <button class="ai-tab" data-ai="extract">整理备注</button>
+    ${gray?'<button class="ai-tab" data-ai="analyze">截图分析</button>':''}
+    ${gray?'<button class="ai-tab" data-ai="reply">帮我代回</button>':''}
+    <button class="ai-tab" data-ai="timeline">维护记录</button>
+   </div>
+   <div class="ai-body" id="aiBody"><div class="ai-ph">点上方功能，AI 实时生成</div></div>
+  </div>`;
+}
+function bindAiPanel(sec){
+  const card=document.getElementById('aiCard');if(!card)return;
+  const box=card.querySelector('#aiBody');
+  card.querySelectorAll('.ai-tab').forEach(t=>t.onclick=()=>{
+    card.querySelectorAll('.ai-tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');
+    const k=t.dataset.ai;box.innerHTML='<div class="ai-ph">生成中…</div>';let p;
+    if(k==='opening')p=aiShowOpening(sec,box);
+    else if(k==='extract')p=aiShowExtract(sec,box);
+    else if(k==='analyze')p=aiShowAnalyze(sec,box);
+    else if(k==='reply')p=aiShowReply(sec,box);
+    else if(k==='timeline')p=aiShowTimeline(sec,box);
+    if(p)p.catch(e=>{box.innerHTML='<div class="ai-err">'+escapeHtml(String(e.message||e))+'</div>';});
+  });
+}
+async function aiShowOpening(sec,box){
+  const r=await aiPost('/opening',{token:storedToken(),sec,user:DATA.users[sec]});
+  const ts=r.topics||[];
+  box.innerHTML=ts.map(t=>`<div class="ai-item"><div class="ai-st">${escapeHtml(t.style||'')}</div>
+    <div class="ai-txt">${escapeHtml(t.text||'')}</div><button class="ai-cp">复制</button></div>`).join('')
+    ||'<div class="ai-ph">没生成，重试</div>';
+  box.querySelectorAll('.ai-cp').forEach((b,i)=>b.onclick=()=>{copyText(ts[i].text||'');toast('已复制');});
+}
+function aiShowExtract(sec,box){
+  const local=localStorage.getItem('note_'+sec)||'';
+  box.innerHTML=`<textarea id="aiNoteTA" rows="3" placeholder="把客情备注粘进来（可含星座/地区/职业/爱好/定制进度）">${escapeHtml(local)}</textarea>
+    <button class="ai-go" id="aiExtractGo">智能整理</button><div id="aiExtractBox"></div>`;
+  box.querySelector('#aiExtractGo').onclick=async()=>{
+    const note=box.querySelector('#aiNoteTA').value.trim();
+    if(!note){toast('请先填备注');return;}
+    const exb=box.querySelector('#aiExtractBox');exb.innerHTML='<div class="ai-ph">整理中…</div>';
+    try{const r=await aiPost('/extract',{token:storedToken(),sec,note,day:DATA.anchor.date});
+      renderExtract(exb,r.extracted);
+    }catch(e){exb.innerHTML='<div class="ai-err">'+escapeHtml(e.message)+'</div>';}
+  };
+}
+function renderExtract(box,ex){
+  ex=ex||{};
+  const F=[['星座','zodiac'],['生日','birthday'],['地区','region'],['职业','job'],['爱好','hobby'],['情绪','mood']];
+  let html=F.map(([lab,k])=>`<div class="ai-frow"><span>${lab}</span><input data-k="${k}" value="${escapeHtml(ex[k]||'')}"></div>`).join('');
+  const custom=(ex.custom||[]).filter(c=>c.item).map(c=>c.item+' '+c.done+'/'+c.total).join('；');
+  html+=`<div class="ai-frow"><span>定制</span><div>${escapeHtml(custom)||'—'}</div></div>`;
+  if(ex.other)html+=`<div class="ai-frow"><span>其他</span><div>${escapeHtml(ex.other)}</div></div>`;
+  html+=`<div class="fb-hint" style="margin:6px 2px">确认后只补空回填，已有的人工内容不覆盖</div>
+    <button class="ai-go" id="aiConfirmGo">确认回填</button>`;
+  box.innerHTML=html;
+  box.querySelector('#aiConfirmGo').onclick=async()=>{
+    const ex2={...ex,custom:ex.custom||[]};
+    box.querySelectorAll('input[data-k]').forEach(i=>ex2[i.dataset.k]=i.value.trim());
+    const btn=box.querySelector('#aiConfirmGo');btn.textContent='提交中…';
+    try{await aiPost('/confirm',{token:storedToken(),sec,day:DATA.anchor.date,extracted:ex2});
+      box.innerHTML='<div class="ai-ph">已确认，空字段已回填</div>';toast('已回填');
+    }catch(e){btn.textContent='确认回填';toast(e.message);}
+  };
+}
+function aiShowAnalyze(sec,box){
+  box.innerHTML=`<label class="ai-up"><input id="aiFileIn" type="file" accept="image/*" multiple>点这里选聊天截图（可多张，建议按顺序）</label>
+   <div id="aiAnalyzeBox"></div>`;
+  const input=box.querySelector('#aiFileIn');const ab=box.querySelector('#aiAnalyzeBox');
+  input.onchange=async()=>{
+    const fs=[...input.files];if(!fs.length)return;
+    ab.innerHTML='<div class="ai-ph">读图分析中…（图多稍等）</div>';
+    try{const images=await Promise.all(fs.map(fileToDataURL));
+      const r=await aiPost('/analyze',{token:storedToken(),sec,user:DATA.users[sec],images});
+      renderAnalyze(ab,r);
+    }catch(e){ab.innerHTML='<div class="ai-err">'+escapeHtml(e.message)+'</div>';}
+  };
+}
+function renderAnalyze(box,r){
+  let h=`<div class="ai-intent"><div><b>意图：</b>${escapeHtml(r.intent||'—')}</div>
+    <div><b>情绪：</b>${escapeHtml(r.emotion||'—')}</div>`;
+  if(r.issue)h+=`<div><b>问题：</b>${escapeHtml(r.issue)}</div>`;
+  h+=`</div>`;
+  if(r.advice&&r.advice.length)h+='<div class="ai-sub">应对建议</div>'+r.advice.map(a=>`<div class="ai-adv">· ${escapeHtml(a)}</div>`).join('');
+  if(r.missing)h+=`<div class="ai-err" style="text-align:left">还需：${escapeHtml(r.missing)}</div>`;
+  if(r.transcript&&r.transcript.length)h+='<div class="ai-sub">识别到的对话（已存维护记录）</div>'
+    +r.transcript.map(t=>`<div class="ai-msg ${t.role==='anchor'?'anchor':'user'}">${escapeHtml(t.text||'')}</div>`).join('');
+  box.innerHTML=h;
+}
+function aiShowReply(sec,box){
+  box.innerHTML=`<textarea id="aiSayTA" rows="2" placeholder="把用户刚发来的话粘进来（可一次几句）"></textarea>
+   <button class="ai-go" id="aiReplyGo">生成高情商回复</button><div id="aiReplyBox"></div>`;
+  box.querySelector('#aiReplyGo').onclick=async()=>{
+    const says=box.querySelector('#aiSayTA').value.trim();
+    if(!says){toast('请先粘贴用户的话');return;}
+    const rb=box.querySelector('#aiReplyBox');
+    rb.innerHTML='<span class="ai-txt" id="aiStreamTxt"></span>';
+    const el=rb.querySelector('#aiStreamTxt');
+    try{
+      await aiStreamReply({token:storedToken(),sec,user:DATA.users[sec],user_says:says},t=>{el.textContent+=t;});
+      const full=el.textContent;
+      rb.insertAdjacentHTML('beforeend',`<div style="margin-top:8px"><button class="ai-cp" id="aiReplyCp">复制回复</button>
+        <button class="ai-cp" id="aiReplyAgain">重新生成</button></div>`);
+      rb.querySelector('#aiReplyCp').onclick=()=>{copyText(full);toast('已复制');};
+      rb.querySelector('#aiReplyAgain').onclick=box.querySelector('#aiReplyGo').onclick;
+    }catch(e){rb.innerHTML='<div class="ai-err">'+escapeHtml(e.message)+'</div>';}
+  };
+}
+async function aiStreamReply(body,onChunk){
+  const r=await fetch(AI_BASE+'/reply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok||!r.body){let d={};try{d=await r.json();}catch(e){};throw new Error(d.error||'生成失败');}
+  const reader=r.body.getReader();const dec=new TextDecoder();let buf='';
+  while(true){
+    const {done,value}=await reader.read();if(done)break;
+    buf+=dec.decode(value,{stream:true});
+    let idx;
+    while((idx=buf.indexOf('\n'))>=0){
+      let line=buf.slice(0,idx).trim();buf=buf.slice(idx+1);
+      if(!line.startsWith('data:'))continue;line=line.slice(5).trim();
+      if(line==='[DONE]')continue;
+      let j=null;try{j=JSON.parse(line);}catch(e){j=null;}
+      if(j){if(j.t)onChunk(j.t);if(j.error)throw new Error(j.error);}
+    }
+  }
+}
+async function aiShowTimeline(sec,box){
+  const r=await aiPost('/timeline',{token:storedToken(),sec});
+  let h='';
+  if(r.snapshots&&r.snapshots.length){
+    h+='<div class="ai-sub">客情备注（按天）</div>';
+    h+=r.snapshots.map(s=>`<div class="ai-snap"><b>${s.day}</b> ${escapeHtml(s.note||'')}<span class="ai-status">${s.status}</span></div>`).join('');
+  }
+  if(r.messages&&r.messages.length){
+    h+='<div class="ai-sub">对话记录</div>';
+    h+=r.messages.map(m=>`<div class="ai-msg ${m.role==='anchor'?'anchor':'user'}">${escapeHtml(m.content||'')}</div>`).join('');
+  }
+  box.innerHTML=h||'<div class="ai-ph">暂无维护记录</div>';
+}
+
 function boot(){
  const urlT=new URLSearchParams(location.search).get('t');
  if(urlT){localStorage.setItem('anchor_token',urlT);
