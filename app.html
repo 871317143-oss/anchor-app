@@ -46,7 +46,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .t-green{color:var(--green);background:var(--green-bg);}.t-green .dot{background:var(--green);}
 .t-amber{color:var(--amber);background:var(--amber-bg);}.t-amber .dot{background:var(--amber);}
 .t-gray{color:var(--gray);background:var(--gray-bg);}.t-gray .dot{background:var(--gray);}
-.profile{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(20,35,55,.05);}
+.profile{background:var(--card);border-radius:16px;overflow:hidden;overflow:clip;box-shadow:0 2px 12px rgba(20,35,55,.05);}
 .profile .head{padding:16px 16px 13px;display:flex;gap:12px;align-items:flex-start;}
 .profile .head .avatar{width:48px;height:48px;font-size:19px;background:#b3544b;}
 .profile .h-main{flex:1;min-width:0;}
@@ -68,7 +68,11 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .pv-info{display:flex;align-items:center;gap:8px;margin:8px 16px 0;font-size:12px;color:var(--ink2);}
 .pv-info .pvi-label{flex:none;min-width:42px;color:var(--ink3);font-size:11px;}
 .pv-info span:last-child{word-break:break-all;}
-.act{display:flex;gap:9px;padding:14px 16px 16px;margin-top:14px;}
+.act{display:flex;gap:9px;padding:14px 16px 16px;margin-top:14px;
+ position:sticky;bottom:0;z-index:3;background:var(--card);border-top:1px solid var(--line);
+ box-shadow:0 -2px 10px rgba(20,35,55,.06);padding-bottom:calc(16px + env(safe-area-inset-bottom));}
+/* 浏览器内（非主屏安装）底部有原生工具栏，按钮区预留其上（同 sheet 的 88px 经验值） */
+.pview.in-browser .act{padding-bottom:calc(88px + env(safe-area-inset-bottom));}
 .btn{flex:1;border:none;border-radius:10px;padding:11px 0;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;}
 .btn-primary{background:var(--brand);color:#fff;}
 .btn-ghost{background:var(--gray-bg);color:var(--ink2);}
@@ -209,7 +213,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v26';
+const APP_VERSION='v27';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -350,7 +354,10 @@ function switchTab(t){['today','search','me'].forEach(x=>{const v=document.getEl
  document.querySelectorAll('.tabbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
  if(t==='search'){const q=document.getElementById('q');if(q){renderSearch(q.value);}}}
 function render(){root.innerHTML=viewToday()+viewSearch()+viewMe();switchTab('today');}
-function openProfile(sec){closeProfile();root.insertAdjacentHTML('beforeend',viewProfile(sec));bindAiPanel(sec);}
+function openProfile(sec){closeProfile();root.insertAdjacentHTML('beforeend',viewProfile(sec));
+ const _pv=document.getElementById('pv');
+ if(_pv){const _ss=window.matchMedia('(display-mode: standalone)')&&window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;if(!_ss)_pv.classList.add('in-browser');}
+ bindAiPanel(sec);}
 function closeProfile(){const pv=document.getElementById('pv');if(pv)pv.remove();}
 let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.opacity='1';
  t.style.transform='translateX(-50%) translateY(0)';clearTimeout(tt);
