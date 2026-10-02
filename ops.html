@@ -7,40 +7,54 @@
 <title>画像助手 · 运营版</title>
 <style>
 :root{--bg:#f3f4f6;--card:#fff;--ink:#1c2733;--ink2:#46545f;--ink3:#8a97a5;--line:#e6eaee;--brand:#3d5a80;
---red:#c6453b;--blue:#2f6fb0;--green:#3a8a5e;--amber:#c07f24;--gray-bg:#f0f2f4;}
+--red:#c6453b;--red-bg:#fbeae8;--blue:#2f6fb0;--blue-bg:#e8f1f9;--green:#3a8a5e;--green-bg:#e8f4ed;
+--amber:#c07f24;--amber-bg:#faf1e1;--gray:#6b7280;--gray-bg:#f0f2f4;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif;}
-.wrap{max-width:560px;margin:0 auto;padding:14px 12px 40px;}
-.hd{padding:18px 4px 12px;display:flex;align-items:center;justify-content:space-between;}
-.hd h1{font-size:19px;}
-.hd .sub{font-size:12px;color:var(--ink3);margin-top:3px;}
-.btn{border:none;border-radius:10px;padding:9px 16px;font-size:14px;font-weight:600;background:var(--brand);color:#fff;cursor:pointer;font-family:inherit;}
-.btn.ghost{background:var(--gray-bg);color:var(--ink2);}
+#phone{max-width:480px;margin:0 auto;min-height:100vh;position:relative;}
+.wrap{padding:0 12px calc(40px + env(safe-area-inset-bottom));}
+.topbar{display:flex;align-items:center;gap:10px;padding:calc(14px + env(safe-area-inset-top)) 14px 12px;background:var(--brand);color:#fff;}
+.topbar .avatar{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;}
+.topbar .name{font-size:15px;font-weight:700;}
+.topbar .meta{font-size:11px;opacity:.82;margin-top:2px;}
+.topbar .rf{margin-left:auto;background:rgba(255,255,255,.16);border:none;color:#fff;border-radius:9px;padding:7px 13px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+.sec-title{display:flex;justify-content:space-between;align-items:baseline;margin:16px 2px 8px;}
+.sec-title h3{font-size:14px;color:var(--ink2);}
+.sec-title .more{font-size:11px;color:var(--ink3);}
+.tier{background:var(--card);border-radius:14px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 10px rgba(20,35,55,.04);}
+.t-head{display:flex;align-items:center;gap:10px;padding:12px 14px;}
+.t-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex:none;}
+.t-name{font-size:14px;font-weight:700;}
+.t-sub{font-size:11px;color:var(--ink3);margin-top:2px;}
+.t-cnt{margin-left:auto;font-size:16px;font-weight:800;color:var(--ink2);}
+.t-cnt small{font-size:10px;font-weight:400;color:var(--ink3);}
+.urow{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-top:1px solid var(--line);}
+.urow .avatar{width:32px;height:32px;font-size:13px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;flex:none;}
+.u-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
+.u-line1{display:flex;align-items:baseline;gap:8px;}
+.u-nick{font-size:13px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.u-t{font-size:11px;color:var(--ink3);flex:none;}
+.u-note{font-size:12px;color:var(--ink2);line-height:1.5;word-break:break-all;}
+.u-tags{display:flex;flex-wrap:wrap;gap:4px;}
+.u-tags:empty{display:none;}
+.tag{display:inline-flex;align-items:center;font-size:11px;font-weight:500;padding:3px 8px;border-radius:6px;line-height:1;}
+.t-green{color:var(--green);background:var(--green-bg);}.t-blue{color:var(--blue);background:var(--blue-bg);}
+.t-red{color:var(--red);background:var(--red-bg);}.t-amber{color:var(--amber);background:var(--amber-bg);}
+.t-gray{color:var(--gray);background:var(--gray-bg);}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:4px 2px 10px;}
+.chip{font-size:12px;font-weight:500;padding:7px 13px;border-radius:999px;background:#fff;color:var(--ink2);cursor:pointer;border:1px solid var(--line);}
+.chip.on{background:var(--brand);color:#fff;border-color:var(--brand);}
+.todo{background:var(--card);border-radius:14px;padding:13px 14px;margin-bottom:10px;box-shadow:0 2px 10px rgba(20,35,55,.04);border-left:4px solid var(--amber);}
+.todo .who{font-size:14px;font-weight:700;}
+.todo .meta{font-size:11px;color:var(--ink3);margin:3px 0 7px;}
+.todo .txt{font-size:13px;color:var(--ink2);line-height:1.6;background:var(--gray-bg);border-radius:10px;padding:8px 10px;margin-bottom:9px;}
+.todo .acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.btn{border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;background:var(--brand);color:#fff;cursor:pointer;font-family:inherit;}
 .btn.ok{background:var(--green);}
 .btn.no{background:var(--gray-bg);color:var(--red);}
-.btn.sm{padding:6px 12px;font-size:12px;}
-.card{background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 6px rgba(20,35,55,.05);}
-.sec-t{font-size:14px;font-weight:700;margin:16px 4px 8px;color:var(--ink2);display:flex;justify-content:space-between;align-items:baseline;}
-.sec-t .cnt{font-size:12px;color:var(--ink3);font-weight:400;}
-.row{display:flex;gap:8px;align-items:baseline;padding:7px 2px;border-top:1px solid var(--line);font-size:13px;}
-.row:first-child{border-top:none;}
-.row .t{color:var(--ink3);font-size:11px;flex:none;width:44px;}
-.row .a{color:var(--brand);font-weight:600;flex:none;}
-.row .n{flex:none;max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.row .x{color:var(--ink2);flex:1;min-width:0;word-break:break-all;}
-.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;margin-right:4px;background:var(--gray-bg);}
-.tag.g{background:#e8f4ed;color:var(--green);}.tag.b{background:#e8f1f9;color:var(--blue);}
-.tag.r{background:#fbeae8;color:var(--red);}.tag.a{background:#faf1e1;color:var(--amber);}
-.todo{background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 6px rgba(20,35,55,.05);border-left:4px solid var(--amber);}
-.todo .who{font-size:14px;font-weight:700;margin-bottom:4px;}
-.todo .meta{font-size:12px;color:var(--ink3);margin-bottom:6px;}
-.todo .txt{font-size:13px;color:var(--ink2);line-height:1.6;background:var(--gray-bg);border-radius:10px;padding:8px 10px;margin-bottom:8px;}
-.todo .acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-.todo select{border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:13px;font-family:inherit;background:#fff;}
-.chips{display:flex;flex-wrap:wrap;gap:7px;margin:4px 0 10px;}
-.chip{font-size:12px;font-weight:500;padding:6px 12px;border-radius:999px;background:#fff;color:var(--ink2);cursor:pointer;border:1px solid var(--line);}
-.chip.on{background:var(--brand);color:#fff;border-color:var(--brand);}
-.empty{text-align:center;color:var(--ink3);font-size:13px;padding:30px 0;}
+.todo select{border:1px solid var(--line);border-radius:9px;padding:6px 8px;font-size:13px;font-family:inherit;background:#fff;max-width:150px;}
+.empty{text-align:center;color:var(--ink3);font-size:13px;padding:26px 0;}
+.foot{text-align:center;color:var(--ink3);font-size:11px;padding:18px 0 6px;}
 .login-wrap{min-height:80vh;display:flex;align-items:center;justify-content:center;}
 .login-card{width:88%;max-width:340px;background:var(--card);border-radius:18px;padding:28px 22px;text-align:center;box-shadow:0 4px 20px rgba(20,35,55,.08);}
 .login-title{font-size:18px;font-weight:800;margin-bottom:6px;}
@@ -51,7 +65,7 @@ body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSys
 </style>
 </head>
 <body>
-<div id="root"></div>
+<div id="phone"><div id="root"></div></div>
 <div id="toast"></div>
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
@@ -62,6 +76,7 @@ const name2team={};
 const teamOf=n=>name2team[n]||'';
 const inT=n=>!_tf||teamOf(n)===_tf;
 function esc(s){return (s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
+function colorOf(s){const cs=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5a9e','#2f6fb0'];let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return cs[h%cs.length];}
 function storedToken(){return localStorage.getItem('ops_token')||'';}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',1800);}
 function showLogin(err){
@@ -81,7 +96,7 @@ function fmtTs(t){if(!t)return'';const d=new Date(t.replace(' ','T')+(t.includes
 async function load(tok){
  root.innerHTML='<div class="empty">加载中…</div>';
  try{
-  const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),20000);
+  const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),25000);
   const r=await fetch(SUMMARY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok}),signal:ctrl.signal});
   clearTimeout(to);
   const d=await r.json();
@@ -95,37 +110,41 @@ async function review(type,subId,action,extra){
  try{
   const r=await fetch(REVIEW_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   const d=await r.json();
-  if(!r.ok||!d.ok)throw new Error(d.error||'失败');
+  if(!r.ok||!d.ok)throw new Error(String(d.error||'失败').replace(/^Error: /,''));
   toast(action==='approve'?'已通过并生效':'已驳回');
   load(storedToken());
  }catch(e){toast(e.message);}}
-function tagFor(a){const m={'已拉群':'g','已互关':'b','已流失':'r','已回复':'g','已私信':'b','已关注':'g','已复购':'a'};
- return `<span class="tag ${m[a]||''}">${a}</span>`;}
+function tagFor(a){const m={'已拉群':'t-green','已互关':'t-blue','已流失':'t-red','已回复':'t-green','已私信':'t-blue','已关注':'t-green','已复购':'t-amber'};
+ return `<span class="tag ${m[a]||'t-gray'}">${a}</span>`;}
+function nameOf(x){return x.nick||('sec…'+x.sec_tail);}
 function todoHtml(){
  let h='';
  const gs=(D.grades||[]).filter(g=>inT(g.anchor));
  if(gs.length){
-  h+=`<div class="sec-t">等级建议待审批<span class="cnt">${gs.length} 条</span></div>`;
-  h+=gs.map((g,i)=>`<div class="todo"><div class="who">${esc(g.nick||('sec…'+g.sec_tail))}　<span class="tag a">${g.grade}</span></div>
-   <div class="meta">${esc(g.anchor)} 建议 · ${fmtTs(g.ts)}</div>
+  h+=`<div class="sec-title"><h3>等级建议待审批</h3><span class="more">${gs.length} 条</span></div>`;
+  h+=gs.map((g,i)=>`<div class="todo"><div class="who">${esc(nameOf(g))}　<span class="tag t-amber">建议 ${g.grade}</span></div>
+   <div class="meta">${esc(g.anchor)} · ${fmtTs(g.ts)}</div>
    ${g.note?`<div class="txt">${esc(g.note)}</div>`:''}
-   <div class="acts"><button class="btn ok sm" data-rv="grade|${g.sub_id}|approve|${i}">通过（写入档案库）</button>
-   <button class="btn no sm" data-rv="grade|${g.sub_id}|reject|${i}">驳回</button></div></div>`).join('');
+   <div class="acts"><button class="btn ok" data-rv="grade|${g.sub_id}|approve|${i}">通过 · 写入档案库</button>
+   <button class="btn no" data-rv="grade|${g.sub_id}|reject|${i}">驳回</button></div></div>`).join('');
  }
  const ap=(D.appeals||[]).filter(g=>inT(g.anchor));
  if(ap.length){
-  h+=`<div class="sec-t">归属异议待处理<span class="cnt">${ap.length} 条</span></div>`;
+  h+=`<div class="sec-title"><h3>归属异议待处理</h3><span class="more">${ap.length} 条</span></div>`;
   h+=ap.map((g,i)=>{
    const opts=(D.anchors||[]).map(a=>`<option value="${a.gid}|${a.tid}" ${a.name===g.anchor?'selected':''}>${a.team.replace('梦华录','')}·${a.name}</option>`).join('');
-   return `<div class="todo"><div class="who">${esc(g.nick||('sec…'+g.sec_tail))}</div>
+   return `<div class="todo"><div class="who">${esc(nameOf(g))}</div>
    <div class="meta">${esc(g.anchor)} 提交 · ${fmtTs(g.ts)}</div>
    <div class="txt">${esc(g.appeal)}</div>
    <div class="acts"><select id="ovr${i}">${opts}</select>
-   <button class="btn ok sm" data-rv="appeal|${g.sub_id}|approve|${i}">通过（改主归属）</button>
-   <button class="btn no sm" data-rv="appeal|${g.sub_id}|reject|${i}">驳回</button></div></div>`;}).join('');
+   <button class="btn ok" data-rv="appeal|${g.sub_id}|approve|${i}">通过 · 改主归属</button>
+   <button class="btn no" data-rv="appeal|${g.sub_id}|reject|${i}">驳回</button></div></div>`;}).join('');
  }
  return h;
 }
+function urow(x,right,sub){return `<div class="urow"><div class="avatar" style="background:${colorOf(x.nick||x.sec)}">${(x.nick||'?')[0]||'?'}</div>
+ <div class="u-main"><div class="u-line1"><span class="u-nick">${esc(nameOf(x))}</span><span class="u-t">${fmtTs(x.ts)}</span></div>
+ <div class="u-tags">${sub||''}</div>${x.note?`<div class="u-note">${esc(x.note)}</div>`:''}</div></div>`;}
 function render(){
  Object.keys(name2team).forEach(k=>delete name2team[k]);(D.anchors||[]).forEach(a=>name2team[a.name]=a.team);
  const teams=['梦华录寻音','梦华录行舟','梦华录水月'];
@@ -133,37 +152,42 @@ function render(){
  let anchors=[...new Set((D.subs||[]).map(s=>s.anchor))];
  if(_tf)anchors=anchors.filter(a=>teamOf(a)===_tf);
  const chipHtml=['',...anchors].map(a=>`<span class="chip${a===_af?' on':''}" data-af="${a}">${a||'全部'}</span>`).join('');
- const inT=n=>!_tf||teamOf(n)===_tf;
  const subs=(D.subs||[]).filter(s=>(!_af||s.anchor===_af)&&inT(s.anchor));
- const subsHtml=subs.length?subs.map(s=>`<div class="row"><span class="t">${fmtTs(s.ts)}</span>
-  <span class="a">${esc(s.anchor)}</span><span class="n">${esc(s.nick||('sec…'+s.sec_tail))}</span>
-  <span class="x">${(s.actions||[]).map(tagFor).join('')}${s.actions&&s.actions.length&&s.note?' ':''}${esc(s.note||'')}</span></div>`).join('')
+ const subsHtml=subs.length?subs.map(s=>urow(s,'',`${(s.actions||[]).map(tagFor).join('')}<span class="tag t-gray">${esc(s.anchor)}</span>${s.kind!=='日常维护'?`<span class="tag t-blue">${esc(s.kind)}</span>`:''}`)).join('')
   :'<div class="empty">还没有回传流水</div>';
- const flagsHtml=(D.flags||[]).filter(f=>inT(f.anchor)).length?D.flags.filter(f=>inT(f.anchor)).map(f=>`<div class="row"><span class="t">${fmtTs(f.ts)}</span>
-  <span class="a">${esc(f.anchor)}</span><span class="n">sec…${f.sec_tail}</span><span class="x">${tagFor(f.flag)}</span></div>`).join('')
+ const fl=(D.flags||[]).filter(f=>inT(f.anchor));
+ const flagsHtml=fl.length?fl.map(f=>urow(f,'',tagFor(f.flag)+`<span class="tag t-gray">${esc(f.anchor)}</span>`)).join('')
   :'<div class="empty">还没有点亮标记</div>';
- const stHtml=(D.status||[]).filter(f=>inT(f.anchor)).length?D.status.filter(f=>inT(f.anchor)).map(f=>`<div class="row"><span class="t">${fmtTs(f.ts)}</span>
-  <span class="a">${esc(f.anchor)}</span><span class="n">sec…${f.sec_tail}</span><span class="x">${tagFor(f.status)}</span></div>`).join('')
+ const st=(D.status||[]).filter(f=>inT(f.anchor));
+ const stHtml=st.length?st.map(f=>urow(f,'',tagFor(f.status)+`<span class="tag t-gray">${esc(f.anchor)}</span>`)).join('')
   :'<div class="empty">还没有状态记录</div>';
  const todo=todoHtml();
- root.innerHTML=`<div class="wrap"><div class="hd"><div><h1>画像助手 · 运营版</h1>
-  <div class="sub">${esc(D.scope||'运营')} · 实时出自云端 · 审批即刻生效</div></div>
-  <button class="btn ghost" id="rf">刷新</button></div>
+ root.innerHTML=`<div class="topbar"><div class="avatar">运</div><div><div class="name">画像助手 · 运营版</div>
+  <div class="meta">${esc(D.scope||'运营')} · 实时数据</div></div><button class="rf" id="rf">刷新</button></div>
+  <div class="wrap">
   ${todo}
-  <div class="sec-t">回传流水<span class="cnt">按团 / 主播过滤</span></div>
+  <div class="sec-title"><h3>回传流水</h3><span class="more">按团 / 主播过滤</span></div>
   <div class="chips">${tchipHtml}</div>
   <div class="chips">${chipHtml}</div>
-  <div class="card">${subsHtml}</div>
-  <div class="sec-t">持久点亮（已拉群 / 已互关）</div><div class="card">${flagsHtml}</div>
-  <div class="sec-t">跟进状态（各主播视角）</div><div class="card">${stHtml}</div>
-  <div class="empty">运营版 v2 · 明细与归档在 Notion 回传库</div></div>`;
+  <div class="tier"><div class="t-head"><div class="t-ico" style="background:var(--blue-bg);color:var(--blue)">流</div>
+   <div><div class="t-name">维护动作明细</div><div class="t-sub">最近 ${subs.length} 条 · 实时</div></div>
+   <div class="t-cnt">${subs.length}<small> 条</small></div></div>${subsHtml}</div>
+  <div class="sec-title"><h3>持久点亮</h3><span class="more">已拉群 / 已互关</span></div>
+  <div class="tier"><div class="t-head"><div class="t-ico" style="background:var(--green-bg);color:var(--green)">亮</div>
+   <div><div class="t-name">点亮清单</div><div class="t-sub">点亮后一直亮，人工取消才灭</div></div>
+   <div class="t-cnt">${fl.length}<small> 条</small></div></div>${flagsHtml}</div>
+  <div class="sec-title"><h3>跟进状态</h3><span class="more">各主播视角</span></div>
+  <div class="tier"><div class="t-head"><div class="t-ico" style="background:var(--amber-bg);color:var(--amber)">态</div>
+   <div><div class="t-name">状态总览</div><div class="t-sub">每主播对每个用户的最新进度</div></div>
+   <div class="t-cnt">${st.length}<small> 条</small></div></div>${stHtml}</div>
+  <div class="foot">运营版 v2.3 · 明细与归档在 Notion 回传库</div></div>`;
  document.getElementById('rf').onclick=()=>load(storedToken());
  document.querySelectorAll('[data-af]').forEach(c=>c.onclick=()=>{_af=c.dataset.af;render();});
  document.querySelectorAll('[data-tf]').forEach(c=>c.onclick=()=>{_tf=c.dataset.tf;_af='';render();});
  document.querySelectorAll('[data-rv]').forEach(b=>b.onclick=()=>{
   const [type,subId,action,idx]=b.dataset.rv.split('|');
-  if(type==='grade'){const g=D.grades[+idx];review(type,subId,action,{sec:g.sec,grade:g.grade,anchor:g.anchor});}
-  else{const g=D.appeals[+idx];const sel=document.getElementById('ovr'+idx).value.split('|');
+  if(type==='grade'){const g=(D.grades||[]).filter(g=>inT(g.anchor))[+idx];review(type,subId,action,{sec:g.sec,grade:g.grade,anchor:g.anchor});}
+  else{const g=(D.appeals||[]).filter(g=>inT(g.anchor))[+idx];const sel=document.getElementById('ovr'+idx).value.split('|');
    review(type,subId,action,{sec:g.sec,gid:sel[0],tid:sel[1],anchor:g.anchor});}
  });}
 const t0=new URLSearchParams(location.search).get('t');
