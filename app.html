@@ -218,7 +218,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v33';
+const APP_VERSION='v34';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -262,6 +262,15 @@ function returnedBanner(){const r=DATA.returned;if(!r||!r.length)return '';
  const names=r.slice(0,5).map(s=>DATA.users[s].n).join('、');
  return `<div class="cross" style="border-left:4px solid var(--amber)">${RETURNICO}
   <div class="c-txt"><b>${r.length} 位「已流失」老客今天回来给你刷礼物了</b>（${names}${r.length>5?' 等':''}），已标记<b>回归</b>，重点走心接待、给足独宠感。</div></div>`;}
+function mysteryBlock(){const m=DATA.mystery;if(!m||!m.length)return '';
+ const rows=m.map(x=>`<div class="urow" style="cursor:default"><div class="avatar" style="background:#6b7280">?</div>
+  <div class="u-main"><div class="u-line1"><span class="u-nick">🎭 ${escapeHtml(x.n)}</span><span class="u-val">${yuan(x.v)}</span></div>
+  <div class="u-tags">${x.ago?`<span class="tag t-amber">${x.ago}天前来过</span>`:'<span class="tag t-gray">首次出现</span>'}</div>
+  ${x.fp?`<div style="font-size:11px;color:var(--ink3);line-height:1.5">${escapeHtml(x.fp)}</div>`:''}</div></div>`).join('');
+ const foot=m.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${m.length} 个 ▾</span></div>`:'';
+ return `<div class="tier closed"><div class="t-head"><div class="t-ico" style="background:var(--gray-bg);color:var(--ink2)">🎭</div>
+  <div><div class="t-name">神秘人</div><div class="t-sub">匿名送礼 · 按行为指纹认老朋友</div></div>
+  <div class="t-cnt">${m.length}<small> 个</small></div></div><div class="trows">${rows}</div>${foot}</div>`;}
 function viewToday(){const c=DATA.counts,ch=DATA.churn;
  const cross=DATA.crossToday.length?`<div class="cross">${GLOBE}
   <div class="c-txt">今天有 <b>${DATA.crossToday.length} 位跨团用户</b>给你送礼，也在其他团消费，注意客情；<b>不显示对方归属</b>。</div></div>`:'';
@@ -274,7 +283,7 @@ function viewToday(){const c=DATA.counts,ch=DATA.churn;
   <div class="sec-title"><h3>今日维护</h3><span class="more">按对我消费分层</span></div>${cross}${returnedBanner()}
   ${tier('l3','L3','重点维护','消费 > 99 元 · 今天必聊',DATA.l3)}
   ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2)}
-  ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1)}${greetBlock()}${churn}</div></div>`;}
+  ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1)}${greetBlock()}${mysteryBlock()}${churn}</div></div>`;}
 const TIERS=['S','A','B','C','D',''];
 function tierCounts(){const c={};TIERS.forEach(t=>c[t]=0);
  for(const s in DATA.users){const u=DATA.users[s];if(!u.mine)continue;const t=u.t||'';c[t]=(c[t]||0)+1;}return c;}
