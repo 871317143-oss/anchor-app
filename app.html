@@ -213,7 +213,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v30';
+const APP_VERSION='v31';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -272,7 +272,7 @@ function viewToday(){const c=DATA.counts,ch=DATA.churn;
   ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1)}${greetBlock()}${churn}</div></div>`;}
 const TIERS=['S','A','B','C','D',''];
 function tierCounts(){const c={};TIERS.forEach(t=>c[t]=0);
- for(const s in DATA.users){const t=DATA.users[s].t||'';c[t]=(c[t]||0)+1;}return c;}
+ for(const s in DATA.users){const u=DATA.users[s];if(!u.mine)continue;const t=u.t||'';c[t]=(c[t]||0)+1;}return c;}
 function viewSearch(){return `<div class="view" id="v-search">${topbar()}<div class="wrap">
   <div class="chips" id="tierChips" style="margin:2px 0 10px"></div>
   <div id="sresult"></div></div></div>`;}
@@ -284,9 +284,9 @@ function renderList(t){
  const chips=document.getElementById('tierChips');
  if(chips)chips.innerHTML=TIERS.map(x=>`<span class="chip${x===t?' on':''}" data-t="${x}">${x||'未评级'} ${cc[x]||0}</span>`).join('');
  if(chips)chips.querySelectorAll('.chip').forEach(c=>c.onclick=()=>renderList(c.dataset.t));
- let list=Object.keys(DATA.users).filter(s=>(DATA.users[s].t||'')===t);
+ let list=Object.keys(DATA.users).filter(s=>(DATA.users[s].t||'')===t&&DATA.users[s].mine);
  list.sort((a,b)=>(DATA.users[b].sv||0)-(DATA.users[a].sv||0));
- if(!list.length){box.innerHTML='<div class="empty">这个等级还没有用户</div>';return;}
+ if(!list.length){box.innerHTML='<div class="empty">这个等级还没有属于你的用户</div>';return;}
  const total=list.length;list=list.slice(0,200);
  box.innerHTML=`<div class="slist">${list.map(s=>{const u=DATA.users[s];return `<div class="srow" data-sec="${s}">
   <div class="avatar" style="background:${colorOf(u.n||s)};width:36px;height:36px;font-size:14px">${(u.n||'?')[0]}</div>
@@ -530,8 +530,11 @@ function markFeedbackDone(sec,kind,actions){if(!sec)return;var st=fbStatus(kind,
    var ex=r.querySelector('.done-tag');if(ex)ex.remove();
    r.querySelector('.u-val').insertAdjacentHTML('beforebegin',fbTagHTML(st));
  });}
-function isFeedbackDone(sec){return !!loadFbDone()[sec];}
-function doneTagHTML(sec){var st=loadFbDone()[sec];return st?fbTagHTML(st):'';}
+function isFeedbackDone(sec){return !!(_fbCloud[sec]||loadFbDone()[sec]);}
+function doneTagHTML(sec){
+ const c=_fbCloud[sec];
+ if(c)return fbTagHTML(fbStatus(c.kind,c.actions));
+ var st=loadFbDone()[sec];return st?fbTagHTML(st):'';}
 function doSubmit(body,ok){
  body.sub_id=storedToken()+'_'+(body.sec||'all')+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
  const btn=document.getElementById('sheetSubmit');if(btn){btn.disabled=true;btn.textContent='提交中…';}
@@ -626,13 +629,16 @@ function showUpdateBar(){
 const AI_BASE='https://fb.menghualu.com.co/api/ai';
 const FOLLOW_URL='https://fb.menghualu.com.co/api/follow';
 // 进页实时拉跟进状态/持久点亮（D1），不等每场重建（2026-10-03）
+let _fbCloud={};   // 云端「今日已回传」：sec -> {kind, actions}（任何设备可见）
 async function loadLiveFollow(){
- try{const r=await fetch(FOLLOW_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken()})});
+ try{const r=await fetch(FOLLOW_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({token:storedToken(),day:DATA.anchor.date})});
   const d=await r.json();if(!d||!d.ok)return;
   let dirty=false;
   for(const sec in (d.status||{})){const u=DATA.users[sec];if(u&&u.fs!==d.status[sec]){u.fs=d.status[sec];u.lost=d.status[sec]==='已流失'?1:0;dirty=true;}}
   for(const sec in (d.flags||{})){const u=DATA.users[sec];if(u&&JSON.stringify(u.ff||[])!==JSON.stringify(d.flags[sec])){u.ff=d.flags[sec];dirty=true;}}
-  if(dirty)render();
+  if(d.done)_fbCloud=d.done;
+  if(dirty||d.done)render();
  }catch(e){}}
 async function aiPost(path,body){
   const r=await fetch(AI_BASE+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
