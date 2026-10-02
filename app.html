@@ -209,7 +209,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v22';
+const APP_VERSION='v23';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -290,18 +290,19 @@ function viewMe(){const a=DATA.anchor,c=DATA.counts,total=Object.keys(DATA.users
   <div class="me-row"><span>今日回归老客</span><b>${c.ret} 人</b></div></div>
   <div style="padding:16px 2px 0"><button class="btn btn-ghost" data-act="logout" style="width:100%">退出登录 / 换账号</button></div>
   <div class="empty" style="padding:24px 10px 10px">版本 ${APP_VERSION}　数据每场下播后自动更新<br>口径只与你自己相关</div></div></div>`;}
-function pvNote(sec){const v=localStorage.getItem('note_'+sec);
- return v?`<div class="advice" style="background:var(--gray-bg)"><div class="at" style="color:var(--ink2)">我的备注（仅本手机）</div><p style="color:var(--ink2)">${v.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</p></div>`:'';}
+function pvNote(sec){const u=DATA.users[sec]||{};const v=localStorage.getItem('note_'+sec)||u.anote||'';
+ const cloud=localStorage.getItem('note_'+sec)?'':'（云端）';
+ return v?`<div class="advice" style="background:var(--gray-bg)"><div class="at" style="color:var(--ink2)">我的备注${cloud}</div><p style="color:var(--ink2)">${v.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</p></div>`:'';}
 function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
  const gap=u.last?daysBetween(u.last,DATA.anchor.date):'';
  let tags=[gradeTag(u)];if(u.nf)tags.push(tag('red','新客'));
  if(u.cr)tags.push(u.mine?tag('green','跨团·归我'):tag('blue','跨团'));
  if(u.ret)tags.push(tag('amber','回归用户'));
  if(u.w>1200)tags.push(tag('green','高陪伴'));if(u.ch)tags.push(tag(u.ch==='A'?'red':u.ch==='B'?'amber':'gray',churnLab(u.ch)));
- const info=[u.gr&&('荣耀'+u.gr),u.l,u.g&&(u.g===1?'男':'女'),u.a&&(u.a+'岁')].filter(x=>x).join(' · ');
+ const info=[u.gr&&('荣耀'+u.gr),u.fl&&('灯牌'+u.fl),u.l,u.g&&(u.g===1?'男':'女'),u.a&&(u.a+'岁')].filter(x=>x).join(' · ');
  return `<div class="pview show" id="pv" data-sec="${sec}"><div class="pv-back" data-back="1">‹ 返回</div><div class="wrap">
   <div class="profile"><div class="head">
-  <div class="avatar" style="background:${colorOf(u.n||sec)};width:48px;height:48px;font-size:19px">${(u.n||'?')[0]}</div>
+  <div class="avatar" style="position:relative;background:${colorOf(u.n||sec)};width:48px;height:48px;font-size:19px">${(u.n||'?')[0]}${u.av?`<img src="${escapeHtml(u.av)}" style="position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.remove()">`:''}</div>
   <div class="h-main"><div class="nick">${u.n}</div><div class="tags">${tags.join('')}</div>
   <div class="grade">${info}</div></div></div>
   <div class="grid">
@@ -322,11 +323,18 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
   :`<div class="own" style="color:var(--blue)"><span class="tag t-blue"><span class="dot"></span>跨团用户</span><span>主归属在<b>别家</b>，不可跳转主页</span></div>`}
   ${u.birth?`<div class="pv-info"><span class="pvi-label">生日</span><span>${escapeHtml(String(u.birth).slice(0,10))}</span></div>`:''}
   ${u.former?`<div class="pv-info"><span class="pvi-label">曾用名</span><span>${escapeHtml(u.former)}</span></div>`:''}
+  ${u.mbti?`<div class="pv-info"><span class="pvi-label">MBTI</span><span>${escapeHtml(u.mbti)}</span></div>`:''}
+  ${u.taboo?`<div class="pv-info"><span class="pvi-label">禁忌</span><span style="color:var(--red)">${escapeHtml(u.taboo)}</span></div>`:''}
+  ${u.fs0?`<div class="pv-info"><span class="pvi-label">首次到场</span><span>${escapeHtml(u.fs0)}${u.first&&u.first!==u.fs0?`（首次消费 ${escapeHtml(u.first)}）`:''}</span></div>`:''}
+  ${u.gd?`<div class="pv-info"><span class="pvi-label">等级变化</span><span>${escapeHtml(u.gd)}</span></div>`:''}
+  ${u.rh?`<div class="pv-info"><span class="pvi-label">消费节奏</span><span>${escapeHtml(u.rh)}</span></div>`:''}
+  ${u.opnote?`<div class="pv-info"><span class="pvi-label">运营备注</span><span>${escapeHtml(u.opnote)}</span></div>`:''}
+  ${u.priv?`<div class="pv-info"><span class="pvi-label">主页</span><span style="color:var(--amber)">对方主页不可见（私密/异常账号），不要跳转</span></div>`:''}
   <div class="pv-spacer"></div>
   <div class="act">
-  ${u.mine
+  ${(u.mine&&!u.priv)
   ?`<button class="btn btn-primary" data-act="dm">私信</button>`
-  :`<button class="btn btn-ghost" disabled style="opacity:.5;cursor:not-allowed">归属别家</button>`}
+  :`<button class="btn btn-ghost" disabled style="opacity:.5;cursor:not-allowed">${u.priv?'主页不可见':'归属别家'}</button>`}
   <button class="btn btn-primary" data-act="feedback">回传</button>
   <button class="btn btn-ghost" data-act="correct">纠错</button></div>
   </div></div></div>`;}
@@ -354,14 +362,22 @@ function openNoteEditor(sec){
   <button id="noteDel" class="btn btn-danger" style="flex:1">删除</button>
   <button id="noteSave" class="btn btn-primary" style="flex:1">保存</button></div>`;
  pv.querySelector('.act').before(box);
- const ta=box.querySelector('#noteTA');const oldv=localStorage.getItem('note_'+sec);ta.value=oldv||'';
+ const ta=box.querySelector('#noteTA');
+ const u0=DATA.users[sec]||{};
+ const oldv=localStorage.getItem('note_'+sec)||u0.anote||'';ta.value=oldv;
  box.querySelector('#noteDel').style.display=oldv?'':'none';
  setTimeout(()=>{try{ta.focus();}catch(e){}},60);
  box.querySelector('#noteCancel').onclick=()=>box.remove();
- box.querySelector('#noteDel').onclick=()=>{localStorage.removeItem('note_'+sec);closeProfile();openProfile(sec);};
- box.querySelector('#noteSave').onclick=()=>{const v=ta.value;if(v.trim())localStorage.setItem('note_'+sec,v);else localStorage.removeItem('note_'+sec);closeProfile();openProfile(sec);};}
+ // 2026-10-03：备注除本机外同步上云（用户卡「主播备注」），换手机/AI 军师都能读到
+ box.querySelector('#noteDel').onclick=()=>{localStorage.removeItem('note_'+sec);syncNote(sec,'');closeProfile();openProfile(sec);};
+ box.querySelector('#noteSave').onclick=()=>{const v=ta.value;if(v.trim())localStorage.setItem('note_'+sec,v);else localStorage.removeItem('note_'+sec);syncNote(sec,v.trim());closeProfile();openProfile(sec);};}
 /* ============ 主播回传（上云） ============ */
 const FB_URL='https://fb.menghualu.com.co/api/feedback';
+const NOTE_URL='https://fb.menghualu.com.co/api/note';
+function syncNote(sec,v){
+ fetch(NOTE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken(),sec,note:v})})
+ .then(r=>r.json()).then(d=>{if(d&&d.ok)toast('备注已同步云端');else toast('备注同步失败，仅保存在本机');})
+ .catch(()=>{toast('离线中：备注仅保存在本机，联网后请再存一次');});}
 function escapeHtml(s){return (s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
 function bindChipGroup(box,multi){
  box.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
@@ -405,7 +421,7 @@ function openFeedbackSheet(sec){
   <div class="field"><label>客情备注（主要填写区）</label>
    <textarea id="fbNote" rows="3" placeholder="聊到的近况、关系进展…">${escapeHtml(localNote)}</textarea></div>
   <div class="fb-more">
-   <div class="fb-more-toggle" id="fbMoreToggle">更多信息：联系方式 / 老家 / 爱好 / 职业 / 地址 / 生日　▾</div>
+   <div class="fb-more-toggle" id="fbMoreToggle">更多信息：联系方式 / 老家 / 爱好 / 职业 / 地址 / 禁忌 / 生日　▾</div>
    <div class="fb-more-body" id="fbMoreBody" style="display:none">
     <div class="field"><label>联系方式（微信/手机）</label>
      <input id="fbContact" type="text" value="${pv('contact')}" placeholder="选填，对方愿意给的联系方式"></div>
@@ -419,6 +435,8 @@ function openFeedbackSheet(sec){
      <input id="fbAddress" type="text" value="${pv('address')}" placeholder="选填，所在城市/收货地址"></div>
     <div class="field"><label>关键事件（直播中）</label>
      <textarea id="fbKeyevent" rows="2" placeholder="选填，重要的事/关系节点/承诺">${pv('keyevent')}</textarea></div>
+    <div class="field"><label>禁忌 / 雷区（绝不能提的话题）</label>
+     <input id="fbTaboo" type="text" value="${pv('taboo')}" placeholder="选填，如家庭矛盾 / 前任 / 某主播"></div>
     <div class="field"><label>用户诉求</label>
      <textarea id="fbDemand" rows="2" placeholder="对方想要什么、有什么问题"></textarea></div>
     <div class="field"><label>生日</label><input id="fbBirth" type="date" value="${pv('birth')}"></div>
@@ -429,7 +447,7 @@ function openFeedbackSheet(sec){
  s.querySelector('#fbMoreToggle').onclick=()=>{
    const body=s.querySelector('#fbMoreBody');const hide=body.style.display!=='none';
    body.style.display=hide?'none':'block';
-   s.querySelector('#fbMoreToggle').textContent=hide?'更多信息：联系方式 / 老家 / 爱好 / 职业 / 地址 / 生日　▾':'收起　▴';
+   s.querySelector('#fbMoreToggle').textContent=hide?'更多信息：联系方式 / 老家 / 爱好 / 职业 / 地址 / 禁忌 / 生日　▾':'收起　▴';
    if(!hide){const sc=document.getElementById('sheet');if(sc)sc.querySelector('.sheet-card').scrollTop=0;}
  };
  s.querySelector('#sheetSubmit').onclick=()=>{
@@ -445,9 +463,10 @@ function openFeedbackSheet(sec){
   const keyevent=gv('#fbKeyevent');
   const address=gv('#fbAddress');
   const job=gv('#fbJob');
-  if(!actions.length&&!note&&!contact&&!demand&&!birthday&&!hometown&&!hobby&&!keyevent&&!address&&!job&&!grade){toast('请至少填写一项');return;}
+  const taboo=gv('#fbTaboo');
+  if(!actions.length&&!note&&!contact&&!demand&&!birthday&&!hometown&&!hobby&&!keyevent&&!address&&!job&&!grade&&!taboo){toast('请至少填写一项');return;}
   const body={token:storedToken(),sec,room_id:DATA.anchor.room_id||'',kind:'日常维护',actions,grade,note,contact,demand,birthday,
-    hometown,hobby,keyevent,address,job};
+    hometown,hobby,keyevent,address,job,taboo};
   doSubmit(body,()=>{if(note)localStorage.setItem('note_'+sec,note);closeSheet();});};}
 function openCorrectSheet(sec){
  const u=DATA.users[sec];
@@ -513,6 +532,7 @@ document.addEventListener('click',e=>{
  const pv=document.getElementById('pv');if(!pv)return;const k=pv.dataset.sec;
  if(act==='dm'){const u=DATA.users[k];
   if(!u||!u.mine){toast('主归属在别家，不可跳转 TA 主页');return;}
+  if(u.priv){toast('对方主页不可见（私密/异常账号）');return;}
   window.location.href='https://www.douyin.com/user/'+k;return;}
  if(act==='feedback'){openFeedbackSheet(k);return;}
  if(act==='correct'){openCorrectSheet(k);return;}
