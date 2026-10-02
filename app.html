@@ -218,7 +218,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v35';
+const APP_VERSION='v36';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -693,9 +693,10 @@ function aiPanel(sec){
   return `<div class="ai-card" id="aiCard" data-sec="${sec}">
    <div class="ai-head">小梦救我 · 基于 TA 的档案</div>
    <div class="ai-nav">
-    <button class="ai-tab" data-ai="strategy">作战建议</button>
+    <button class="ai-tab" data-ai="homepage">主页破冰</button>
+    <button class="ai-tab" data-ai="chat">私信维护</button>
    </div>
-   <div class="ai-body" id="aiBody"><div class="ai-ph">点「作战建议」，小梦帮你分析 TA 怎么维护</div></div>
+   <div class="ai-body" id="aiBody"><div class="ai-ph">主页破冰：发 TA 的主页截图<br>私信维护：发你们的聊天截图</div></div>
   </div>`;
 }
 function bindAiPanel(sec){
@@ -703,15 +704,62 @@ function bindAiPanel(sec){
   const box=card.querySelector('#aiBody');
   card.querySelectorAll('.ai-tab').forEach(t=>t.onclick=()=>{
     card.querySelectorAll('.ai-tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');
-    const k=t.dataset.ai;box.innerHTML='<div class="ai-ph">军师思考中…</div>';let p;
-    if(k==='strategy')p=aiShowStrategy(sec,box);
+    const k=t.dataset.ai;let p;
+    box.innerHTML='<div class="ai-ph">上传截图后小梦开始分析</div>';
+    if(k==='homepage')p=aiShowFive(sec,box,'homepage');
+    else if(k==='chat')p=aiShowFive(sec,box,'chat');
+    else if(k==='strategy')p=aiShowStrategy(sec,box);
     else if(k==='opening')p=aiShowOpening(sec,box);
     else if(k==='extract')p=aiShowExtract(sec,box);
     else if(k==='analyze')p=aiShowAnalyze(sec,box);
     else if(k==='reply')p=aiShowReply(sec,box);
     else if(k==='timeline')p=aiShowTimeline(sec,box);
-    if(p)p.catch(e=>{box.innerHTML='<div class="ai-err">'+escapeHtml(String(e.message||e))+'</div>';});
+    if(p&&p.catch)p.catch(e=>{box.innerHTML='<div class="ai-err">'+escapeHtml(String(e.message||e))+'</div>';});
   });
+}
+// 小梦救我·五段式（主页破冰/私信维护）：截图 → 五段分析 + 三套方案可复制
+function aiShowFive(sec,box,mode){
+ const isHome=mode==='homepage';
+ box.innerHTML=`<label class="ai-up"><input id="aiFileIn" type="file" accept="image/*" multiple>${isHome?'点这里选 TA 的主页截图（顶部资料/作品网格/喜欢页，可多张）':'点这里选聊天截图（可多张，建议按顺序）'}</label>
+  ${isHome?'':'<input id="aiQ" type="text" placeholder="选填：这次想达到的目的（如：让他今天来直播间）" style="width:100%;margin-top:8px;border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:13px;font-family:inherit;outline:none">'}
+  <div id="aiFiveBox"></div>`;
+ const input=box.querySelector('#aiFileIn');const fb=box.querySelector('#aiFiveBox');
+ input.onchange=async()=>{
+  const fs=[...input.files];if(!fs.length)return;
+  fb.innerHTML='<div class="ai-ph">小梦读图中…（图多稍等）</div>';
+  try{const images=await Promise.all(fs.map(fileToDataURL));
+    const q=box.querySelector('#aiQ');
+    const r=await aiPost('/analyze',{token:storedToken(),sec,user:DATA.users[sec],images,mode,question:q?q.value.trim():''});
+    renderFive(fb,r,isHome);
+  }catch(e){fb.innerHTML='<div class="ai-err">'+escapeHtml(e.message)+'</div>';}
+ };
+}
+function fivePlansHtml(plans){
+ if(!plans||!plans.length)return '';
+ return plans.map((p,i)=>`<div class="ai-item"><div class="ai-st">${escapeHtml(p.style||'')}${p.style?' · ':''}${escapeHtml(p.name||'')}</div>
+  ${p.fit?`<div class="ai-txt" style="color:var(--ink3)">适用：${escapeHtml(p.fit)}</div>`:''}
+  ${p.desc?`<div class="ai-txt" style="color:var(--ink3)">${escapeHtml(p.desc)}</div>`:''}
+  <div class="ai-txt">${escapeHtml(p.script||'')}</div>
+  <div class="ai-acts"><button class="ai-cp" data-i="${i}">复制话术</button></div></div>`).join('');
+}
+function renderFive(box,r,isHome){
+ let h='';
+ if(isHome&&r.profile){
+  const p=r.profile;
+  h+=`<div class="ai-item"><div class="ai-st">画像速判</div><div class="ai-txt">${
+   [['年龄段',p.age],['性别',p.gender],['IP属地',p.loc],['职业线索',p.job],['兴趣爱好',p.hobby],['生活状态',p.life],['打赏潜力',p.potential]]
+   .filter(x=>x[1]).map(x=>`<div>· ${x[0]}：${escapeHtml(x[1])}</div>`).join('')}</div></div>`;
+  if(r.ammo&&r.ammo.length)h+=`<div class="ai-item"><div class="ai-st">破冰弹药库</div>${r.ammo.map(a=>`<div class="ai-txt">· ${escapeHtml(a.detail||'')}<span style="color:var(--ink3)">（${escapeHtml(a.why||'')}）</span></div>`).join('')}</div>`;
+ }
+ if(!isHome&&r.scene)h+=`<div class="ai-item"><div class="ai-st">局面速判</div><div class="ai-txt">${escapeHtml(r.scene)}</div></div>`;
+ if(!isHome&&r.read&&r.read.length)h+=`<div class="ai-item"><div class="ai-st">读心翻译</div>${r.read.map(x=>`<div class="ai-txt">他说「${escapeHtml(x.said||'')}」→ ${escapeHtml(x.means||'')}<span style="color:var(--ink3)">（${escapeHtml(x.point||'')}）</span></div>`).join('')}</div>`;
+ h+=`<div class="ai-item"><div class="ai-st">${isHome?'破冰话术 · 三套方案':'维护话术 · 三套方案'}（改成你的语气再发）</div></div>`+fivePlansHtml(r.plans);
+ if(r.taboos&&r.taboos.length)h+=`<div class="ai-item"><div class="ai-st">雷区警报</div>${r.taboos.map(x=>`<div class="ai-txt" style="color:var(--red)">⚠ ${escapeHtml(x)}</div>`).join('')}</div>`;
+ if(r.next&&r.next.length)h+=`<div class="ai-item"><div class="ai-st">后续推演</div>${r.next.map(x=>`<div class="ai-txt">若${escapeHtml(x.reaction||'')}→ ${escapeHtml(x.reply||'')}</div>`).join('')}</div>`;
+ if(r.hook)h+=`<div class="ai-item"><div class="ai-st">埋钩</div><div class="ai-txt">${escapeHtml(r.hook)}</div></div>`;
+ box.innerHTML=h||'<div class="ai-ph">没生成，换张截图重试</div>';
+ const plans=r.plans||[];
+ box.querySelectorAll('.ai-cp').forEach(b=>b.onclick=()=>{copyText(plans[+b.dataset.i].script||'');toast('已复制，改成你的语气再发');});
 }
 // 维护军师·作战建议（行舟灰度）：军师只给判断和建议，话术由主播自己说
 async function aiShowStrategy(sec,box){
