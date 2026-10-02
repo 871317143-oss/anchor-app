@@ -213,7 +213,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v29';
+const APP_VERSION='v30';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -496,9 +496,11 @@ function openFeedbackSheet(sec){
   const job=gv('#fbJob');
   const taboo=gv('#fbTaboo');
   if(!actions.length&&!note&&!contact&&!demand&&!birthday&&!hometown&&!hobby&&!keyevent&&!address&&!job&&!grade&&!taboo){toast('请至少填写一项');return;}
-  const body={token:storedToken(),sec,room_id:DATA.anchor.room_id||'',kind:'日常维护',actions,grade,note,contact,demand,birthday,
+  const body={token:storedToken(),sec,nick:u.n||'',room_id:DATA.anchor.room_id||'',kind:'日常维护',actions,grade,note,contact,demand,birthday,
     hometown,hobby,keyevent,address,job,taboo};
-  doSubmit(body,()=>{if(note)localStorage.setItem('note_'+sec,note);closeSheet();});};}
+  doSubmit(body,()=>{if(note)localStorage.setItem('note_'+sec,note);
+   const u2=DATA.users[sec];if(u2&&actions.length){u2.ff=u2.ff||[];for(const f of['已拉群','已互关'])if(actions.includes(f)&&!u2.ff.includes(f))u2.ff.push(f);}
+   closeSheet();if(document.getElementById('pv')){closeProfile();openProfile(sec);}});};}
 function openCorrectSheet(sec){
  const u=DATA.users[sec];
  const s=openSheet(`归属纠错 · ${u.n}`,
@@ -596,7 +598,7 @@ function showLogin(err){
  btn.onclick=go;code.onkeydown=e=>{if(e.key==='Enter')go();};setTimeout(()=>code.focus(),60);}
 function loadData(tok){
  fetch(`data/${tok}.json`).then(r=>{if(!r.ok)throw 0;return r.json();}).then(d=>{DATA=d;
-  document.title='画像·'+d.anchor.name;root.insertAdjacentHTML('afterend',TABBAR);render();})
+  document.title='画像·'+d.anchor.name;root.insertAdjacentHTML('afterend',TABBAR);render();loadLiveFollow();})
  .catch(()=>{localStorage.removeItem('anchor_token');
    showLogin('访问码无效或已失效，请重新输入或找运营补发');});
  setupSW();}
@@ -622,6 +624,16 @@ function showUpdateBar(){
  document.getElementById('phone').appendChild(_updateBar);}
 /* ============ AI 客情助手（动态 API） ============ */
 const AI_BASE='https://fb.menghualu.com.co/api/ai';
+const FOLLOW_URL='https://fb.menghualu.com.co/api/follow';
+// 进页实时拉跟进状态/持久点亮（D1），不等每场重建（2026-10-03）
+async function loadLiveFollow(){
+ try{const r=await fetch(FOLLOW_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken()})});
+  const d=await r.json();if(!d||!d.ok)return;
+  let dirty=false;
+  for(const sec in (d.status||{})){const u=DATA.users[sec];if(u&&u.fs!==d.status[sec]){u.fs=d.status[sec];u.lost=d.status[sec]==='已流失'?1:0;dirty=true;}}
+  for(const sec in (d.flags||{})){const u=DATA.users[sec];if(u&&JSON.stringify(u.ff||[])!==JSON.stringify(d.flags[sec])){u.ff=d.flags[sec];dirty=true;}}
+  if(dirty)render();
+ }catch(e){}}
 async function aiPost(path,body){
   const r=await fetch(AI_BASE+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   let d={};try{d=await r.json();}catch(e){}
