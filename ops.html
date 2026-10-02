@@ -78,11 +78,15 @@ function fmtTs(t){if(!t)return'';const d=new Date(t.replace(' ','T')+(t.includes
 async function load(tok){
  root.innerHTML='<div class="empty">加载中…</div>';
  try{
-  const r=await fetch(SUMMARY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok})});
+  const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),20000);
+  const r=await fetch(SUMMARY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok}),signal:ctrl.signal});
+  clearTimeout(to);
   const d=await r.json();
   if(!r.ok||!d.ok)throw new Error(d.error||'访问码无效');
   D=d;render();
- }catch(e){localStorage.removeItem('ops_token');showLogin(e.message||'加载失败');}}
+ }catch(e){
+  if(String(e).includes('AbortError')){root.innerHTML='<div class="empty">网络超时，点这里重试</div>';root.onclick=()=>{root.onclick=null;load(tok);};return;}
+  localStorage.removeItem('ops_token');showLogin(e.message||'加载失败');}}
 async function review(type,subId,action,extra){
  const body={token:storedToken(),sub_id:subId,type,action,...extra};
  try{
@@ -141,7 +145,7 @@ function render(){
   :'<div class="empty">还没有状态记录</div>';
  const todo=todoHtml();
  root.innerHTML=`<div class="wrap"><div class="hd"><div><h1>画像助手 · 运营版</h1>
-  <div class="sub">实时出自云端 · 审批即刻生效</div></div>
+  <div class="sub">${esc(D.scope||'运营')} · 实时出自云端 · 审批即刻生效</div></div>
   <button class="btn ghost" id="rf">刷新</button></div>
   ${todo}
   <div class="sec-t">回传流水<span class="cnt">按团 / 主播过滤</span></div>
@@ -156,9 +160,9 @@ function render(){
  document.querySelectorAll('[data-tf]').forEach(c=>c.onclick=()=>{_tf=c.dataset.tf;_af='';render();});
  document.querySelectorAll('[data-rv]').forEach(b=>b.onclick=()=>{
   const [type,subId,action,idx]=b.dataset.rv.split('|');
-  if(type==='grade'){const g=D.grades[+idx];review(type,subId,action,{sec:g.sec,grade:g.grade});}
+  if(type==='grade'){const g=D.grades[+idx];review(type,subId,action,{sec:g.sec,grade:g.grade,anchor:g.anchor});}
   else{const g=D.appeals[+idx];const sel=document.getElementById('ovr'+idx).value.split('|');
-   review(type,subId,action,{sec:g.sec,gid:sel[0],tid:sel[1]});}
+   review(type,subId,action,{sec:g.sec,gid:sel[0],tid:sel[1],anchor:g.anchor});}
  });}
 const t0=new URLSearchParams(location.search).get('t');
 if(t0){localStorage.setItem('ops_token',t0.trim().toLowerCase());history.replaceState(null,'',location.pathname);}
