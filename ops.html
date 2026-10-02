@@ -57,7 +57,7 @@ body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSys
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
 const root=document.getElementById('root');
-let D=null, _af='';
+let D=null, _af='', _tf='';
 function esc(s){return (s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
 function storedToken(){return localStorage.getItem('ops_token')||'';}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',1800);}
@@ -96,7 +96,7 @@ function tagFor(a){const m={'已拉群':'g','已互关':'b','已流失':'r','已
  return `<span class="tag ${m[a]||''}">${a}</span>`;}
 function todoHtml(){
  let h='';
- const gs=D.grades||[];
+ const gs=(D.grades||[]).filter(g=>inT(g.anchor));
  if(gs.length){
   h+=`<div class="sec-t">等级建议待审批<span class="cnt">${gs.length} 条</span></div>`;
   h+=gs.map((g,i)=>`<div class="todo"><div class="who">${esc(g.nick||('sec…'+g.sec_tail))}　<span class="tag a">${g.grade}</span></div>
@@ -105,7 +105,7 @@ function todoHtml(){
    <div class="acts"><button class="btn ok sm" data-rv="grade|${g.sub_id}|approve|${i}">通过（写入档案库）</button>
    <button class="btn no sm" data-rv="grade|${g.sub_id}|reject|${i}">驳回</button></div></div>`).join('');
  }
- const ap=D.appeals||[];
+ const ap=(D.appeals||[]).filter(g=>inT(g.anchor));
  if(ap.length){
   h+=`<div class="sec-t">归属异议待处理<span class="cnt">${ap.length} 条</span></div>`;
   h+=ap.map((g,i)=>{
@@ -120,17 +120,23 @@ function todoHtml(){
  return h;
 }
 function render(){
- const anchors=[...new Set((D.subs||[]).map(s=>s.anchor))];
+ const name2team={};(D.anchors||[]).forEach(a=>name2team[a.name]=a.team);
+ const teamOf=n=>name2team[n]||'';
+ const teams=['梦华录寻音','梦华录行舟','梦华录水月'];
+ const tchipHtml=['',...teams].map(t=>`<span class="chip${t===_tf?' on':''}" data-tf="${t}">${t?t.replace('梦华录',''):'全部团'}</span>`).join('');
+ let anchors=[...new Set((D.subs||[]).map(s=>s.anchor))];
+ if(_tf)anchors=anchors.filter(a=>teamOf(a)===_tf);
  const chipHtml=['',...anchors].map(a=>`<span class="chip${a===_af?' on':''}" data-af="${a}">${a||'全部'}</span>`).join('');
- const subs=(D.subs||[]).filter(s=>!_af||s.anchor===_af);
+ const inT=n=>!_tf||teamOf(n)===_tf;
+ const subs=(D.subs||[]).filter(s=>(!_af||s.anchor===_af)&&inT(s.anchor));
  const subsHtml=subs.length?subs.map(s=>`<div class="row"><span class="t">${fmtTs(s.ts)}</span>
   <span class="a">${esc(s.anchor)}</span><span class="n">${esc(s.nick||('sec…'+s.sec_tail))}</span>
   <span class="x">${(s.actions||[]).map(tagFor).join('')}${s.actions&&s.actions.length&&s.note?' ':''}${esc(s.note||'')}</span></div>`).join('')
   :'<div class="empty">还没有回传流水</div>';
- const flagsHtml=(D.flags||[]).length?D.flags.map(f=>`<div class="row"><span class="t">${fmtTs(f.ts)}</span>
+ const flagsHtml=(D.flags||[]).filter(f=>inT(f.anchor)).length?D.flags.filter(f=>inT(f.anchor)).map(f=>`<div class="row"><span class="t">${fmtTs(f.ts)}</span>
   <span class="a">${esc(f.anchor)}</span><span class="n">sec…${f.sec_tail}</span><span class="x">${tagFor(f.flag)}</span></div>`).join('')
   :'<div class="empty">还没有点亮标记</div>';
- const stHtml=(D.status||[]).length?D.status.map(f=>`<div class="row"><span class="t">${fmtTs(f.ts)}</span>
+ const stHtml=(D.status||[]).filter(f=>inT(f.anchor)).length?D.status.filter(f=>inT(f.anchor)).map(f=>`<div class="row"><span class="t">${fmtTs(f.ts)}</span>
   <span class="a">${esc(f.anchor)}</span><span class="n">sec…${f.sec_tail}</span><span class="x">${tagFor(f.status)}</span></div>`).join('')
   :'<div class="empty">还没有状态记录</div>';
  const todo=todoHtml();
@@ -138,7 +144,8 @@ function render(){
   <div class="sub">实时出自云端 · 审批即刻生效</div></div>
   <button class="btn ghost" id="rf">刷新</button></div>
   ${todo}
-  <div class="sec-t">回传流水<span class="cnt">按主播过滤</span></div>
+  <div class="sec-t">回传流水<span class="cnt">按团 / 主播过滤</span></div>
+  <div class="chips">${tchipHtml}</div>
   <div class="chips">${chipHtml}</div>
   <div class="card">${subsHtml}</div>
   <div class="sec-t">持久点亮（已拉群 / 已互关）</div><div class="card">${flagsHtml}</div>
@@ -146,6 +153,7 @@ function render(){
   <div class="empty">运营版 v2 · 明细与归档在 Notion 回传库</div></div>`;
  document.getElementById('rf').onclick=()=>load(storedToken());
  document.querySelectorAll('[data-af]').forEach(c=>c.onclick=()=>{_af=c.dataset.af;render();});
+ document.querySelectorAll('[data-tf]').forEach(c=>c.onclick=()=>{_tf=c.dataset.tf;_af='';render();});
  document.querySelectorAll('[data-rv]').forEach(b=>b.onclick=()=>{
   const [type,subId,action,idx]=b.dataset.rv.split('|');
   if(type==='grade'){const g=D.grades[+idx];review(type,subId,action,{sec:g.sec,grade:g.grade});}
