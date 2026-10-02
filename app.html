@@ -213,7 +213,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v28';
+const APP_VERSION='v29';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -221,7 +221,10 @@ function daysBetween(d1,d2){return Math.round((new Date(d2)-new Date(d1))/864000
 function tag(cls,txt){return `<span class="tag t-${cls}"><span class="dot"></span>${txt}</span>`;}
 function churnLab(ch){return ch==='A'?'高价值流失':ch==='B'?'老客流失':'长尾流失';}
 function gradeTag(u){const m={S:'red',A:'amber',B:'blue',C:'green',D:'gray'};return u.t?tag(m[u.t],u.t+'级'):'';}
-function rowTags(u){let t=[gradeTag(u)];if(u.nf)t.push(tag('red','新客'));
+function rowTags(u){let t=[gradeTag(u)];
+  if(u.ff&&u.ff.includes('已拉群'))t.push(tag('green','已拉群'));
+  if(u.ff&&u.ff.includes('已互关'))t.push(tag('blue','已互关'));
+  if(u.nf)t.push(tag('red','新客'));
   if(u.cr)t.push(u.mine?tag('green','跨团·归我'):tag('blue','跨团'));
   if(u.ret)t.push(tag('amber','回归用户'));
   if(u.w>1200)t.push(tag('green','高陪伴'));return t.join('');}
@@ -309,7 +312,11 @@ function pvNote(sec){const u=DATA.users[sec]||{};const v=localStorage.getItem('n
  return v?`<div class="advice" style="background:var(--gray-bg)"><div class="at" style="color:var(--ink2)">我的备注${cloud}</div><p style="color:var(--ink2)">${v.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</p></div>`:'';}
 function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
  const gap=u.last?daysBetween(u.last,DATA.anchor.date):'';
- let tags=[gradeTag(u)];if(u.nf)tags.push(tag('red','新客'));
+ const showDet=!!u.mine;   // 非主归属用户不显示详细信息（老板口径 2026-10-03）
+ let tags=[gradeTag(u)];
+ if(u.ff&&u.ff.includes('已拉群'))tags.push(tag('green','已拉群'));
+ if(u.ff&&u.ff.includes('已互关'))tags.push(tag('blue','已互关'));
+ if(u.nf)tags.push(tag('red','新客'));
  if(u.cr)tags.push(u.mine?tag('green','跨团·归我'):tag('blue','跨团'));
  if(u.ret)tags.push(tag('amber','回归用户'));
  if(u.w>1200)tags.push(tag('green','高陪伴'));if(u.ch)tags.push(tag(u.ch==='A'?'red':u.ch==='B'?'amber':'gray',churnLab(u.ch)));
@@ -327,29 +334,29 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
   <div class="cell"><div class="num">${u.days||0}<small>天</small></div><div class="lab">陪伴我的天数</div></div>
   <div class="cell"><div class="num">${u.w?Math.round(u.w/60):0}<small>分</small></div><div class="lab">今日观看</div></div>
   </div>
-  ${u.adv?`<div class="advice"><div class="at">维护提示</div><p>${u.adv}</p></div>`:''}
-  ${pvNote(sec)}
+  ${showDet&&u.adv?`<div class="advice"><div class="at">维护提示</div><p>${u.adv}</p></div>`:''}
+  ${showDet?pvNote(sec):''}
   ${aiPanel(sec)}
   ${u.mine
   ?(u.cr
     ?`<div class="own" style="color:var(--green)"><span class="tag t-green"><span class="dot"></span>跨团·归我</span><span>也在别家消费，但主归属是<b>我</b>，可私信</span></div>`
     :`<div class="own"><span class="tag t-green"><span class="dot"></span>自己人</span><span>主归属：<b>我</b></span></div>`)
   :`<div class="own" style="color:var(--blue)"><span class="tag t-blue"><span class="dot"></span>跨团用户</span><span>主归属在<b>别家</b>，不可跳转主页</span></div>`}
-  ${u.birth?`<div class="pv-info"><span class="pvi-label">生日</span><span>${escapeHtml(String(u.birth).slice(0,10).startsWith('2000-')?String(u.birth).slice(5,10):String(u.birth).slice(0,10))}</span></div>`:''}
-  ${u.former?`<div class="pv-info"><span class="pvi-label">曾用名</span><span>${escapeHtml(u.former)}</span></div>`:''}
-  ${u.mbti?`<div class="pv-info"><span class="pvi-label">MBTI</span><span>${escapeHtml(u.mbti)}</span></div>`:''}
-  ${u.taboo?`<div class="pv-info"><span class="pvi-label">禁忌</span><span style="color:var(--red)">${escapeHtml(u.taboo)}</span></div>`:''}
-  ${u.hometown?`<div class="pv-info"><span class="pvi-label">老家</span><span>${escapeHtml(u.hometown)}</span></div>`:''}
-  ${u.hobby?`<div class="pv-info"><span class="pvi-label">爱好</span><span>${escapeHtml(u.hobby)}</span></div>`:''}
-  ${u.job?`<div class="pv-info"><span class="pvi-label">职业</span><span>${escapeHtml(u.job)}</span></div>`:''}
-  ${u.address?`<div class="pv-info"><span class="pvi-label">地址</span><span>${escapeHtml(u.address)}</span></div>`:''}
-  ${u.contact?`<div class="pv-info"><span class="pvi-label">联系方式</span><span>${escapeHtml(u.contact)}</span></div>`:''}
-  ${u.keyevent?`<div class="pv-info"><span class="pvi-label">关键事件</span><span style="color:var(--amber)">${escapeHtml(u.keyevent)}</span></div>`:''}
-  ${u.sign?`<div class="pv-info"><span class="pvi-label">个性签名</span><span>${escapeHtml(u.sign)}</span></div>`:''}
-  ${u.fs0?`<div class="pv-info"><span class="pvi-label">首次到场</span><span>${escapeHtml(u.fs0)}${u.first&&u.first!==u.fs0?`（首次消费 ${escapeHtml(u.first)}）`:''}</span></div>`:''}
-  ${u.gd?`<div class="pv-info"><span class="pvi-label">等级变化</span><span>${escapeHtml(u.gd)}</span></div>`:''}
-  ${u.rh?`<div class="pv-info"><span class="pvi-label">消费节奏</span><span>${escapeHtml(u.rh)}</span></div>`:''}
-  ${u.opnote?`<div class="pv-info"><span class="pvi-label">运营备注</span><span>${escapeHtml(u.opnote)}</span></div>`:''}
+  ${showDet&&u.birth?`<div class="pv-info"><span class="pvi-label">生日</span><span>${escapeHtml(String(u.birth).slice(0,10).startsWith('2000-')?String(u.birth).slice(5,10):String(u.birth).slice(0,10))}</span></div>`:''}
+  ${showDet&&u.former?`<div class="pv-info"><span class="pvi-label">曾用名</span><span>${escapeHtml(u.former)}</span></div>`:''}
+  ${showDet&&u.mbti?`<div class="pv-info"><span class="pvi-label">MBTI</span><span>${escapeHtml(u.mbti)}</span></div>`:''}
+  ${showDet&&u.taboo?`<div class="pv-info"><span class="pvi-label">禁忌</span><span style="color:var(--red)">${escapeHtml(u.taboo)}</span></div>`:''}
+  ${showDet&&u.hometown?`<div class="pv-info"><span class="pvi-label">老家</span><span>${escapeHtml(u.hometown)}</span></div>`:''}
+  ${showDet&&u.hobby?`<div class="pv-info"><span class="pvi-label">爱好</span><span>${escapeHtml(u.hobby)}</span></div>`:''}
+  ${showDet&&u.job?`<div class="pv-info"><span class="pvi-label">职业</span><span>${escapeHtml(u.job)}</span></div>`:''}
+  ${showDet&&u.address?`<div class="pv-info"><span class="pvi-label">地址</span><span>${escapeHtml(u.address)}</span></div>`:''}
+  ${showDet&&u.contact?`<div class="pv-info"><span class="pvi-label">联系方式</span><span>${escapeHtml(u.contact)}</span></div>`:''}
+  ${showDet&&u.keyevent?`<div class="pv-info"><span class="pvi-label">关键事件</span><span style="color:var(--amber)">${escapeHtml(u.keyevent)}</span></div>`:''}
+  ${showDet&&u.sign?`<div class="pv-info"><span class="pvi-label">个性签名</span><span>${escapeHtml(u.sign)}</span></div>`:''}
+  ${showDet&&u.fs0?`<div class="pv-info"><span class="pvi-label">首次到场</span><span>${escapeHtml(u.fs0)}${u.first&&u.first!==u.fs0?`（首次消费 ${escapeHtml(u.first)}）`:''}</span></div>`:''}
+  ${showDet&&u.gd?`<div class="pv-info"><span class="pvi-label">等级变化</span><span>${escapeHtml(u.gd)}</span></div>`:''}
+  ${showDet&&u.rh?`<div class="pv-info"><span class="pvi-label">消费节奏</span><span>${escapeHtml(u.rh)}</span></div>`:''}
+  ${showDet&&u.opnote?`<div class="pv-info"><span class="pvi-label">运营备注</span><span>${escapeHtml(u.opnote)}</span></div>`:''}
   ${u.priv?`<div class="pv-info"><span class="pvi-label">主页</span><span style="color:var(--amber)">对方主页不可见（私密/异常账号），不要跳转</span></div>`:''}
   <div class="pv-spacer"></div>
   <div class="act">
@@ -508,11 +515,14 @@ function openCorrectSheet(sec){
   if(nom)doSubmit({token:storedToken(),sec,room_id:DATA.anchor.room_id||'',kind:'提名大哥',appeal:nom},()=>{});
   closeSheet();};}
 function fbDoneKey(){return 'fb_done_'+(DATA&&DATA.anchor?DATA.anchor.date:'nodate');}
-function fbStatus(kind){return (kind==='归属异议'||kind==='提名大哥')?{cls:'blue',txt:'已纠错'}:{cls:'gray',txt:'已回传'};}
+function fbStatus(kind,actions){
+ if(kind==='归属异议'||kind==='提名大哥')return{cls:'blue',txt:'已纠错'};
+ const a=(actions||[]).filter(x=>x);
+ return{cls:'gray',txt:a.length?a.join('·'):'已回传'};}
 function fbTagHTML(st){return '<span class="tag t-'+st.cls+' done-tag"><span class="dot"></span>'+st.txt+'</span>';}
 function loadFbDone(){try{var v=JSON.parse(localStorage.getItem(fbDoneKey())||'{}');return (v&&typeof v==='object'&&!Array.isArray(v))?v:{};}catch(e){return{};}}
 function saveFbDone(a){localStorage.setItem(fbDoneKey(),JSON.stringify(a));}
-function markFeedbackDone(sec,kind){if(!sec)return;var st=fbStatus(kind);var a=loadFbDone();a[sec]=st;saveFbDone(a);
+function markFeedbackDone(sec,kind,actions){if(!sec)return;var st=fbStatus(kind,actions);var a=loadFbDone();a[sec]=st;saveFbDone(a);
  document.querySelectorAll('.urow[data-sec="'+sec+'"]').forEach(r=>{
    r.classList.add('done');
    var ex=r.querySelector('.done-tag');if(ex)ex.remove();
@@ -523,7 +533,7 @@ function doneTagHTML(sec){var st=loadFbDone()[sec];return st?fbTagHTML(st):'';}
 function doSubmit(body,ok){
  body.sub_id=storedToken()+'_'+(body.sec||'all')+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
  const btn=document.getElementById('sheetSubmit');if(btn){btn.disabled=true;btn.textContent='提交中…';}
- submitToWorker(body).then(()=>{if(body.sec)markFeedbackDone(body.sec,body.kind);try{ok();}catch(e){}
+ submitToWorker(body).then(()=>{if(body.sec)markFeedbackDone(body.sec,body.kind,body.actions);try{ok();}catch(e){}
    toast((body.kind==='归属异议'||body.kind==='提名大哥')?'已提交，运营会核对':'已回传，运营可见');})
  .catch(()=>{enqueueOffline(body);try{ok();}catch(e){}toast('已保存，联网后自动上传');});}
 async function submitToWorker(body){
@@ -536,7 +546,7 @@ function saveQueue(q){localStorage.setItem('fb_queue',JSON.stringify(q))}
 function enqueueOffline(b){const q=loadQueue();q.push(b);saveQueue(q)}
 async function flushQueue(){
  const q=loadQueue();if(!q.length)return;const remain=[];
- for(const b of q){try{await submitToWorker(b);if(b.sec)markFeedbackDone(b.sec,b.kind);}catch(e){remain.push(b);}}
+ for(const b of q){try{await submitToWorker(b);if(b.sec)markFeedbackDone(b.sec,b.kind,b.actions);}catch(e){remain.push(b);}}
  saveQueue(remain);
  if(q.length!==remain.length)toast('已同步 '+(q.length-remain.length)+' 条回传');}
 window.addEventListener('online',flushQueue);
