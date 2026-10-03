@@ -270,6 +270,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .ua-nr .ua-c{background:var(--red);color:#fff;}
 .trows .urow{position:relative;background:var(--card);transition:transform .18s ease;}
 .urow-wrap.open .urow{transform:translateX(-198px);}
+.urow.nr{background:linear-gradient(rgba(214,79,24,.07),rgba(214,79,24,.07)),var(--card);}   /* 未回复：灰中带红 */
 .pv-hint{margin-left:auto;font-size:12px;color:var(--on-bg2);font-weight:500;}
 .qk-t{font-size:12px;font-weight:700;color:var(--ink2);margin:16px 18px 7px;}
 </style>
@@ -283,7 +284,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v49';
+const APP_VERSION='v50';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -308,7 +309,7 @@ function topbar(){const a=DATA.anchor;return `<div class="topbar"><div class="wh
 const GLOBE=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5a7a35" stroke-width="2" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>`;
 
 function tier(cls,code,name,sub,secs){if(!secs.length)return '';
- const rows=secs.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow-wrap"><div class="urow-acts"><button class="ua ua-fb" data-ua="fb"><span class="ua-c">传</span><span class="ua-l">回传</span></button><button class="ua ua-jl" data-ua="jl"><span class="ua-c">联</span><span class="ua-l">已建联</span></button><button class="ua ua-nr" data-ua="nr"><span class="ua-c">未</span><span class="ua-l">未回复</span></button></div><div class="urow${dn?' done':''}" data-sec="${s}">
+ const rows=secs.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow-wrap"><div class="urow-acts"><button class="ua ua-fb" data-ua="fb"><span class="ua-c">传</span><span class="ua-l">回传</span></button><button class="ua ua-jl" data-ua="jl"><span class="ua-c">联</span><span class="ua-l">已建联</span></button><button class="ua ua-nr" data-ua="nr"><span class="ua-c">未</span><span class="ua-l">未回复</span></button></div><div class="urow${dn?' done':''}${dn&&fbDoneNr(s)?' nr':''}" data-sec="${s}">
   ${avHtml(u,s,36,14)}
   <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span><span class="u-val">${yuan(u.tv)}</span></div><div class="u-tags">${rowTags(u)}${doneTagHTML(s)}</div></div></div></div>`;}).join('');
  const foot=secs.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${secs.length} 人 ▾</span></div>`:'';
@@ -319,7 +320,7 @@ function churnCard(s,cls,lab){const u=DATA.users[s];return `<div class="churn-ca
   <div class="cc-nick">${u.n}</div><div class="cc-gap">${daysBetween(u.last,DATA.anchor.date)}天</div>
   <div class="cc-lab">${lab}</div><div class="cc-val">给我 ${yuan(u.sv)}</div></div>`;}
 function greetBlock(){const g=DATA.greet;if(!g||!g.length)return '';
- const rows=g.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow-wrap"><div class="urow-acts"><button class="ua ua-fb" data-ua="fb"><span class="ua-c">传</span><span class="ua-l">回传</span></button><button class="ua ua-jl" data-ua="jl"><span class="ua-c">联</span><span class="ua-l">已建联</span></button><button class="ua ua-nr" data-ua="nr"><span class="ua-c">未</span><span class="ua-l">未回复</span></button></div><div class="urow${dn?' done':''}" data-sec="${s}">
+ const rows=g.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow-wrap"><div class="urow-acts"><button class="ua ua-fb" data-ua="fb"><span class="ua-c">传</span><span class="ua-l">回传</span></button><button class="ua ua-jl" data-ua="jl"><span class="ua-c">联</span><span class="ua-l">已建联</span></button><button class="ua ua-nr" data-ua="nr"><span class="ua-c">未</span><span class="ua-l">未回复</span></button></div><div class="urow${dn?' done':''}${dn&&fbDoneNr(s)?' nr':''}" data-sec="${s}">
   ${avHtml(u,s,36,14)}
   <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span><span class="u-val">给我 ${yuan(u.sv)}</span></div><div class="u-tags">${gradeTag(u)}${doneTagHTML(s)}</div></div></div></div>`;}).join('');
  const foot=g.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${g.length} 人 ▾</span></div>`:'';
@@ -596,11 +597,13 @@ function openFeedbackSheet(sec){
   const address=gv('#fbAddress');
   const job=gv('#fbJob');
   const taboo=gv('#fbTaboo');
-  if(!actions.length&&!note&&!contact&&!demand&&!birthday&&!hometown&&!hobby&&!keyevent&&!address&&!job&&!grade&&!taboo){toast('请至少填写一项');return;}
+  const unflags=['已拉群','已互关'].filter(f=>u.ff&&u.ff.includes(f)&&!actions.includes(f));   // 点掉亮的=人工取消点亮（老板 10-04）
+  if(!actions.length&&!unflags.length&&!note&&!contact&&!demand&&!birthday&&!hometown&&!hobby&&!keyevent&&!address&&!job&&!grade&&!taboo){toast('请至少填写一项');return;}
   const body={token:storedToken(),sec,nick:u.n||'',room_id:DATA.anchor.room_id||'',kind:'日常维护',actions,grade,note,contact,demand,birthday,
-    hometown,hobby,keyevent,address,job,taboo};
+    hometown,hobby,keyevent,address,job,taboo,unflags};
   doSubmit(body,()=>{if(note)localStorage.setItem('note_'+sec,note);
-   const u2=DATA.users[sec];if(u2&&actions.length){u2.ff=u2.ff||[];for(const f of['已拉群','已互关'])if(actions.includes(f)&&!u2.ff.includes(f))u2.ff.push(f);}
+   const u2=DATA.users[sec];if(u2){u2.ff=u2.ff||[];for(const f of['已拉群','已互关'])if(actions.includes(f)&&!u2.ff.includes(f))u2.ff.push(f);
+    if(unflags.length)u2.ff=u2.ff.filter(f=>!unflags.includes(f));}
    closeSheet();if(document.getElementById('pv')){closeProfile();openProfile(sec);}});};}
 function openCorrectSheet(sec){
  const u=DATA.users[sec];
@@ -620,6 +623,7 @@ function openCorrectSheet(sec){
 function fbDoneKey(){return 'fb_done_'+(DATA&&DATA.anchor?DATA.anchor.date:'nodate');}
 function fbStatus(kind,actions){
  if(kind==='归属异议'||kind==='提名大哥')return{cls:'blue',txt:'已纠错'};
+ if(actions&&actions.includes('未回复'))return{cls:'red',txt:'未回复'};   // 未回复：灰中带红，运营介入信号（老板 10-04）
  const a=(actions||[]).filter(x=>x&&x!=='已拉群'&&x!=='已互关');  // 常驻点亮项不重复进动作标签
  return{cls:'gray',txt:a.length?a.join('·'):'已回传'};}
 function fbTagHTML(st){return '<span class="tag t-'+st.cls+' done-tag"><span class="dot"></span>'+st.txt+'</span>';}
@@ -628,10 +632,12 @@ function saveFbDone(a){localStorage.setItem(fbDoneKey(),JSON.stringify(a));}
 function markFeedbackDone(sec,kind,actions){if(!sec)return;var st=fbStatus(kind,actions);var a=loadFbDone();a[sec]=st;saveFbDone(a);
  document.querySelectorAll('.urow[data-sec="'+sec+'"]').forEach(r=>{
    r.classList.add('done');
+   if(st.txt==='未回复')r.classList.add('nr');else r.classList.remove('nr');
    var ex=r.querySelector('.done-tag');if(ex)ex.remove();
    const _tg=r.querySelector('.u-tags');if(_tg)_tg.insertAdjacentHTML('beforeend',fbTagHTML(st));
  });}
 function isFeedbackDone(sec){return !!(_fbCloud[sec]||loadFbDone()[sec]);}
+function fbDoneNr(sec){const c=_fbCloud[sec];const st=c?fbStatus(c.kind,c.actions):loadFbDone()[sec];return !!(st&&st.txt==='未回复');}
 function doneTagHTML(sec){
  const c=_fbCloud[sec];
  if(c)return fbTagHTML(fbStatus(c.kind,c.actions));
@@ -701,7 +707,7 @@ document.addEventListener('touchstart',e=>{
  if(e.touches.length!==1){_sw=0;return;}
  const t=e.touches[0],w=window.innerWidth;
  if(t.clientX<24||t.clientX>w-24){_sw=0;return;}
- if(e.target&&e.target.closest&&e.target.closest('.churn-row,input,textarea,.sheet,.sbar')){_sw=0;return;}
+ if(e.target&&e.target.closest&&e.target.closest('.churn-row,input,textarea,.sbar')){_sw=0;return;}
  _sx=t.clientX;_sy=t.clientY;_sw=1;
 },{passive:true});
 document.addEventListener('touchmove',e=>{
@@ -713,6 +719,8 @@ document.addEventListener('touchend',e=>{
  if(!_sw)return;_sw=0;
  const dx=e.changedTouches[0].clientX-_sx;
  if(Math.abs(dx)<64)return;
+ const sh=document.getElementById('sheet');
+ if(sh){if(dx>0)closeSheet();return;}   // 回传/纠错弹层：右滑返回（2026-10-04）
  const tr=document.getElementById('pvTrack');
  if(!tr)return;
  if(tr.classList.contains('show-quick')){if(dx>0)tr.classList.remove('show-quick');}
