@@ -105,6 +105,14 @@ async function load(tok){
  }catch(e){
   if(String(e).includes('AbortError')){root.innerHTML='<div class="empty">网络超时，点这里重试</div>';root.onclick=()=>{root.onclick=null;load(tok);};return;}
   localStorage.removeItem('ops_token');showLogin(e.message||'加载失败');}}
+async function offair(tid,name){
+ if(!confirm(`确认标记「${name}」已下播？AI 将自动采集并跑一条龙`))return;
+ try{
+  const r=await fetch('https://fb.menghualu.com.co/api/ops/offair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken(),tid})});
+  const d=await r.json();
+  if(!r.ok||!d.ok)throw new Error(String(d.error||'失败').replace(/^Error: /,''));
+  toast(d.dedup?'已在队列里（30分钟内不重复）':'已标记，AI 将自动采集');
+ }catch(e){toast(e.message);}}
 async function review(type,subId,action,extra){
  const body={token:storedToken(),sub_id:subId,type,action,...extra};
  try{
@@ -163,7 +171,9 @@ function render(){
   :'<div class="empty">还没有状态记录</div>';
  const todo=todoHtml();
  root.innerHTML=`<div class="topbar"><div class="avatar">运</div><div><div class="name">画像助手 · 运营版</div>
-  <div class="meta">${esc(D.scope||'运营')} · 实时数据</div></div><button class="rf" id="rf">刷新</button></div>
+  <div class="meta">${esc(D.scope||'运营')} · 实时数据</div></div>
+  <div style="display:flex;gap:6px;margin-left:auto">
+  <button class="rf" id="rf">刷新</button><button class="rf" id="oa" style="background:rgba(255,255,255,.28)">下播了</button></div></div>
   <div class="wrap">
   ${todo}
   <div class="sec-title"><h3>回传流水</h3><span class="more">按团 / 主播过滤</span></div>
@@ -182,6 +192,14 @@ function render(){
    <div class="t-cnt">${st.length}<small> 条</small></div></div>${stHtml}</div>
   <div class="foot">运营版 v2.3 · 明细与归档在 Notion 回传库</div></div>`;
  document.getElementById('rf').onclick=()=>load(storedToken());
+ document.getElementById('oa').onclick=()=>{
+  const ts=(D.anchors||[]).map(a=>a.tid).filter((v,i,arr)=>arr.indexOf(v)===i);
+  const tn={'menghualu_xunyin':'寻音','menghualu_xingzhou':'行舟','menghualu_shuiyue':'水月'};
+  if(ts.length===1){offair(ts[0],tn[ts[0]]);return;}
+  const pick=prompt('哪个团下播了？输入：寻音 / 行舟 / 水月','');if(!pick)return;
+  const tid=Object.keys(tn).find(k=>tn[k]===pick.trim());
+  if(!tid){toast('团名不对');return;}
+  offair(tid,pick.trim());};
  document.querySelectorAll('[data-af]').forEach(c=>c.onclick=()=>{_af=c.dataset.af;render();});
  document.querySelectorAll('[data-tf]').forEach(c=>c.onclick=()=>{_tf=c.dataset.tf;_af='';render();});
  document.querySelectorAll('[data-rv]').forEach(b=>b.onclick=()=>{
