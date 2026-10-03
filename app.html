@@ -105,7 +105,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .urow .u-tags{display:flex;flex-wrap:wrap;gap:5px;}
 .urow .u-tags:empty{display:none;}
 .tag.badge{padding:3px 6px;font-size:10px;gap:0;line-height:1.1;}
-.urow.done{opacity:.52;}
+.urow.done .avatar,.urow.done .u-main{opacity:.52;}   /* 灰化只压内容，行底保持不透明——否则会漏出背后的左滑键位 */
 .urow.done .avatar{filter:grayscale(.75);}
 .urow.done .u-nick{color:var(--ink3);}
 .urow .done-tag{flex:none;}
@@ -265,9 +265,9 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .ua{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;font-family:inherit;cursor:pointer;padding:0;}
 .ua-c{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;}
 .ua-l{font-size:10px;color:var(--ink2);}
-.ua-dm .ua-c{background:var(--brand-soft);color:var(--brand);}
-.ua-grp .ua-c{background:var(--card2);color:var(--brand);}
-.ua-fb .ua-c{background:var(--lime);color:#223014;}
+.ua-fb .ua-c{background:#3d6b9a;color:#fff;}
+.ua-jl .ua-c{background:#7a5fa8;color:#fff;}
+.ua-nr .ua-c{background:var(--red);color:#fff;}
 .trows .urow{position:relative;background:var(--card);transition:transform .18s ease;}
 .urow-wrap.open .urow{transform:translateX(-198px);}
 .pv-hint{margin-left:auto;font-size:12px;color:var(--on-bg2);font-weight:500;}
@@ -283,7 +283,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v48';
+const APP_VERSION='v49';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -308,7 +308,7 @@ function topbar(){const a=DATA.anchor;return `<div class="topbar"><div class="wh
 const GLOBE=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5a7a35" stroke-width="2" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>`;
 
 function tier(cls,code,name,sub,secs){if(!secs.length)return '';
- const rows=secs.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow-wrap"><div class="urow-acts"><button class="ua ua-dm" data-ua="dm"><span class="ua-c">私</span><span class="ua-l">已私信</span></button><button class="ua ua-grp" data-ua="grp"><span class="ua-c">群</span><span class="ua-l">已拉群</span></button><button class="ua ua-fb" data-ua="fb"><span class="ua-c">传</span><span class="ua-l">回传</span></button></div><div class="urow${dn?' done':''}" data-sec="${s}">
+ const rows=secs.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow-wrap"><div class="urow-acts"><button class="ua ua-fb" data-ua="fb"><span class="ua-c">传</span><span class="ua-l">回传</span></button><button class="ua ua-jl" data-ua="jl"><span class="ua-c">联</span><span class="ua-l">已建联</span></button><button class="ua ua-nr" data-ua="nr"><span class="ua-c">未</span><span class="ua-l">未回复</span></button></div><div class="urow${dn?' done':''}" data-sec="${s}">
   ${avHtml(u,s,36,14)}
   <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span><span class="u-val">${yuan(u.tv)}</span></div><div class="u-tags">${rowTags(u)}${doneTagHTML(s)}</div></div></div></div>`;}).join('');
  const foot=secs.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${secs.length} 人 ▾</span></div>`:'';
@@ -319,7 +319,7 @@ function churnCard(s,cls,lab){const u=DATA.users[s];return `<div class="churn-ca
   <div class="cc-nick">${u.n}</div><div class="cc-gap">${daysBetween(u.last,DATA.anchor.date)}天</div>
   <div class="cc-lab">${lab}</div><div class="cc-val">给我 ${yuan(u.sv)}</div></div>`;}
 function greetBlock(){const g=DATA.greet;if(!g||!g.length)return '';
- const rows=g.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow-wrap"><div class="urow-acts"><button class="ua ua-dm" data-ua="dm"><span class="ua-c">私</span><span class="ua-l">已私信</span></button><button class="ua ua-grp" data-ua="grp"><span class="ua-c">群</span><span class="ua-l">已拉群</span></button><button class="ua ua-fb" data-ua="fb"><span class="ua-c">传</span><span class="ua-l">回传</span></button></div><div class="urow${dn?' done':''}" data-sec="${s}">
+ const rows=g.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow-wrap"><div class="urow-acts"><button class="ua ua-fb" data-ua="fb"><span class="ua-c">传</span><span class="ua-l">回传</span></button><button class="ua ua-jl" data-ua="jl"><span class="ua-c">联</span><span class="ua-l">已建联</span></button><button class="ua ua-nr" data-ua="nr"><span class="ua-c">未</span><span class="ua-l">未回复</span></button></div><div class="urow${dn?' done':''}" data-sec="${s}">
   ${avHtml(u,s,36,14)}
   <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span><span class="u-val">给我 ${yuan(u.sv)}</span></div><div class="u-tags">${gradeTag(u)}${doneTagHTML(s)}</div></div></div></div>`;}).join('');
  const foot=g.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${g.length} 人 ▾</span></div>`:'';
@@ -574,6 +574,8 @@ function openFeedbackSheet(sec){
  bindChipGroup(s.querySelector('#fbGrade'),false);
  // 已点亮（已拉群/已互关）的预设选中——主播一眼看到现状，避免重复回传
  s.querySelectorAll('#fbActions .chip').forEach(c=>{if(u.ff&&u.ff.includes(c.dataset.v))c.classList.add('on');});
+ // 当前等级常亮预选（仍单选，改选即建议新级）
+ if(u.t)s.querySelectorAll('#fbGrade .chip').forEach(c=>{if(c.dataset.v===u.t)c.classList.add('on');});
  s.querySelector('#fbMoreToggle').onclick=()=>{
    const body=s.querySelector('#fbMoreBody');const hide=body.style.display!=='none';
    body.style.display=hide?'none':'block';
@@ -663,11 +665,9 @@ document.addEventListener('click',e=>{
  if(ua){const wrap=ua.closest('.urow-wrap');const rowEl=wrap?wrap.querySelector('.urow[data-sec]'):null;
   if(!rowEl)return;const sec=rowEl.dataset.sec;wrap.classList.remove('open');
   if(ua.dataset.ua==='fb'){openFeedbackSheet(sec);return;}
-  const act=ua.dataset.ua==='dm'?'已私信':'已拉群';
+  const act=ua.dataset.ua==='jl'?'已建联':'未回复';   /* 已建联=破冰沟通上了；未回复=没回消息、运营可能介入 */
   const u=DATA.users[sec];
-  doSubmit({token:storedToken(),sec,nick:(u&&u.n)||'',room_id:DATA.anchor.room_id||'',kind:'日常维护',actions:[act],grade:'',note:'',contact:'',demand:'',birthday:'',hometown:'',hobby:'',keyevent:'',address:'',job:'',taboo:''},()=>{
-   if(u&&act==='已拉群'){u.ff=u.ff||[];if(!u.ff.includes('已拉群'))u.ff.push('已拉群');
-    const tg=wrap.querySelector('.u-tags');if(tg&&!tg.textContent.includes('群'))tg.insertAdjacentHTML('beforeend','<span class="tag t-green badge">群</span>');}});
+  doSubmit({token:storedToken(),sec,nick:(u&&u.n)||'',room_id:DATA.anchor.room_id||'',kind:'日常维护',actions:[act],grade:'',note:'',contact:'',demand:'',birthday:'',hometown:'',hobby:'',keyevent:'',address:'',job:'',taboo:''},()=>{});
   return;}
  if(e.target.closest('[data-qopen]')){const tr=document.getElementById('pvTrack');if(tr)tr.classList.add('show-quick');return;}
  if(e.target.closest('[data-qback]')){const tr=document.getElementById('pvTrack');if(tr)tr.classList.remove('show-quick');return;}
