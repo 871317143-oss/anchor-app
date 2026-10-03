@@ -222,7 +222,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v39';
+const APP_VERSION='v40';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -234,6 +234,7 @@ function avHtml(u,sec,size,fs){
  const inner=(u.n||'?')[0]+(u.av?`<img src="${escapeHtml(u.av)}" style="position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.remove()">`:'');
  return `<div class="avatar" style="position:relative;background:${colorOf(u.n||sec)};width:${size}px;height:${size}px;font-size:${fs}px">${inner}</div>`;}
 function rowTags(u){let t=[gradeTag(u)];
+  if(u.bg!=null&&u.bg<=7)t.push(tag('red','🎂'+(u.bg===0?'今天':u.bg===1?'明天':u.bg+'天')));
   if(u.ff&&u.ff.includes('已拉群'))t.push('<span class="tag t-green badge">群</span>');
   if(u.ff&&u.ff.includes('已互关'))t.push('<span class="tag t-blue badge">互</span>');
   if(u.nf)t.push(tag('red','新客'));
@@ -278,6 +279,10 @@ function mysteryBlock(){const m=DATA.mystery;if(!m||!m.length)return '';
  return `<div class="tier closed"><div class="t-head"><div class="t-ico" style="background:var(--gray-bg);color:var(--ink2)">🎭</div>
   <div><div class="t-name">神秘人</div><div class="t-sub">匿名送礼 · 按行为指纹认老朋友</div></div>
   <div class="t-cnt">${m.length}<small> 个</small></div></div><div class="trows">${rows}</div>${foot}</div>`;}
+function bdayBanner(){const b=DATA.bday||[];if(!b.length)return '';
+ const names=b.slice(0,4).map(x=>DATA.users[x[0]].n+(x[1]===0?'（今天！）':x[1]===1?'（明天）':`（${x[1]}天后）`)).join('、');
+ return `<div class="cross" style="border-left:4px solid var(--red)">🎂
+  <div class="c-txt"><b>未来一周生日 ${b.length} 人</b>：${names}${b.length>4?' 等':''}——提前备好心意，当天给足排面。</div></div>`;}
 function viewToday(){const c=DATA.counts,ch=DATA.churn;
  const cross=DATA.crossToday.length?`<div class="cross">${GLOBE}
   <div class="c-txt">今天有 <b>${DATA.crossToday.length} 位跨团用户</b>给你送礼，也在其他团消费，注意客情；<b>不显示对方归属</b>。</div></div>`:'';
@@ -287,7 +292,7 @@ function viewToday(){const c=DATA.counts,ch=DATA.churn;
   ${ch.b.slice(0,2).map(s=>churnCard(s,'cb','老客流失')).join('')}
   ${ch.c.slice(0,1).map(s=>churnCard(s,'cc2','长尾')).join('')}</div>`;
  return `<div class="view show" id="v-today">${topbar()}<div class="wrap">
-  <div class="sec-title"><h3>今日维护</h3><span class="more">按对我消费分层</span></div>${cross}${returnedBanner()}
+  <div class="sec-title"><h3>今日维护</h3><span class="more">按对我消费分层</span></div>${cross}${returnedBanner()}${bdayBanner()}
   ${tier('l3','L3','重点维护','消费 > 99 元 · 今天必聊',DATA.l3)}
   ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2)}
   ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1)}${greetBlock()}${mysteryBlock()}${churn}</div></div>`;}
@@ -363,7 +368,7 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
     ?`<div class="own" style="color:var(--green)"><span class="tag t-green"><span class="dot"></span>跨团·归我</span><span>也在别家消费，但主归属是<b>我</b>，可私信</span></div>`
     :`<div class="own"><span class="tag t-green"><span class="dot"></span>自己人</span><span>主归属：<b>我</b></span></div>`)
   :`<div class="own" style="color:var(--blue)"><span class="tag t-blue"><span class="dot"></span>跨团用户</span><span>主归属在<b>别家</b>，不可跳转主页</span></div>`}
-  ${showDet&&u.birth?`<div class="pv-info"><span class="pvi-label">生日</span><span>${escapeHtml(String(u.birth).slice(0,10).startsWith('2000-')?String(u.birth).slice(5,10):String(u.birth).slice(0,10))}</span></div>`:''}
+  ${showDet&&u.birth?`<div class="pv-info"><span class="pvi-label">生日</span><span>${escapeHtml(String(u.birth).slice(0,10).startsWith('2000-')?String(u.birth).slice(5,10):String(u.birth).slice(0,10))}${u.bg!=null&&u.bg<=7?` <span class="tag t-red" style="font-size:11px">🎂${u.bg===0?'就是今天！':u.bg===1?'明天！':'还有'+u.bg+'天'}</span>`:''}</span></div>`:''}
   ${showDet&&u.former?`<div class="pv-info"><span class="pvi-label">曾用名</span><span>${escapeHtml(u.former)}</span></div>`:''}
   ${showDet&&u.mbti?`<div class="pv-info"><span class="pvi-label">MBTI</span><span>${escapeHtml(u.mbti)}</span></div>`:''}
   ${showDet&&u.taboo?`<div class="pv-info"><span class="pvi-label">禁忌</span><span style="color:var(--red)">${escapeHtml(u.taboo)}</span></div>`:''}
