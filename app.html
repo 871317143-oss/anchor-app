@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" style="background:#2f412c">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -253,6 +253,13 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .view.show.sl{animation:slideL .26s cubic-bezier(.22,.9,.3,1);}
 .view.show.sr{animation:slideR .26s cubic-bezier(.22,.9,.3,1);}
 .view.show.sl .wrap>*,.view.show.sr .wrap>*{animation:none;}
+/* v46 画像双页：主页 ↔ 快捷页（右滑快捷/左滑返回），快捷页在左、主页在右 */
+.pview{overflow:hidden;}
+.pv-track{display:flex;width:200%;height:100%;transition:transform .28s cubic-bezier(.22,.9,.3,1);transform:translateX(-50%);}
+.pv-track.show-quick{transform:translateX(0);}
+.pv-page{width:50%;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.pv-hint{margin-left:auto;font-size:12px;color:var(--on-bg2);font-weight:500;}
+.qk-t{font-size:12px;font-weight:700;color:var(--ink2);margin:16px 18px 7px;}
 </style>
 </head>
 <body>
@@ -264,7 +271,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v45';
+const APP_VERSION='v46';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -389,7 +396,45 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
  if(u.ret)tags.push(tag('amber','回归用户'));
  if(u.w>1200)tags.push(tag('green','高陪伴'));if(u.ch)tags.push(tag(u.ch==='A'?'red':u.ch==='B'?'amber':'gray',churnLab(u.ch)));
  const info=[u.gr&&('荣耀'+u.gr),u.fl&&('灯牌'+u.fl),u.l,u.g&&(u.g===1?'男':'女'),u.a&&(u.a+'岁')].filter(x=>x).join(' · ');
- return `<div class="pview show" id="pv" data-sec="${sec}"><div class="pv-back" data-back="1">‹ 返回</div><div class="wrap">
+ const moreInfo=(showDet&&u.birth?`<div class="pv-info"><span class="pvi-label">生日</span><span>${escapeHtml(String(u.birth).slice(0,10).startsWith('2000-')?String(u.birth).slice(5,10):String(u.birth).slice(0,10))}${u.bg!=null&&u.bg<=7?` <span class="tag t-red" style="font-size:11px">🎂${u.bg===0?'就是今天！':u.bg===1?'明天！':'还有'+u.bg+'天'}</span>`:''}</span></div>`:'')
+ +`${showDet&&u.former?`<div class="pv-info"><span class="pvi-label">曾用名</span><span>${escapeHtml(u.former)}</span></div>`:''}
+ ${showDet&&u.mbti?`<div class="pv-info"><span class="pvi-label">MBTI</span><span>${escapeHtml(u.mbti)}</span></div>`:''}
+ ${showDet&&u.taboo?`<div class="pv-info"><span class="pvi-label">禁忌</span><span style="color:var(--red)">${escapeHtml(u.taboo)}</span></div>`:''}
+ ${showDet&&u.hometown?`<div class="pv-info"><span class="pvi-label">老家</span><span>${escapeHtml(u.hometown)}</span></div>`:''}
+ ${showDet&&u.hobby?`<div class="pv-info"><span class="pvi-label">爱好</span><span>${escapeHtml(u.hobby)}</span></div>`:''}
+ ${showDet&&u.job?`<div class="pv-info"><span class="pvi-label">职业</span><span>${escapeHtml(u.job)}</span></div>`:''}
+ ${showDet&&u.address?`<div class="pv-info"><span class="pvi-label">地址</span><span>${escapeHtml(u.address)}</span></div>`:''}
+ ${showDet&&u.contact?`<div class="pv-info"><span class="pvi-label">联系方式</span><span>${escapeHtml(u.contact)}</span></div>`:''}
+ ${showDet&&u.keyevent?`<div class="pv-info"><span class="pvi-label">关键事件</span><span style="color:var(--amber)">${escapeHtml(u.keyevent)}</span></div>`:''}
+ ${showDet&&u.sign?`<div class="pv-info"><span class="pvi-label">个性签名</span><span>${escapeHtml(u.sign)}</span></div>`:''}
+ ${showDet&&u.hp&&u.hp.wl&&u.hp.wl.length?`<div class="pv-info"><span class="pvi-label">主页作品</span><span>${escapeHtml(u.hp.wl.join('｜'))}${u.hp.wc?`（共${u.hp.wc}条）`:''}${u.hp.lo?'':' · 喜欢未开放'}</span></div>`:''}
+ ${showDet&&u.fs0?`<div class="pv-info"><span class="pvi-label">首次到场</span><span>${escapeHtml(u.fs0)}${u.first&&u.first!==u.fs0?`（首次消费 ${escapeHtml(u.first)}）`:''}</span></div>`:''}
+ ${showDet&&u.gd?`<div class="pv-info"><span class="pvi-label">等级变化</span><span>${escapeHtml(u.gd)}</span></div>`:''}
+ ${showDet&&u.rh?`<div class="pv-info"><span class="pvi-label">消费节奏</span><span>${escapeHtml(u.rh)}</span></div>`:''}
+ ${showDet&&u.opnote?`<div class="pv-info"><span class="pvi-label">运营备注</span><span>${escapeHtml(u.opnote)}</span></div>`:''}`
+ +`${u.priv?`<div class="pv-info"><span class="pvi-label">主页</span><span style="color:var(--amber)">对方主页不可见（私密/异常账号），不要跳转</span></div>`:''}`;
+ return `<div class="pview show" id="pv" data-sec="${sec}"><div class="pv-track" id="pvTrack">
+  <div class="pv-page pv-quick"><div class="pv-back"><span data-qback="1">‹ 画像</span><span class="pv-hint">左滑回画像</span></div><div class="wrap">
+   <div class="profile" style="min-height:auto">
+   <div class="qk-t" style="margin-top:14px">维护动作（点选后一键提交）</div>
+   <div class="chips" id="qkActions" style="padding:0 16px">
+    <span class="chip" data-v="已私信">已私信</span>
+    <span class="chip" data-v="已回复">已回复</span>
+    <span class="chip" data-v="已拉群">已拉群</span>
+    <span class="chip" data-v="已互关">已互关</span>
+    <span class="chip" data-v="已流失">已流失</span></div>
+   <div class="qk-t">等级评估（对标运营 SABCD）</div>
+   <div class="chips" id="qkGrade" style="padding:0 16px">
+    <span class="chip gS" data-v="S">S</span><span class="chip gA" data-v="A">A</span>
+    <span class="chip gB" data-v="B">B</span><span class="chip gC" data-v="C">C</span>
+    <span class="chip gD" data-v="D">D</span></div>
+   <div style="padding:14px 16px 2px"><button class="btn btn-primary" id="qkSubmit" style="width:100%">提交 · 运营可见</button></div>
+   <div class="fb-hint" style="padding:2px 18px 6px">等级只作建议，不覆盖运营评定；写备注/补信息请用主页「回传」</div>
+   ${showDet?`<div class="qk-t">更多信息</div>`:''}${moreInfo}
+   </div>
+   ${aiPanel(sec)}
+  </div></div>
+  <div class="pv-page pv-main"><div class="pv-back"><span data-back="1">‹ 返回</span><span class="pv-hint" data-qopen="1">快捷操作 ›</span></div><div class="wrap">
   <div class="profile">${showDet&&u.hp&&u.hp.c?`<div style="height:88px;background:center/cover no-repeat url('${escapeHtml(u.hp.c)}');border-radius:16px 16px 0 0;opacity:.92"></div>`:''}<div class="head">
   <div class="avatar" style="position:relative;background:${colorOf(u.n||sec)};width:48px;height:48px;font-size:19px">${(u.n||'?')[0]}${u.av?`<img src="${escapeHtml(u.av)}" style="position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.remove()">`:''}</div>
   <div class="h-main"><div class="nick">${u.n}</div><div class="tags">${tags.join('')}</div>
@@ -404,29 +449,11 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
   </div>
   ${showDet&&u.adv?`<div class="advice"><div class="at">维护提示</div><p>${u.adv}</p></div>`:''}
   ${showDet?pvNote(sec):''}
-  ${aiPanel(sec)}
   ${u.mine
   ?(u.cr
     ?`<div class="own" style="color:var(--green)"><span class="tag t-green"><span class="dot"></span>跨团·归我</span><span>也在别家消费，但主归属是<b>我</b>，可私信</span></div>`
     :`<div class="own"><span class="tag t-green"><span class="dot"></span>自己人</span><span>主归属：<b>我</b></span></div>`)
   :`<div class="own" style="color:var(--blue)"><span class="tag t-blue"><span class="dot"></span>跨团用户</span><span>主归属在<b>别家</b>，不可跳转主页</span></div>`}
-  ${showDet&&u.birth?`<div class="pv-info"><span class="pvi-label">生日</span><span>${escapeHtml(String(u.birth).slice(0,10).startsWith('2000-')?String(u.birth).slice(5,10):String(u.birth).slice(0,10))}${u.bg!=null&&u.bg<=7?` <span class="tag t-red" style="font-size:11px">🎂${u.bg===0?'就是今天！':u.bg===1?'明天！':'还有'+u.bg+'天'}</span>`:''}</span></div>`:''}
-  ${showDet&&u.former?`<div class="pv-info"><span class="pvi-label">曾用名</span><span>${escapeHtml(u.former)}</span></div>`:''}
-  ${showDet&&u.mbti?`<div class="pv-info"><span class="pvi-label">MBTI</span><span>${escapeHtml(u.mbti)}</span></div>`:''}
-  ${showDet&&u.taboo?`<div class="pv-info"><span class="pvi-label">禁忌</span><span style="color:var(--red)">${escapeHtml(u.taboo)}</span></div>`:''}
-  ${showDet&&u.hometown?`<div class="pv-info"><span class="pvi-label">老家</span><span>${escapeHtml(u.hometown)}</span></div>`:''}
-  ${showDet&&u.hobby?`<div class="pv-info"><span class="pvi-label">爱好</span><span>${escapeHtml(u.hobby)}</span></div>`:''}
-  ${showDet&&u.job?`<div class="pv-info"><span class="pvi-label">职业</span><span>${escapeHtml(u.job)}</span></div>`:''}
-  ${showDet&&u.address?`<div class="pv-info"><span class="pvi-label">地址</span><span>${escapeHtml(u.address)}</span></div>`:''}
-  ${showDet&&u.contact?`<div class="pv-info"><span class="pvi-label">联系方式</span><span>${escapeHtml(u.contact)}</span></div>`:''}
-  ${showDet&&u.keyevent?`<div class="pv-info"><span class="pvi-label">关键事件</span><span style="color:var(--amber)">${escapeHtml(u.keyevent)}</span></div>`:''}
-  ${showDet&&u.sign?`<div class="pv-info"><span class="pvi-label">个性签名</span><span>${escapeHtml(u.sign)}</span></div>`:''}
-  ${showDet&&u.hp&&u.hp.wl&&u.hp.wl.length?`<div class="pv-info"><span class="pvi-label">主页作品</span><span>${escapeHtml(u.hp.wl.join('｜'))}${u.hp.wc?`（共${u.hp.wc}条）`:''}${u.hp.lo?'':' · 喜欢未开放'}</span></div>`:''}
-  ${showDet&&u.fs0?`<div class="pv-info"><span class="pvi-label">首次到场</span><span>${escapeHtml(u.fs0)}${u.first&&u.first!==u.fs0?`（首次消费 ${escapeHtml(u.first)}）`:''}</span></div>`:''}
-  ${showDet&&u.gd?`<div class="pv-info"><span class="pvi-label">等级变化</span><span>${escapeHtml(u.gd)}</span></div>`:''}
-  ${showDet&&u.rh?`<div class="pv-info"><span class="pvi-label">消费节奏</span><span>${escapeHtml(u.rh)}</span></div>`:''}
-  ${showDet&&u.opnote?`<div class="pv-info"><span class="pvi-label">运营备注</span><span>${escapeHtml(u.opnote)}</span></div>`:''}
-  ${u.priv?`<div class="pv-info"><span class="pvi-label">主页</span><span style="color:var(--amber)">对方主页不可见（私密/异常账号），不要跳转</span></div>`:''}
   <div class="pv-spacer"></div>
   <div class="act">
   ${(u.mine&&!u.priv)
@@ -434,7 +461,8 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
   :`<button class="btn btn-ghost" disabled style="opacity:.5;cursor:not-allowed">${u.priv?'主页不可见':'归属别家'}</button>`}
   <button class="btn btn-primary" data-act="feedback">回传</button>
   <button class="btn btn-ghost" data-act="correct">纠错</button></div>
-  </div></div></div>`;}
+  </div></div></div>
+ </div></div>`;}
 const TABS=['today','search','me'];   /* 5 tab 骨架预留：新模块把 id 追加进来、补一份 view 即接入滑切 */
 function switchTab(t,dir){TABS.forEach(x=>{const v=document.getElementById('v-'+x);if(v)v.classList.toggle('show',x===t);});
  try{window.scrollTo(0,0);const r=document.getElementById('root');if(r)r.scrollTop=0;}catch(e){}
@@ -445,7 +473,23 @@ function render(){root.innerHTML=viewToday()+viewSearch()+viewMe();switchTab('to
 function openProfile(sec){closeProfile();root.insertAdjacentHTML('beforeend',viewProfile(sec));
  const _pv=document.getElementById('pv');
  if(_pv){const _ss=window.matchMedia('(display-mode: standalone)')&&window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;if(!_ss)_pv.classList.add('in-browser');}
- bindAiPanel(sec);}
+ bindAiPanel(sec);bindQuick(sec);}
+/* v46 快捷页：chips 预点亮 + 一键提交（复用回传同字段，kind 日常维护） */
+function bindQuick(sec){
+ const pv=document.getElementById('pv');if(!pv)return;
+ const qa=pv.querySelector('#qkActions'),qg=pv.querySelector('#qkGrade');
+ if(qa)bindChipGroup(qa,true);
+ if(qg)bindChipGroup(qg,false);
+ const u=DATA.users[sec];
+ if(qa&&u)qa.querySelectorAll('.chip').forEach(c=>{if(u.ff&&u.ff.includes(c.dataset.v))c.classList.add('on');});
+ const b=pv.querySelector('#qkSubmit');
+ if(b)b.onclick=()=>{
+  const actions=getChipVals(qa);const grade=getChipVals(qg)[0]||'';
+  if(!actions.length&&!grade){toast('先选动作或等级');return;}
+  b.disabled=true;b.textContent='提交中…';
+  const body={token:storedToken(),sec,nick:(u&&u.n)||'',room_id:DATA.anchor.room_id||'',kind:'日常维护',actions,grade,note:'',contact:'',demand:'',birthday:'',hometown:'',hobby:'',keyevent:'',address:'',job:'',taboo:''};
+  doSubmit(body,()=>{if(u&&actions.length){u.ff=u.ff||[];for(const f of['已拉群','已互关'])if(actions.includes(f)&&!u.ff.includes(f))u.ff.push(f);}
+   closeProfile();openProfile(sec);});};}
 function closeProfile(){const pv=document.getElementById('pv');if(pv)pv.remove();}
 let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.opacity='1';
  t.style.transform='translateX(-50%) translateY(0)';clearTimeout(tt);
@@ -633,6 +677,8 @@ document.addEventListener('click',e=>{
  if(e.target.closest('#noteEdit'))return;
  if(e.target.closest('#sheet'))return;
  if(e.target.closest('#aiCard'))return;
+ if(e.target.closest('[data-qopen]')){const tr=document.getElementById('pvTrack');if(tr)tr.classList.add('show-quick');return;}
+ if(e.target.closest('[data-qback]')){const tr=document.getElementById('pvTrack');if(tr)tr.classList.remove('show-quick');return;}
  if(e.target.closest('[data-back]')){closeProfile();return;}
  const ac=e.target.closest('[data-act]');
  const se=e.target.closest('[data-sec]');
@@ -663,22 +709,22 @@ document.addEventListener('touchstart',e=>{
  if(e.touches.length!==1){_sw=0;return;}
  const t=e.touches[0],w=window.innerWidth;
  if(t.clientX<24||t.clientX>w-24){_sw=0;return;}
- if(e.target&&e.target.closest&&e.target.closest('.churn-row,input,textarea,.sheet,.pview,.sbar')){_sw=0;return;}
+ if(e.target&&e.target.closest&&e.target.closest('.churn-row,input,textarea,.sheet,.sbar')){_sw=0;return;}
  _sx=t.clientX;_sy=t.clientY;_sw=1;
 },{passive:true});
 document.addEventListener('touchmove',e=>{
  if(!_sw||!e.touches.length)return;const t=e.touches[0];
  if(Math.abs(t.clientY-_sy)>Math.abs(t.clientX-_sx)*1.2)_sw=0;
 },{passive:true});
+/* v46 手势：只在画像页内生效——主页右滑=快捷页，快捷页左滑=回画像，主页左滑=返回列表；列表页不滑切 tab（老板口径 2026-10-04） */
 document.addEventListener('touchend',e=>{
  if(!_sw)return;_sw=0;
  const dx=e.changedTouches[0].clientX-_sx;
  if(Math.abs(dx)<64)return;
- const cur=TABS.findIndex(x=>{const v=document.getElementById('v-'+x);return v&&v.classList.contains('show');});
- if(cur<0)return;
- const n=cur+(dx<0?1:-1);
- if(n<0||n>=TABS.length)return;
- switchTab(TABS[n],dx<0?'l':'r');
+ const tr=document.getElementById('pvTrack');
+ if(!tr)return;
+ if(tr.classList.contains('show-quick')){if(dx<0)tr.classList.remove('show-quick');}
+ else{if(dx>0)tr.classList.add('show-quick');else closeProfile();}
 },{passive:true});
 document.addEventListener('input',e=>{if(e.target.id==='q')renderSearch(e.target.value);});
 const TABBAR=`<div class="tabbar">
