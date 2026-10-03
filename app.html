@@ -109,7 +109,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .urow.done .avatar{filter:grayscale(.75);}
 .urow.done .u-nick{color:var(--ink3);}
 .urow .done-tag{flex:none;}
-.trows .urow{border-top:1px solid var(--line);}
+.trows .urow-wrap{border-top:1px solid var(--line);}
 .tier.closed .trows .urow:nth-child(n+6){display:none;}
 .tier .t-foot{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line);}
 .tier .tf{flex:1;text-align:center;font-size:12px;font-weight:600;padding:10px 4px;border-radius:9px;cursor:pointer;}
@@ -259,6 +259,17 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .pv-track.show-quick{transform:translateX(-50%);}
 .pv-page{width:50%;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .pv-main{order:1;}.pv-quick{order:2;}
+/* v48 用户条左滑快捷操作（仿 iOS 备忘录圆钮） */
+.urow-wrap{position:relative;overflow:hidden;}
+.urow-acts{position:absolute;top:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;padding-right:12px;}
+.ua{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;font-family:inherit;cursor:pointer;padding:0;}
+.ua-c{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;}
+.ua-l{font-size:10px;color:var(--ink2);}
+.ua-dm .ua-c{background:var(--brand-soft);color:var(--brand);}
+.ua-grp .ua-c{background:var(--card2);color:var(--brand);}
+.ua-fb .ua-c{background:var(--lime);color:#223014;}
+.trows .urow{position:relative;background:var(--card);transition:transform .18s ease;}
+.urow-wrap.open .urow{transform:translateX(-198px);}
 .pv-hint{margin-left:auto;font-size:12px;color:var(--on-bg2);font-weight:500;}
 .qk-t{font-size:12px;font-weight:700;color:var(--ink2);margin:16px 18px 7px;}
 </style>
@@ -272,7 +283,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v47';
+const APP_VERSION='v48';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -297,9 +308,9 @@ function topbar(){const a=DATA.anchor;return `<div class="topbar"><div class="wh
 const GLOBE=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5a7a35" stroke-width="2" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>`;
 
 function tier(cls,code,name,sub,secs){if(!secs.length)return '';
- const rows=secs.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow${dn?' done':''}" data-sec="${s}">
-  ${avHtml(u,s,32,13)}
-  <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span><span class="u-val">${yuan(u.tv)}</span></div><div class="u-tags">${rowTags(u)}${doneTagHTML(s)}</div></div></div>`;}).join('');
+ const rows=secs.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow-wrap"><div class="urow-acts"><button class="ua ua-dm" data-ua="dm"><span class="ua-c">私</span><span class="ua-l">已私信</span></button><button class="ua ua-grp" data-ua="grp"><span class="ua-c">群</span><span class="ua-l">已拉群</span></button><button class="ua ua-fb" data-ua="fb"><span class="ua-c">传</span><span class="ua-l">回传</span></button></div><div class="urow${dn?' done':''}" data-sec="${s}">
+  ${avHtml(u,s,36,14)}
+  <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span><span class="u-val">${yuan(u.tv)}</span></div><div class="u-tags">${rowTags(u)}${doneTagHTML(s)}</div></div></div></div>`;}).join('');
  const foot=secs.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${secs.length} 人 ▾</span></div>`:'';
  return `<div class="tier ${cls} closed"><div class="t-head"><div class="t-ico">${code}</div>
   <div><div class="t-name">${name}</div><div class="t-sub">${sub}</div></div>
@@ -308,9 +319,9 @@ function churnCard(s,cls,lab){const u=DATA.users[s];return `<div class="churn-ca
   <div class="cc-nick">${u.n}</div><div class="cc-gap">${daysBetween(u.last,DATA.anchor.date)}天</div>
   <div class="cc-lab">${lab}</div><div class="cc-val">给我 ${yuan(u.sv)}</div></div>`;}
 function greetBlock(){const g=DATA.greet;if(!g||!g.length)return '';
- const rows=g.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow${dn?' done':''}" data-sec="${s}">
-  ${avHtml(u,s,32,13)}
-  <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span><span class="u-val">给我 ${yuan(u.sv)}</span></div><div class="u-tags">${gradeTag(u)}${doneTagHTML(s)}</div></div></div>`;}).join('');
+ const rows=g.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow-wrap"><div class="urow-acts"><button class="ua ua-dm" data-ua="dm"><span class="ua-c">私</span><span class="ua-l">已私信</span></button><button class="ua ua-grp" data-ua="grp"><span class="ua-c">群</span><span class="ua-l">已拉群</span></button><button class="ua ua-fb" data-ua="fb"><span class="ua-c">传</span><span class="ua-l">回传</span></button></div><div class="urow${dn?' done':''}" data-sec="${s}">
+  ${avHtml(u,s,36,14)}
+  <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span><span class="u-val">给我 ${yuan(u.sv)}</span></div><div class="u-tags">${gradeTag(u)}${doneTagHTML(s)}</div></div></div></div>`;}).join('');
  const foot=g.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${g.length} 人 ▾</span></div>`:'';
  return `<div class="tier closed"><div class="t-head"><div class="t-ico" style="background:var(--amber-bg);color:var(--amber)">★</div>
   <div><div class="t-name">主动问候</div><div class="t-sub">S/A/B 级本场没刷 · 也要维系</div></div>
@@ -648,11 +659,21 @@ document.addEventListener('click',e=>{
  if(e.target.closest('#noteEdit'))return;
  if(e.target.closest('#sheet'))return;
  if(e.target.closest('#aiCard'))return;
+ const ua=e.target.closest('[data-ua]');   /* v48 用户条左滑快捷钮 */
+ if(ua){const wrap=ua.closest('.urow-wrap');const rowEl=wrap?wrap.querySelector('.urow[data-sec]'):null;
+  if(!rowEl)return;const sec=rowEl.dataset.sec;wrap.classList.remove('open');
+  if(ua.dataset.ua==='fb'){openFeedbackSheet(sec);return;}
+  const act=ua.dataset.ua==='dm'?'已私信':'已拉群';
+  const u=DATA.users[sec];
+  doSubmit({token:storedToken(),sec,nick:(u&&u.n)||'',room_id:DATA.anchor.room_id||'',kind:'日常维护',actions:[act],grade:'',note:'',contact:'',demand:'',birthday:'',hometown:'',hobby:'',keyevent:'',address:'',job:'',taboo:''},()=>{
+   if(u&&act==='已拉群'){u.ff=u.ff||[];if(!u.ff.includes('已拉群'))u.ff.push('已拉群');
+    const tg=wrap.querySelector('.u-tags');if(tg&&!tg.textContent.includes('群'))tg.insertAdjacentHTML('beforeend','<span class="tag t-green badge">群</span>');}});
+  return;}
  if(e.target.closest('[data-qopen]')){const tr=document.getElementById('pvTrack');if(tr)tr.classList.add('show-quick');return;}
  if(e.target.closest('[data-qback]')){const tr=document.getElementById('pvTrack');if(tr)tr.classList.remove('show-quick');return;}
  if(e.target.closest('[data-back]')){closeProfile();return;}
  const ac=e.target.closest('[data-act]');
- const se=e.target.closest('[data-sec]');
+ const se=e.target.closest('.urow[data-sec],.churn-card[data-sec],.srow[data-sec]');   /* v48 修闪屏：不再匹配 #pv 容器自身，否则画像页内点哪都重开 */
  const tb=e.target.closest('.tabbar .tb');
  if(ac){const act=ac.dataset.act;
  if(act==='logout'){localStorage.removeItem('anchor_token');location.reload();return;}
@@ -697,6 +718,36 @@ document.addEventListener('touchend',e=>{
  if(tr.classList.contains('show-quick')){if(dx>0)tr.classList.remove('show-quick');}
  else{if(dx<0)tr.classList.add('show-quick');else closeProfile();}
 },{passive:true});
+/* v48 用户条左滑快捷操作（仿 iOS 备忘录）；与画像手势互不干扰（列表页无 pvTrack，画像页无 urow） */
+const ROWW=198;let _rs=null,_suppressClick=false;
+document.addEventListener('touchstart',e=>{
+ if(e.touches.length!==1)return;
+ const rw=e.target&&e.target.closest?e.target.closest('.urow[data-sec]'):null;
+ const inActs=e.target&&e.target.closest?e.target.closest('.urow-acts'):null;
+ if(!inActs)document.querySelectorAll('.urow-wrap.open').forEach(w=>{if(!rw||w!==rw.parentElement)w.classList.remove('open');});
+ if(!rw){_rs=null;return;}
+ const t=e.touches[0];_rs={row:rw,wrap:rw.parentElement,x:t.clientX,y:t.clientY,hor:0};
+},{passive:true});
+document.addEventListener('touchmove',e=>{
+ if(!_rs||!e.touches.length)return;const t=e.touches[0];
+ const dx=t.clientX-_rs.x,dy=t.clientY-_rs.y;
+ if(!_rs.hor){if(Math.abs(dy)>Math.abs(dx)*1.2){_rs=null;return;}if(Math.abs(dx)<8)return;_rs.hor=1;}
+ e.preventDefault();
+ const base=_rs.wrap.classList.contains('open')?-ROWW:0;
+ const nx=Math.max(-ROWW,Math.min(0,base+dx));
+ _rs.row.style.transition='none';_rs.row.style.transform='translateX('+nx+'px)';
+},{passive:false});
+document.addEventListener('touchend',e=>{
+ if(!_rs)return;const rs=_rs;_rs=null;
+ if(!rs.hor){rs.row.style.transform='';rs.row.style.transition='';return;}
+ const m=(rs.row.style.transform||'').match(/-?[\d.]+/);const cur=m?parseFloat(m[0]):0;
+ rs.row.style.transform='';rs.row.style.transition='';
+ if(cur<-ROWW/2){document.querySelectorAll('.urow-wrap.open').forEach(w=>{if(w!==rs.wrap)w.classList.remove('open');});rs.wrap.classList.add('open');}
+ else rs.wrap.classList.remove('open');
+ _suppressClick=true;setTimeout(()=>_suppressClick=false,400);
+},{passive:true});
+document.addEventListener('click',e=>{if(_suppressClick){e.stopPropagation();e.preventDefault();}},true);
+document.addEventListener('touchstart',()=>{_suppressClick=false;},true);   /* 下一次触摸即解除抑制：拖拽后的鬼点击仍被吃，新点按不受影响 */
 document.addEventListener('input',e=>{if(e.target.id==='q')renderSearch(e.target.value);});
 const TABBAR=`<div class="tabbar">
  <button class="tb on" data-tab="today"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>今日</button>
