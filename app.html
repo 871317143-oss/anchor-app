@@ -222,7 +222,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v41';
+const APP_VERSION='v42';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -701,8 +701,8 @@ function bindAiFb(scope,sec,txtOverride){
  });
 }
 function aiPanel(sec){
-  const gray=DATA.anchor.team==='menghualu_xingzhou';
-  if(!gray)return '';   // 「小梦救我」仅灰度团（行舟）；其余团不显示
+  const gray=true;   // 2026-10-04 全团放量（老板拍板，小梦助理全团上线）
+  if(!gray)return '';
   return `<div class="ai-card" id="aiCard" data-sec="${sec}">
    <div class="ai-head"><span>小梦助理</span><span class="ai-depth" id="aiDepth"><em data-d="fast">极速</em><em data-d="deep">深度</em></span></div>
    <div class="ai-nav">
