@@ -259,10 +259,14 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .pv-track.show-quick{transform:translateX(-50%);}
 .pv-page{width:50%;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .pv-main{order:1;}.pv-quick{order:2;}
-/* v48 用户条左滑快捷操作（仿 iOS 备忘录圆钮） */
-.urow-wrap{position:relative;overflow:hidden;}
+/* v48 用户条左滑快捷操作（仿 iOS 备忘录圆钮）；v51 按钮级联滑入：--p=展开进度 0→1，越靠右的钮行程越长（错落丝滑） */
+.urow-wrap{position:relative;overflow:hidden;--p:0;}
+.urow-wrap.open{--p:1;}
 .urow-acts{position:absolute;top:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;padding-right:12px;}
-.ua{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;font-family:inherit;cursor:pointer;padding:0;}
+.ua{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;font-family:inherit;cursor:pointer;padding:0;
+ --lag:36px;transform:translateX(calc((1 - var(--p,0))*var(--lag)));transition:transform .22s cubic-bezier(.22,.9,.3,1);}
+.ua:nth-child(2){--lag:84px;transition-delay:.03s;}
+.ua:nth-child(3){--lag:136px;transition-delay:.06s;}
 .ua-c{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;}
 .ua-l{font-size:10px;color:var(--ink2);}
 .ua-fb .ua-c{background:#3d6b9a;color:#fff;}
@@ -284,7 +288,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v50';
+const APP_VERSION='v51';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -604,6 +608,9 @@ function openFeedbackSheet(sec){
   doSubmit(body,()=>{if(note)localStorage.setItem('note_'+sec,note);
    const u2=DATA.users[sec];if(u2){u2.ff=u2.ff||[];for(const f of['已拉群','已互关'])if(actions.includes(f)&&!u2.ff.includes(f))u2.ff.push(f);
     if(unflags.length)u2.ff=u2.ff.filter(f=>!unflags.includes(f));}
+   if(unflags.length)document.querySelectorAll('.urow[data-sec="'+sec+'"] .u-tags .badge').forEach(b=>{   /* 灭灯后列表徽标同步摘掉（v51 修不同步） */
+    if(unflags.includes('已拉群')&&b.textContent.trim()==='群')b.remove();
+    if(unflags.includes('已互关')&&b.textContent.trim()==='互')b.remove();});
    closeSheet();if(document.getElementById('pv')){closeProfile();openProfile(sec);}});};}
 function openCorrectSheet(sec){
  const u=DATA.users[sec];
@@ -702,22 +709,39 @@ document.addEventListener('gesturestart',e=>e.preventDefault());
 document.addEventListener('gesturechange',e=>e.preventDefault());
 document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault();},{passive:false});
 /* v45 左右滑切 tab：边缘 24px 禁区；横滑卡片区/输入区/弹层内不接管；纵向占优不接管 */
-let _sx=0,_sy=0,_sw=0;
+let _sx=0,_sy=0,_sw=0,_dg=null;
 document.addEventListener('touchstart',e=>{
  if(e.touches.length!==1){_sw=0;return;}
  const t=e.touches[0],w=window.innerWidth;
  if(t.clientX<24||t.clientX>w-24){_sw=0;return;}
  if(e.target&&e.target.closest&&e.target.closest('.churn-row,input,textarea,.sbar')){_sw=0;return;}
  _sx=t.clientX;_sy=t.clientY;_sw=1;
+ /* v51 跟手退出候选：弹层 or 画像主页（更多信息页/列表页不设） */
+ _dg=null;
+ const _sh=document.getElementById('sheet');
+ if(_sh)_dg={el:_sh,moved:0};
+ else{const _pv=document.getElementById('pv'),_tr=document.getElementById('pvTrack');
+  if(_pv&&_tr&&!_tr.classList.contains('show-quick'))_dg={el:_pv,moved:0};}
 },{passive:true});
 document.addEventListener('touchmove',e=>{
  if(!_sw||!e.touches.length)return;const t=e.touches[0];
- if(Math.abs(t.clientY-_sy)>Math.abs(t.clientX-_sx)*1.2)_sw=0;
+ const dx=t.clientX-_sx;
+ if(Math.abs(t.clientY-_sy)>Math.abs(dx)*1.2){_sw=0;return;}
+ if(_dg&&dx>0){_dg.el.style.transition='none';_dg.el.style.transform='translateX('+dx+'px)';_dg.moved=1;}
 },{passive:true});
-/* v47 手势：只在画像页内生效——主页左滑=更多信息页，更多信息页右滑=回画像，主页右滑=退出返回（老板口径 2026-10-04）；列表页不滑切 tab */
+/* v51 手势：右滑退出全程跟手（弹层/画像主页），拖过 1/3 屏完成退出、否则弹回；画像页内左滑=更多信息页，信息页右滑=回画像（阈值式保留）；列表页不滑切 tab */
 document.addEventListener('touchend',e=>{
  if(!_sw)return;_sw=0;
  const dx=e.changedTouches[0].clientX-_sx;
+ if(_dg&&_dg.moved){
+  const el=_dg.el,isSheet=el.id==='sheet';_dg=null;
+  el.style.transition='transform .24s cubic-bezier(.22,.9,.3,1)';
+  if(dx>window.innerWidth*0.33){el.style.transform='translateX(110%)';
+   setTimeout(()=>{if(isSheet)closeSheet();else closeProfile();},200);}
+  else el.style.transform='translateX(0)';
+  setTimeout(()=>{if(el.isConnected){el.style.transform='';el.style.transition='';}},320);
+  return;}
+ _dg=null;
  if(Math.abs(dx)<64)return;
  const sh=document.getElementById('sheet');
  if(sh){if(dx>0)closeSheet();return;}   // 回传/纠错弹层：右滑返回（2026-10-04）
@@ -744,12 +768,13 @@ document.addEventListener('touchmove',e=>{
  const base=_rs.wrap.classList.contains('open')?-ROWW:0;
  const nx=Math.max(-ROWW,Math.min(0,base+dx));
  _rs.row.style.transition='none';_rs.row.style.transform='translateX('+nx+'px)';
+ _rs.wrap.style.setProperty('--p',(-nx/ROWW).toFixed(3));   /* 按钮跟随拖拽进度级联滑入（v51） */
 },{passive:false});
 document.addEventListener('touchend',e=>{
  if(!_rs)return;const rs=_rs;_rs=null;
  if(!rs.hor){rs.row.style.transform='';rs.row.style.transition='';return;}
  const m=(rs.row.style.transform||'').match(/-?[\d.]+/);const cur=m?parseFloat(m[0]):0;
- rs.row.style.transform='';rs.row.style.transition='';
+ rs.row.style.transform='';rs.row.style.transition='';rs.wrap.style.removeProperty('--p');
  if(cur<-ROWW/2){document.querySelectorAll('.urow-wrap.open').forEach(w=>{if(w!==rs.wrap)w.classList.remove('open');});rs.wrap.classList.add('open');}
  else rs.wrap.classList.remove('open');
  _suppressClick=true;setTimeout(()=>_suppressClick=false,400);
