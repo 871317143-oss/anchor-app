@@ -222,7 +222,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v40';
+const APP_VERSION='v41';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -234,7 +234,7 @@ function avHtml(u,sec,size,fs){
  const inner=(u.n||'?')[0]+(u.av?`<img src="${escapeHtml(u.av)}" style="position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.remove()">`:'');
  return `<div class="avatar" style="position:relative;background:${colorOf(u.n||sec)};width:${size}px;height:${size}px;font-size:${fs}px">${inner}</div>`;}
 function rowTags(u){let t=[gradeTag(u)];
-  if(u.bg!=null&&u.bg<=7)t.push(tag('red','🎂'+(u.bg===0?'今天':u.bg===1?'明天':u.bg+'天')));
+  if(u.bg!=null&&u.bg<=7&&u.mine)t.push(tag('red','🎂'+(u.bg===0?'今天':u.bg===1?'明天':u.bg+'天')));
   if(u.ff&&u.ff.includes('已拉群'))t.push('<span class="tag t-green badge">群</span>');
   if(u.ff&&u.ff.includes('已互关'))t.push('<span class="tag t-blue badge">互</span>');
   if(u.nf)t.push(tag('red','新客'));
