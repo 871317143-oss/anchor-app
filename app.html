@@ -222,7 +222,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v37';
+const APP_VERSION='v38';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -230,6 +230,9 @@ function daysBetween(d1,d2){return Math.round((new Date(d2)-new Date(d1))/864000
 function tag(cls,txt){return `<span class="tag t-${cls}"><span class="dot"></span>${txt}</span>`;}
 function churnLab(ch){return ch==='A'?'高价值流失':ch==='B'?'老客流失':'长尾流失';}
 function gradeTag(u){const m={S:'red',A:'amber',B:'blue',C:'green',D:'gray'};return u.t?tag(m[u.t],u.t+'级'):'';}
+function avHtml(u,sec,size,fs){
+ const inner=(u.n||'?')[0]+(u.av?`<img src="${escapeHtml(u.av)}" style="position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.remove()">`:'');
+ return `<div class="avatar" style="position:relative;background:${colorOf(u.n||sec)};width:${size}px;height:${size}px;font-size:${fs}px">${inner}</div>`;}
 function rowTags(u){let t=[gradeTag(u)];
   if(u.ff&&u.ff.includes('已拉群'))t.push('<span class="tag t-green badge">群</span>');
   if(u.ff&&u.ff.includes('已互关'))t.push('<span class="tag t-blue badge">互</span>');
@@ -244,7 +247,7 @@ const GLOBE=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke=
 
 function tier(cls,code,name,sub,secs){if(!secs.length)return '';
  const rows=secs.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow${dn?' done':''}" data-sec="${s}">
-  <div class="avatar" style="background:${colorOf(u.n||s)}">${(u.n||'?')[0]}</div>
+  ${avHtml(u,s,32,13)}
   <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span><span class="u-val">${yuan(u.tv)}</span></div><div class="u-tags">${rowTags(u)}${doneTagHTML(s)}</div></div></div>`;}).join('');
  const foot=secs.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${secs.length} 人 ▾</span></div>`:'';
  return `<div class="tier ${cls} closed"><div class="t-head"><div class="t-ico">${code}</div>
@@ -255,7 +258,7 @@ function churnCard(s,cls,lab){const u=DATA.users[s];return `<div class="churn-ca
   <div class="cc-lab">${lab}</div><div class="cc-val">给我 ${yuan(u.sv)}</div></div>`;}
 function greetBlock(){const g=DATA.greet;if(!g||!g.length)return '';
  const rows=g.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow${dn?' done':''}" data-sec="${s}">
-  <div class="avatar" style="background:${colorOf(u.n||s)}">${(u.n||'?')[0]}</div>
+  ${avHtml(u,s,32,13)}
   <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span><span class="u-val">给我 ${yuan(u.sv)}</span></div><div class="u-tags">${gradeTag(u)}${doneTagHTML(s)}</div></div></div>`;}).join('');
  const foot=g.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${g.length} 人 ▾</span></div>`:'';
  return `<div class="tier closed"><div class="t-head"><div class="t-ico" style="background:var(--amber-bg);color:var(--amber)">★</div>
@@ -307,7 +310,7 @@ function renderList(t){
  if(!list.length){box.innerHTML='<div class="empty">这个等级还没有属于你的用户</div>';return;}
  const total=list.length;list=list.slice(0,200);
  box.innerHTML=`<div class="slist">${list.map(s=>{const u=DATA.users[s];return `<div class="srow" data-sec="${s}">
-  <div class="avatar" style="background:${colorOf(u.n||s)};width:36px;height:36px;font-size:14px">${(u.n||'?')[0]}</div>
+  ${avHtml(u,s,36,14)}
   <div class="s-nick">${u.n} ${rowTags(u)}</div>
   <div class="s-sub">累计${yuan(u.sv)}${u.tv?(' · 今天'+yuan(u.tv)):''}${u.last?(' · 上次'+u.last.slice(5)):''}${u.ch?(' · '+churnLab(u.ch)):''}</div></div>`;}).join('')}</div>
   ${total>200?`<div class="empty">共 ${total} 人，仅显示前 200（按累计排序）</div>`:''}`;}
