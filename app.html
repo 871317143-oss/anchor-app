@@ -176,7 +176,10 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .fb-more-body{padding:3px 12px 1px;}
 /* AI 客情助手 */
 .ai-card{margin:12px 16px 0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;}
-.ai-head{padding:11px 14px;font-size:13px;font-weight:700;background:var(--brand);color:#fff;letter-spacing:.5px;}
+.ai-head{padding:11px 14px;font-size:13px;font-weight:700;background:var(--brand);color:#fff;letter-spacing:.5px;display:flex;align-items:center;justify-content:space-between;}
+.ai-depth{display:flex;background:rgba(255,255,255,.18);border-radius:999px;padding:2px;font-weight:600;}
+.ai-depth em{font-style:normal;font-size:11px;padding:3px 10px;border-radius:999px;color:rgba(255,255,255,.65);cursor:pointer;}
+.ai-depth em.on{background:#fff;color:var(--brand);}
 .ai-nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line);}
 .ai-tab{font-size:12px;font-weight:600;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--brand);font-family:inherit;cursor:pointer;}
 .ai-tab.on{background:var(--brand);color:#fff;}
@@ -218,7 +221,8 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
-const APP_VERSION='v36';
+let _aiDepth=localStorage.getItem('ai_depth')||'deep';
+const APP_VERSION='v37';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -691,7 +695,7 @@ function aiPanel(sec){
   const gray=DATA.anchor.team==='menghualu_xingzhou';
   if(!gray)return '';   // 「小梦救我」仅灰度团（行舟）；其余团不显示
   return `<div class="ai-card" id="aiCard" data-sec="${sec}">
-   <div class="ai-head">小梦救我 · 基于 TA 的档案</div>
+   <div class="ai-head"><span>小梦助理</span><span class="ai-depth" id="aiDepth"><em data-d="fast">极速</em><em data-d="deep">深度</em></span></div>
    <div class="ai-nav">
     <button class="ai-tab" data-ai="homepage">主页破冰</button>
     <button class="ai-tab" data-ai="chat">私信维护</button>
@@ -716,6 +720,9 @@ function bindAiPanel(sec){
     else if(k==='timeline')p=aiShowTimeline(sec,box);
     if(p&&p.catch)p.catch(e=>{box.innerHTML='<div class="ai-err">'+escapeHtml(String(e.message||e))+'</div>';});
   });
+  const dw=card.querySelector('#aiDepth');
+  if(dw){const sync=()=>dw.querySelectorAll('em').forEach(e=>e.classList.toggle('on',e.dataset.d===_aiDepth));
+   sync();dw.querySelectorAll('em').forEach(e=>e.onclick=()=>{_aiDepth=e.dataset.d;localStorage.setItem('ai_depth',_aiDepth);sync();});}
 }
 // 小梦救我·五段式（主页破冰/私信维护）：截图 → 五段分析 + 三套方案可复制
 function aiShowFive(sec,box,mode){
@@ -729,7 +736,7 @@ function aiShowFive(sec,box,mode){
   fb.innerHTML='<div class="ai-ph">小梦读图中…（图多稍等）</div>';
   try{const images=await Promise.all(fs.map(fileToDataURL));
     const q=box.querySelector('#aiQ');
-    const r=await aiPost('/analyze',{token:storedToken(),sec,user:DATA.users[sec],images,mode,question:q?q.value.trim():''});
+    const r=await aiPost('/analyze',{token:storedToken(),sec,user:DATA.users[sec],images,mode,depth:_aiDepth,question:q?q.value.trim():''});
     renderFive(fb,r,isHome);
   }catch(e){fb.innerHTML='<div class="ai-err">'+escapeHtml(e.message)+'</div>';}
  };
