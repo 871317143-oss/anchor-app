@@ -222,7 +222,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v38';
+const APP_VERSION='v39';
 const COLORS=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5195','#2f6fb0','#a05a2c','#4a6b50'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -343,7 +343,7 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
  if(u.w>1200)tags.push(tag('green','高陪伴'));if(u.ch)tags.push(tag(u.ch==='A'?'red':u.ch==='B'?'amber':'gray',churnLab(u.ch)));
  const info=[u.gr&&('荣耀'+u.gr),u.fl&&('灯牌'+u.fl),u.l,u.g&&(u.g===1?'男':'女'),u.a&&(u.a+'岁')].filter(x=>x).join(' · ');
  return `<div class="pview show" id="pv" data-sec="${sec}"><div class="pv-back" data-back="1">‹ 返回</div><div class="wrap">
-  <div class="profile"><div class="head">
+  <div class="profile">${showDet&&u.hp&&u.hp.c?`<div style="height:88px;background:center/cover no-repeat url('${escapeHtml(u.hp.c)}');border-radius:16px 16px 0 0;opacity:.92"></div>`:''}<div class="head">
   <div class="avatar" style="position:relative;background:${colorOf(u.n||sec)};width:48px;height:48px;font-size:19px">${(u.n||'?')[0]}${u.av?`<img src="${escapeHtml(u.av)}" style="position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.remove()">`:''}</div>
   <div class="h-main"><div class="nick">${u.n}</div><div class="tags">${tags.join('')}</div>
   <div class="grade">${info}</div></div></div>
@@ -374,6 +374,7 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
   ${showDet&&u.contact?`<div class="pv-info"><span class="pvi-label">联系方式</span><span>${escapeHtml(u.contact)}</span></div>`:''}
   ${showDet&&u.keyevent?`<div class="pv-info"><span class="pvi-label">关键事件</span><span style="color:var(--amber)">${escapeHtml(u.keyevent)}</span></div>`:''}
   ${showDet&&u.sign?`<div class="pv-info"><span class="pvi-label">个性签名</span><span>${escapeHtml(u.sign)}</span></div>`:''}
+  ${showDet&&u.hp&&u.hp.wl&&u.hp.wl.length?`<div class="pv-info"><span class="pvi-label">主页作品</span><span>${escapeHtml(u.hp.wl.join('｜'))}${u.hp.wc?`（共${u.hp.wc}条）`:''}${u.hp.lo?'':' · 喜欢未开放'}</span></div>`:''}
   ${showDet&&u.fs0?`<div class="pv-info"><span class="pvi-label">首次到场</span><span>${escapeHtml(u.fs0)}${u.first&&u.first!==u.fs0?`（首次消费 ${escapeHtml(u.first)}）`:''}</span></div>`:''}
   ${showDet&&u.gd?`<div class="pv-info"><span class="pvi-label">等级变化</span><span>${escapeHtml(u.gd)}</span></div>`:''}
   ${showDet&&u.rh?`<div class="pv-info"><span class="pvi-label">消费节奏</span><span>${escapeHtml(u.rh)}</span></div>`:''}
