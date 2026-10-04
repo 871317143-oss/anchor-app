@@ -271,7 +271,7 @@ async function loadData(token){
       const k=normNick(x);if(k&&!S.nick2sec[k])S.nick2sec[k]=sec;});
   }
   const a=S.data.anchor||{};
-  $('#hName').textContent='🛰 '+ (a.display||a.name||'主持雷达');
+  $('#hName').textContent=a.display||a.name||'主持雷达';
   $('#hMeta').textContent='数据 '+ (a.date||'?') +' · 客群 '+Object.keys(S.users).length;
   document.title=(a.display||a.name||'')+' · 主持雷达';
 }
@@ -327,6 +327,7 @@ function handleEvents(events){
   });
 }
 function processEvent(ev){
+  if(!ev.sec)ev.sec=S.nick2sec[normNick(ev.nick)]||'';   // 演示/直推事件同样走昵称→sec 解析（否则大哥榜同人两行）
   const key=ev.sec||('~'+normNick(ev.nick));
   if(ev.kind==='enter'){
     $('#stEnter').textContent=+$('#stEnter').textContent+1;
