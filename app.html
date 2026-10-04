@@ -325,7 +325,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v66';
+const APP_VERSION='v67';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -525,10 +525,27 @@ function pollNotifs(first){
   if(!d.ok)return;
   const fresh=d.messages||[];
   if(!first){const known=new Set(_d1Notifs.map(m=>m.id));
-   fresh.filter(m=>!m.read&&!known.has(m.id)).forEach(m=>pushBanner({kind:m.kind,level:m.level,title:m.title,body:m.body,ref:m.ref_sec,time:'现在'}));}
+   fresh.filter(m=>!m.read&&!known.has(m.id)).forEach(m=>{pushBanner({kind:m.kind,level:m.level,title:m.title,body:m.body,ref:m.ref_sec,time:'现在'});
+    // v67：采集完成/数据更新消息 → 自动刷新数据（3 秒后先试一次，120 秒兜底，覆盖 CDN 延迟）
+    if(m.kind==='data_updated'||m.kind==='offair_done'){setTimeout(()=>autoRefreshData(true),3000);setTimeout(()=>autoRefreshData(true),120000);}});}
   _d1Notifs=fresh;updateNotifBadge();
   if(first)fireLocalBanners();
  }).catch(()=>{});
+}
+/* v67 数据自动刷新：回前台/定时/收到更新消息时 HEAD 比对 Last-Modified，变了就整取换数据重渲染，全程无感 */
+let _dataMod='',_rfT=0;
+async function autoRefreshData(force){
+ if(!DATA||!storedToken()||overlayOpen())return;const now=Date.now();if(now-_rfT<20000)return;_rfT=now;
+ try{
+  const h=await fetch(`data/${storedToken()}.json`,{method:'HEAD',cache:'no-store'});
+  const lm=h.headers.get('Last-Modified')||'';
+  if(!force&&lm&&lm===_dataMod)return;
+  const r=await fetch(`data/${storedToken()}.json`,{cache:'no-store'});
+  if(!r.ok)return;const d=await r.json();const nl=r.headers.get('Last-Modified')||'';
+  if(!d||!d.anchor||(d.anchor.date===DATA.anchor.date&&nl===_dataMod))return;
+  _dataMod=nl;DATA=d;document.title='画像·'+d.anchor.name;render();loadLiveFollow();
+  pushBanner({kind:'data_updated',level:'banner',title:'数据已更新',body:'已刷新到 '+d.anchor.date+' 最新场次，今日维护名单看这里',time:'现在'});
+ }catch(e){}
 }
 /* v64 顶部横幅堆叠（iOS 风）：新通知掉入、最多两层+计数、横幅态自动收、提醒态上滑收、点开通知中心 */
 let _nbQ=[];
@@ -1019,7 +1036,7 @@ function showLogin(err){
    localStorage.setItem('anchor_token',v);loadData(v);};
  btn.onclick=go;code.onkeydown=e=>{if(e.key==='Enter')go();};setTimeout(()=>code.focus(),60);}
 function loadData(tok){
- fetch(`data/${tok}.json`).then(r=>{if(!r.ok)throw 0;return r.json();}).then(d=>{DATA=d;
+ fetch(`data/${tok}.json`).then(r=>{if(!r.ok)throw 0;_dataMod=r.headers.get('Last-Modified')||'';return r.json();}).then(d=>{DATA=d;
   document.title='画像·'+d.anchor.name;root.insertAdjacentHTML('afterend',TABBAR+BELLF);render();loadLiveFollow();loadD1Notifs();})
  .catch(()=>{localStorage.removeItem('anchor_token');
    showLogin('访问码无效或已失效，请重新输入或找运营补发');});
@@ -1030,7 +1047,7 @@ function setupSW(){
  navigator.serviceWorker.addEventListener('controllerchange',()=>{
    if(refreshing)return;refreshing=true;location.reload();});
  navigator.serviceWorker.register('sw.js').then(reg=>{
-   const check=()=>{try{reg.update();}catch(e){}
+   const check=()=>{try{reg.update();}catch(e){}autoRefreshData(false);
      fetch('app.html?cv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{
        const m=t.match(/APP_VERSION='(v\d+)'/);
        if(m&&m[1]!==APP_VERSION)showUpdateBar();}).catch(()=>{});};
