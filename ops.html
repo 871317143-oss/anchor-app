@@ -135,7 +135,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.8';
+const OPS_VERSION='v3.9';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -434,7 +434,7 @@ function render(){
  _rowMeta={};(D.subs||[]).concat(D.flags||[],D.status||[],D.appeals||[],D.grades||[]).forEach(x=>{if(x.sec)_rowMeta[x.sec]={nick:nameOf(x),op:x.op||''};});
  const todoN=(D.grades||[]).filter(g=>inT(g.anchor)).length+(D.appeals||[]).filter(g=>inT(g.anchor)).length;
  root.innerHTML=`<div class="topbar"><div class="avatar">运</div><div><div class="name">运营工作台</div>
-  <div class="meta">${esc(D.scope||'运营')} · 实时数据</div></div>
+  <div class="meta">${esc(D.scope||'运营')} · ${(()=>{const ti=Object.values(D.teams||{}).reduce((s,t)=>s+(t.today.income||0),0),yi=Object.values(D.teams||{}).reduce((s,t)=>s+(t.yesterday.income||0),0);return ti>0?`<b style="color:var(--lime)">今日 ¥${fmtM(ti)}</b>`:(yi>0?`昨日 ¥${fmtM(yi)}`:'今日未开');})()} · 实时数据</div></div>
   <button class="rf" id="rf">刷新</button></div>
  <div class="view" id="v-proj">${vProj()}</div>
  <div class="view" id="v-todo">${vTodo()}</div>
