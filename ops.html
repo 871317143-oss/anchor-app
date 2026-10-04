@@ -135,7 +135,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.5';
+const OPS_VERSION='v3.6';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -335,6 +335,7 @@ function vAdmin(){
    <div class="mrow dim"><div class="mi">期</div>排期表 · 化妆表录入<span class="ms">筹备中</span></div>
    <div class="mrow dim"><div class="mi">诉</div>主播申诉处理<span class="ms">筹备中</span></div>
    <div class="mrow dim"><div class="mi">讯</div>主播信息维护<span class="ms">筹备中</span></div></div>
+  <div class="tier"><div class="mrow" id="logoutBtn" style="cursor:pointer"><div class="mi" style="background:var(--red-bg);color:var(--red)">出</div>切换账号<span class="ms">退出当前运营码</span></div></div>
   <div class="foot">运营工作台 ${OPS_VERSION} · 明细与归档在 Notion 回传库</div></div>`;}
 
 function openOpNote(sec){
@@ -386,6 +387,7 @@ function render(){
  <div class="view" id="v-admin">${vAdmin()}</div>${tabbar(todoN)}`;
  switchTab(_tab);
  document.getElementById('rf').onclick=()=>load(storedToken());
+ const lo=document.getElementById('logoutBtn');if(lo)lo.onclick=()=>{if(confirm('退出当前运营账号？')){localStorage.removeItem('ops_token');location.reload();}};
  document.querySelectorAll('[data-af]').forEach(c=>c.onclick=()=>{_af=c.dataset.af;render();});
  document.querySelectorAll('[data-tf]').forEach(c=>c.onclick=()=>{_tf=c.dataset.tf;_af='';render();});
  document.querySelectorAll('[data-oa]').forEach(b=>b.onclick=()=>offair(b.dataset.oa,({'menghualu_xunyin':'寻音','menghualu_xingzhou':'行舟','menghualu_shuiyue':'水月'})[b.dataset.oa]||b.dataset.oa));
