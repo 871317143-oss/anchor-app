@@ -296,7 +296,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v53';
+const APP_VERSION='v54';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -721,7 +721,8 @@ let _sx=0,_sy=0,_sw=0,_dg=null;
 document.addEventListener('touchstart',e=>{
  if(e.touches.length!==1){_sw=0;return;}
  const t=e.touches[0],w=window.innerWidth;
- if(t.clientX<24||t.clientX>w-24){_sw=0;return;}
+ const _std=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+ if(!_std&&(t.clientX<24||t.clientX>w-24)){_sw=0;return;}   /* 边缘禁区只对浏览器模式（防返回手势）；主屏安装版无系统手势，全屏可滑（v54 修右滑不灵） */
  if(e.target&&e.target.closest&&e.target.closest('.churn-row,input,textarea,.sbar')){_sw=0;return;}
  _sx=t.clientX;_sy=t.clientY;_sw=1;
  /* v51 跟手退出候选：弹层 or 画像主页（更多信息页/列表页不设） */
@@ -736,7 +737,7 @@ document.addEventListener('touchmove',e=>{
  const dx=t.clientX-_sx;
  if(Math.abs(t.clientY-_sy)>Math.abs(dx)*1.2){_sw=0;return;}
  if(_dg&&dx>0){
-  const now=e.timeStamp;_dg.vx=0.7*(_dg.vx||0)+0.3*((t.clientX-(_dg.lx||t.clientX))/Math.max(1,now-(_dg.lt||now)));_dg.lx=t.clientX;_dg.lt=now;
+  const now=e.timeStamp;_dg.vx=0.45*(_dg.vx||0)+0.55*((t.clientX-(_dg.lx||t.clientX))/Math.max(1,now-(_dg.lt||now)));_dg.lx=t.clientX;_dg.lt=now;
   let fx=dx;const lim=window.innerWidth*0.9;
   if(fx>lim)fx=lim+(fx-lim)*0.28;   /* 橡皮筋阻尼 */
   _dg.el.style.transition='none';_dg.el.style.transform='translateX('+fx+'px)';_dg.moved=1;}
@@ -747,9 +748,9 @@ document.addEventListener('touchend',e=>{
  const dx=e.changedTouches[0].clientX-_sx;
  if(_dg&&_dg.moved){
   const el=_dg.el,isSheet=el.id==='sheet';
-  const fast=(_dg.vx||0)>0.5;_dg=null;
+  const fast=(_dg.vx||0)>0.35;_dg=null;
   el.style.transition='transform .33s var(--spring-settle)';
-  if(dx>window.innerWidth*0.33||fast){el.style.transform='translateX(110%)';   /* 过1/3屏或快速扫都完成退出 */
+  if(dx>window.innerWidth*0.28||fast){el.style.transform='translateX(110%)';   /* 过28%屏或快速扫都完成退出（v54 灵敏度对齐） */
    setTimeout(()=>{if(isSheet)closeSheet();else closeProfile();},280);}
   else el.style.transform='translateX(0)';
   setTimeout(()=>{if(el.isConnected){el.style.transform='';el.style.transition='';}},400);
@@ -779,7 +780,7 @@ document.addEventListener('touchmove',e=>{
  const dx=t.clientX-_rs.x,dy=t.clientY-_rs.y;
  if(!_rs.hor){if(Math.abs(dy)>Math.abs(dx)*1.2){_rs.wrap.classList.remove('dragging');_rs=null;return;}if(Math.abs(dx)<8)return;_rs.hor=1;}
  e.preventDefault();
- const now=e.timeStamp;_rs.vx=0.7*_rs.vx+0.3*((t.clientX-_rs.lx)/Math.max(1,now-_rs.lt));_rs.lx=t.clientX;_rs.lt=now;   /* 平滑速度 px/ms */
+ const now=e.timeStamp;_rs.vx=0.45*_rs.vx+0.55*((t.clientX-_rs.lx)/Math.max(1,now-_rs.lt));_rs.lx=t.clientX;_rs.lt=now;   /* 平滑速度 px/ms（0.45/0.55，新值权重过半，快扫不稀释） */
  const base=_rs.wrap.classList.contains('open')?-ROWW:0;
  let nx=base+dx;
  if(nx>0)nx=nx*0.28;   /* 橡皮筋：过界阻尼 */
@@ -793,7 +794,7 @@ document.addEventListener('touchend',e=>{
  if(!rs.hor){rs.row.style.transform='';rs.row.style.transition='';return;}
  const m=(rs.row.style.transform||'').match(/-?[\d.]+/);const cur=m?parseFloat(m[0]):0;
  rs.row.style.transform='';rs.row.style.transition='';rs.wrap.style.removeProperty('--p');
- const flickL=rs.vx<-0.45,flickR=rs.vx>0.45;   /* v52：快扫认速度方向，慢拖认位置 */
+ const flickL=rs.vx<-0.35,flickR=rs.vx>0.35;   /* v52：快扫认速度方向，慢拖认位置（v54 阈值 0.45→0.35 对齐右滑） */
  if(flickL||(!flickR&&cur<-ROWW/2)){document.querySelectorAll('.urow-wrap.open').forEach(w=>{if(w!==rs.wrap)w.classList.remove('open');});rs.wrap.classList.add('open');}
  else rs.wrap.classList.remove('open');
  _suppressClick=true;setTimeout(()=>_suppressClick=false,400);
