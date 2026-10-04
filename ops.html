@@ -196,7 +196,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.17';
+const OPS_VERSION='v3.18';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -223,6 +223,24 @@ function fmtTs(t){if(!t)return'';const d=new Date(t.replace(' ','T')+(t.includes
  return (m===now.getMonth()+1&&dd===now.getDate())?`${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')}`:`${m}/${dd} ${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')}`;}
 function fmtM(n){n=Math.round(n||0);return n>=10000?(n/10000).toFixed(1).replace(/\.0$/,'')+'w':String(n);}
 let _perfs=null;
+let _radar={};
+async function loadRadar(){   // v3.18 主播能力雷达（gen_anchor_radar.py 每日随管线生成）
+ try{const tids=Object.keys(D.teams||{});_radar={};
+  await Promise.all(tids.map(async t=>{const r=await fetch(`data/radar_${t}.json?cb=`+Date.now());if(r.ok){const d=await r.json();Object.assign(_radar,d.anchors||{});}}));
+ }catch(e){}}
+function radarCard(name){const r=_radar[name];if(!r)return '';
+ const CX=100,CY=104,R=66,AX=['稳定','流水','趋势','维护','留存'],V=[r.stability,r.income,r.trend,r.maintain,r.retention];
+ const pt=(i,p)=>{const a=(-90+i*72)*Math.PI/180;return [CX+R*p*Math.cos(a),CY+R*p*Math.sin(a)];};
+ let g='';
+ [0.25,0.5,0.75,1].forEach(p=>{g+=`<polygon points="${[0,1,2,3,4].map(i=>pt(i,p).map(n=>n.toFixed(1)).join(','))}" fill="none" stroke="var(--line)" stroke-width="1"/>`;});
+ const poly=[0,1,2,3,4].map(i=>pt(i,V[i]/100).map(n=>n.toFixed(1))).join(',');
+ let dots='',labs='';
+ [0,1,2,3,4].forEach(i=>{const [x,y]=pt(i,V[i]/100);dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="var(--brand)"/>`;
+  const [lx,ly]=pt(i,1.24);labs+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" font-size="11" fill="var(--ink2)" text-anchor="middle" dominant-baseline="middle">${AX[i]} ${V[i]}</text>`;});
+ return `<div class="tier" style="margin-top:12px"><div class="t-head"><div class="t-ico" style="background:var(--green-bg);color:var(--brand)">能</div>
+  <div><div class="t-name">能力雷达</div><div class="t-sub">7场均 ¥${fmtM(r.avg7)} · 30天 ${r.days30} 场 · 留存 ${esc(r.retention_n)} · 回传 ${esc(r.fb||'—')}</div></div>
+  <div class="t-cnt">${r.overall}<small> 综合</small></div></div>
+  <div style="display:flex;justify-content:center;padding:2px 0 12px"><svg viewBox="0 0 200 210" style="width:210px;height:210px">${g}<polygon points="${poly}" fill="rgba(90,122,53,.18)" stroke="var(--brand)" stroke-width="2"/>${dots}${labs}</svg></div></div>`;}
 async function loadPerfs(){
  try{const r=await fetch('https://fb.menghualu.com.co/api/anchor/perf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken()})});
   const d=await r.json();if(d.ok&&d.list){_perfs={};d.list.forEach(p=>_perfs[p.name]=p);render();}}catch(e){}}
@@ -234,7 +252,7 @@ async function load(tok){
   clearTimeout(to);
   const d=await r.json();
   if(!r.ok||!d.ok)throw new Error(d.error||'访问码无效');
-  D=d;render();loadPerfs();loadOffairStatus();loadD1Notifs();
+  D=d;render();loadPerfs();loadRadar();loadOffairStatus();loadD1Notifs();
  }catch(e){
   if(String(e).includes('AbortError')){root.innerHTML='<div class="empty">网络超时，点这里重试</div>';root.onclick=()=>{root.onclick=null;load(tok);};return;}
   localStorage.removeItem('ops_token');showLogin(e.message||'加载失败');}}
@@ -401,6 +419,7 @@ function openPerson(name){
     <div class="pbar"><div class="pbar-fill" style="width:${Math.max(3,prog)}%"></div></div>
     <div style="font-size:11px;color:var(--ink3);margin-top:8px">${esc(p.trend_warn||'')}${p.level?' · '+esc(p.level):''}</div>
    </div></div>
+  ${radarCard(name)}
   ${p.brief?`<div class="sec-title"><h3>最新场次简报</h3></div><div class="tier" style="padding:14px 16px"><div style="font-size:12px;line-height:1.7;color:var(--ink2);white-space:pre-line">${esc(p.brief)}</div></div>`:''}`
   :'<div class="empty">业绩档案加载中或未找到</div>'}
   <div class="sec-title"><h3>今日执行</h3><span class="more">回传 ${subsT.length} 条</span></div>
