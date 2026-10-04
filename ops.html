@@ -1,100 +1,146 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" style="background:#2f412c">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>画像助手 · 运营版</title>
+<meta name="theme-color" content="#2f412c">
+<title>梦华录 · 运营工作台</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap">
 <style>
-:root{--bg:#f3f4f6;--card:#fff;--ink:#1c2733;--ink2:#46545f;--ink3:#8a97a5;--line:#e6eaee;--brand:#3d5a80;
---red:#c6453b;--red-bg:#fbeae8;--blue:#2f6fb0;--blue-bg:#e8f1f9;--green:#3a8a5e;--green-bg:#e8f4ed;
---amber:#c07f24;--amber-bg:#faf1e1;--gray:#6b7280;--gray-bg:#f0f2f4;}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif;}
-#phone{max-width:480px;margin:0 auto;min-height:100vh;position:relative;}
-.wrap{padding:0 12px calc(40px + env(safe-area-inset-bottom));}
-.topbar{display:flex;align-items:center;gap:10px;padding:calc(14px + env(safe-area-inset-top)) 14px 12px;background:var(--brand);color:#fff;}
-.topbar .avatar{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;}
-.topbar .name{font-size:15px;font-weight:700;}
-.topbar .meta{font-size:11px;opacity:.82;margin-top:2px;}
-.topbar .rf{margin-left:auto;background:rgba(255,255,255,.16);border:none;color:#fff;border-radius:9px;padding:7px 13px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
-.sec-title{display:flex;justify-content:space-between;align-items:baseline;margin:16px 2px 8px;}
-.sec-title h3{font-size:14px;color:var(--ink2);}
-.sec-title .more{font-size:11px;color:var(--ink3);}
-.tier{background:var(--card);border-radius:14px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 10px rgba(20,35,55,.04);}
-.t-head{display:flex;align-items:center;gap:10px;padding:12px 14px;}
-.t-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex:none;}
-.t-name{font-size:14px;font-weight:700;}
-.t-sub{font-size:11px;color:var(--ink3);margin-top:2px;}
-.t-cnt{margin-left:auto;font-size:16px;font-weight:800;color:var(--ink2);}
-.t-cnt small{font-size:10px;font-weight:400;color:var(--ink3);}
-.urow{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-top:1px solid var(--line);}
-.urow .avatar{width:32px;height:32px;font-size:13px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;flex:none;}
-.u-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
+/* 运营工作台 v3.0（2026-10-04）：设计规范 v1 落地（技能库/anchor-app/references/design-system.md） */
+:root{
+  --ink:#1d2817;--ink2:#4a5a42;--ink3:#8a957e;
+  --on-bg:#eef3e4;--on-bg2:#b3bfa6;--on-bg3:#79856c;
+  --bg:#2f412c;--card:#f7f9f0;--card2:#e9f3d2;--line:#dde6cb;
+  --brand:#33462c;--brand-soft:#e4f0c9;--lime:#c9ec5a;
+  --red:#d64f18;--red-bg:#f6d9c6;--blue:#4f6f63;--blue-bg:#dce8d6;
+  --green:#5a8a2e;--green-bg:#e2f0c6;--amber:#a5760f;--amber-bg:#f3e5b8;
+  --gray:#75816b;--gray-bg:#e6ecd4;
+  --spring-settle:cubic-bezier(.32,.72,.35,1);
+}
+@supports (animation-timing-function:linear(0,1)){
+ :root{--spring-settle:linear(0.0,0.0058,0.0217,0.0459,0.0768,0.1129,0.153,0.1958,0.2406,0.2864,0.3326,0.3786,0.424,0.4682,0.5111,0.5523,0.5917,0.6291,0.6644,0.6977,0.7288,0.7578,0.7847,0.8095,0.8323,0.8533,0.8724,0.8897,0.9054,0.9196,0.9323,0.9437,0.9538,0.9627,0.9706,0.9775,0.9835,0.9887,0.9931,0.9969,1.0001);}
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;
+  background:linear-gradient(180deg,#a8c6aa 0%,#536652 100%);color:var(--ink);display:flex;justify-content:center;min-height:100vh;touch-action:pan-x pan-y;}
+#phone{width:100%;max-width:414px;background:radial-gradient(130% 55% at 50% 0%,#42573a 0%,#32452d 45%,#22301e 100%);min-height:100vh;position:relative;
+  box-shadow:0 0 40px rgba(20,30,18,.35);padding-bottom:92px;}
+@media(min-width:480px){#phone{min-height:880px;margin:24px 0;border-radius:28px;overflow:hidden;}}
+.topbar{background:transparent;color:var(--on-bg);padding:calc(20px + env(safe-area-inset-top)) 20px 14px;display:flex;align-items:center;gap:12px;}
+.avatar{width:46px;height:46px;border-radius:50%;background:#4f6b43;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:19px;flex:none;}
+.topbar .name{font-size:24px;font-weight:800;letter-spacing:.5px;}
+.topbar .meta{font-size:12px;color:var(--on-bg2);margin-top:4px;letter-spacing:.5px;}
+.topbar .rf{margin-left:auto;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);color:var(--on-bg);border-radius:999px;padding:8px 15px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+.wrap{padding:0 16px;}
+.sec-title{display:flex;align-items:center;justify-content:space-between;margin:20px 2px 12px;}
+.sec-title h3{font-size:20px;font-weight:800;color:var(--on-bg);}
+.sec-title .more{font-size:12px;color:var(--on-bg3);letter-spacing:.3px;}
+.tier{background:var(--card);border-radius:20px;margin-bottom:16px;box-shadow:0 4px 14px rgba(20,30,18,.08);overflow:hidden;}
+.t-head{display:flex;align-items:center;gap:11px;padding:16px;}
+.t-ico{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex:none;}
+.t-name{font-size:16px;font-weight:700;}
+.t-sub{font-size:12px;color:var(--ink3);margin-top:2px;letter-spacing:.3px;}
+.t-cnt{margin-left:auto;font-size:16px;font-weight:800;}
+.t-cnt small{font-weight:400;color:var(--ink3);font-size:11px;}
+.urow{display:flex;align-items:flex-start;gap:11px;padding:13px 16px;border-top:1px solid var(--line);}
+.urow .avatar{width:36px;height:36px;font-size:14px;}
+.u-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;}
 .u-line1{display:flex;align-items:baseline;gap:8px;}
-.u-nick{font-size:13px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.u-nick{font-size:14px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .u-t{font-size:11px;color:var(--ink3);flex:none;}
 .u-note{font-size:12px;color:var(--ink2);line-height:1.5;word-break:break-all;}
-.u-tags{display:flex;flex-wrap:wrap;gap:4px;}
+.u-tags{display:flex;flex-wrap:wrap;gap:5px;}
 .u-tags:empty{display:none;}
-.tag{display:inline-flex;align-items:center;font-size:11px;font-weight:500;padding:3px 8px;border-radius:6px;line-height:1;}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:4px 9px;border-radius:7px;line-height:1;}
 .t-green{color:var(--green);background:var(--green-bg);}.t-blue{color:var(--blue);background:var(--blue-bg);}
 .t-red{color:var(--red);background:var(--red-bg);}.t-amber{color:var(--amber);background:var(--amber-bg);}
 .t-gray{color:var(--gray);background:var(--gray-bg);}
-.chips{display:flex;flex-wrap:wrap;gap:7px;margin:4px 2px 10px;}
-.chip{font-size:12px;font-weight:500;padding:7px 13px;border-radius:999px;background:#fff;color:var(--ink2);cursor:pointer;border:1px solid var(--line);}
-.chip.on{background:var(--brand);color:#fff;border-color:var(--brand);}
-.todo{background:var(--card);border-radius:14px;padding:13px 14px;margin-bottom:10px;box-shadow:0 2px 10px rgba(20,35,55,.04);border-left:4px solid var(--amber);}
-.todo .who{font-size:14px;font-weight:700;}
-.todo .meta{font-size:11px;color:var(--ink3);margin:3px 0 7px;}
-.todo .txt{font-size:13px;color:var(--ink2);line-height:1.6;background:var(--gray-bg);border-radius:10px;padding:8px 10px;margin-bottom:9px;}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:2px 2px 12px;}
+.chip{font-size:12px;font-weight:500;padding:7px 13px;border-radius:999px;background:var(--gray-bg);color:var(--ink2);cursor:pointer;border:1px solid transparent;user-select:none;}
+.chip.on{background:var(--lime);color:#223014;}
+.todo{background:var(--card);border-radius:20px;padding:16px;margin-bottom:12px;box-shadow:0 4px 14px rgba(20,30,18,.08);border-left:4px solid var(--amber);}
+.todo .who{font-size:16px;font-weight:700;}
+.todo .meta{font-size:11px;color:var(--ink3);margin:4px 0 8px;}
+.todo .txt{font-size:13px;color:var(--ink2);line-height:1.6;background:var(--gray-bg);border-radius:12px;padding:10px 12px;margin-bottom:10px;word-break:break-word;}
 .todo .acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-.btn{border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;background:var(--brand);color:#fff;cursor:pointer;font-family:inherit;}
+.btn{border:none;border-radius:12px;padding:10px 16px;font-size:13px;font-weight:600;background:var(--brand);color:#fff;cursor:pointer;font-family:inherit;transition:transform .12s ease;}
+.btn:active{transform:scale(.94);}
 .btn.ok{background:var(--green);}
 .btn.no{background:var(--gray-bg);color:var(--red);}
-.todo select{border:1px solid var(--line);border-radius:9px;padding:6px 8px;font-size:13px;font-family:inherit;background:#fff;max-width:150px;}
-.empty{text-align:center;color:var(--ink3);font-size:13px;padding:26px 0;}
-.foot{text-align:center;color:var(--ink3);font-size:11px;padding:18px 0 6px;}
-.login-wrap{min-height:80vh;display:flex;align-items:center;justify-content:center;}
-.login-card{width:88%;max-width:340px;background:var(--card);border-radius:18px;padding:28px 22px;text-align:center;box-shadow:0 4px 20px rgba(20,35,55,.08);}
-.login-title{font-size:18px;font-weight:800;margin-bottom:6px;}
-.login-sub{font-size:13px;color:var(--ink3);margin-bottom:14px;}
-.login-input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:15px;outline:none;text-align:center;font-family:inherit;}
+.btn.big{display:block;width:100%;padding:15px;font-size:15px;background:var(--lime);color:#223014;border-radius:14px;font-weight:700;}
+.todo select{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fff;max-width:150px;color:var(--ink);}
+.empty{text-align:center;color:var(--ink3);font-size:13px;padding:40px 16px;line-height:1.7;}
+.foot{text-align:center;color:var(--on-bg3);font-size:11px;padding:20px 0 6px;}
+.mrow{display:flex;align-items:center;gap:11px;padding:15px 16px;border-top:1px solid var(--line);font-size:14px;font-weight:500;}
+.mrow:first-of-type{border-top:none;}
+.mrow .mi{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex:none;background:var(--brand-soft);color:var(--brand);}
+.mrow .ms{margin-left:auto;font-size:11px;color:var(--ink3);}
+.mrow.dim{opacity:.55;}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+.login-card{width:100%;max-width:340px;background:var(--card);border-radius:22px;padding:30px 24px;box-shadow:0 6px 26px rgba(0,0,0,.25);text-align:center;}
+.login-logo{width:64px;height:64px;border-radius:16px;background:var(--brand);color:#fff;font-size:26px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
+.login-title{font-size:19px;font-weight:800;}
+.login-sub{font-size:13px;color:var(--ink3);margin:6px 0 18px;}
+.login-input{width:100%;border:1px solid var(--line);border-radius:12px;padding:13px 14px;font-size:15px;font-family:inherit;outline:none;text-align:center;background:#fff;color:var(--ink);}
+.login-input:focus{border-color:var(--brand);}
 .login-err{font-size:12px;color:var(--red);margin-top:10px;min-height:14px;}
-#toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:rgba(28,39,51,.94);color:#fff;font-size:13px;padding:11px 18px;border-radius:10px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:60;max-width:82%;text-align:center;}
+#toast{position:absolute;left:50%;bottom:108px;transform:translateX(-50%) translateY(16px);background:rgba(26,36,22,.95);color:#fff;font-size:13px;padding:11px 18px;border-radius:10px;max-width:82%;text-align:center;opacity:0;transition:all .25s;pointer-events:none;z-index:60;}
+.view{display:none;}.view.show{display:block;}
+.tabbar{position:absolute;bottom:0;left:0;right:0;background:rgba(28,41,26,.72);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);border-top:1px solid rgba(255,255,255,.08);display:flex;padding:9px 0 calc(11px + env(safe-area-inset-bottom));}
+.tabbar .tb{flex:1;text-align:center;font-size:11px;color:var(--on-bg3);background:none;border:none;cursor:pointer;font-family:inherit;transition:transform .12s ease;position:relative;}
+.tabbar .tb:active{transform:scale(.94);}
+.tabbar .tb svg{margin:0 auto 3px;display:block;}
+.tabbar .tb.on{color:var(--lime);font-weight:600;}
+.bdg{position:absolute;top:-2px;left:calc(50% + 4px);min-width:17px;height:17px;border-radius:999px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+@keyframes riseIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.view.show .wrap>*{animation:riseIn .38s cubic-bezier(.22,.9,.3,1) both;}
+.view.show .wrap>*:nth-child(2){animation-delay:.05s}
+.view.show .wrap>*:nth-child(3){animation-delay:.1s}
+.view.show .wrap>*:nth-child(4){animation-delay:.15s}
+.view.show .wrap>*:nth-child(5){animation-delay:.2s}
+.view.show .wrap>*:nth-child(6){animation-delay:.25s}
+.sk-top{height:78px;margin:24px 20px 0;border-radius:20px;}
+.sk-card{height:190px;margin:20px 16px 0;border-radius:20px;}
+.sk{background:linear-gradient(100deg,rgba(255,255,255,.05) 30%,rgba(255,255,255,.13) 50%,rgba(255,255,255,.05) 70%);background-size:220% 100%;animation:skmove 1.15s linear infinite;}
+@keyframes skmove{from{background-position:170% 0}to{background-position:-70% 0}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;}}
 </style>
 </head>
 <body>
-<div id="phone"><div id="root"></div></div>
+<div id="phone"><div id="root"><div class="sk sk-top"></div><div class="sk sk-card"></div><div class="sk sk-card" style="height:150px"></div></div></div>
 <div id="toast"></div>
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
+const OPS_VERSION='v3.0';
 const root=document.getElementById('root');
-let D=null, _af='', _tf='';
+let D=null, _af='', _tf='', _tab='todo';
 const name2team={};
 const teamOf=n=>name2team[n]||'';
 const inT=n=>!_tf||teamOf(n)===_tf;
 function esc(s){return (s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));}
-function colorOf(s){const cs=['#b3544b','#3d5a80','#3a8a5e','#c07f24','#7a5a9e','#2f6fb0'];let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return cs[h%cs.length];}
+function colorOf(s){const cs=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return cs[h%cs.length];}
 function storedToken(){return localStorage.getItem('ops_token')||'';}
-function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',1800);}
+let _tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';clearTimeout(_tt);_tt=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(16px)';},1900);}
 function showLogin(err){
  root.innerHTML=`<div class="login-wrap"><div class="login-card">
-  <div class="login-title">画像助手 · 运营版</div>
+  <div class="login-logo">运</div>
+  <div class="login-title">梦华录 · 运营工作台</div>
   <div class="login-sub">请输入运营访问码</div>
   <input id="loginCode" class="login-input" type="text" autocapitalize="off" autocomplete="off" placeholder="粘贴访问码">
-  <button id="loginBtn" class="btn" style="width:100%;margin-top:8px">进入</button>
+  <button id="loginBtn" class="btn big" style="margin-top:10px">进入</button>
   <div id="loginErr" class="login-err">${err||''}</div></div></div>`;
  const code=document.getElementById('loginCode');
- const go=()=>{const v=(code.value||'').trim().toLowerCase();if(!v)return;localStorage.setItem('ops_token',v);load(v);};
+ const go=()=>{const v=(code.value||'').trim().toLowerCase();if(!v){document.getElementById('loginErr').textContent='请输入访问码';return;}localStorage.setItem('ops_token',v);load(v);};
  document.getElementById('loginBtn').onclick=go;code.onkeydown=e=>{if(e.key==='Enter')go();};
  setTimeout(()=>code.focus(),60);}
 function fmtTs(t){if(!t)return'';const d=new Date(t.replace(' ','T')+(t.includes('Z')?'':'Z'));
  const m=d.getMonth()+1,dd=d.getDate(),h=d.getHours(),mi=d.getMinutes();const now=new Date();
  return (m===now.getMonth()+1&&dd===now.getDate())?`${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')}`:`${m}/${dd} ${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')}`;}
 async function load(tok){
- root.innerHTML='<div class="empty">加载中…</div>';
+ root.innerHTML='<div class="sk sk-top"></div><div class="sk sk-card"></div><div class="sk sk-card" style="height:150px"></div>';
  try{
   const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),25000);
   const r=await fetch(SUMMARY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok}),signal:ctrl.signal});
@@ -122,86 +168,123 @@ async function review(type,subId,action,extra){
   toast(action==='approve'?'已通过并生效':'已驳回');
   load(storedToken());
  }catch(e){toast(e.message);}}
-function tagFor(a){const m={'已拉群':'t-green','已互关':'t-blue','已流失':'t-red','已回复':'t-green','已私信':'t-blue','已关注':'t-green','已复购':'t-amber'};
+function tagFor(a){const m={'已拉群':'t-green','已互关':'t-blue','已流失':'t-red','已回复':'t-green','已私信':'t-blue','已关注':'t-green','已复购':'t-amber','已建联':'t-green','未回复':'t-red'};
  return `<span class="tag ${m[a]||'t-gray'}">${a}</span>`;}
 function nameOf(x){return x.nick||('sec…'+x.sec_tail);}
-function todoHtml(){
- let h='';
- const gs=(D.grades||[]).filter(g=>inT(g.anchor));
+function urow(x,sub){return `<div class="urow"><div class="avatar" style="background:${colorOf(x.nick||x.sec)};width:36px;height:36px;font-size:14px">${(x.nick||'?')[0]||'?'}</div>
+ <div class="u-main"><div class="u-line1"><span class="u-nick">${esc(nameOf(x))}</span><span class="u-t">${fmtTs(x.ts)}</span></div>
+ <div class="u-tags">${sub||''}</div>${x.note?`<div class="u-note">${esc(x.note)}</div>`:''}</div></div>`;}
+
+/* ===== 视图：审批 ===== */
+function vTodo(){
+ const gs=(D.grades||[]).filter(g=>inT(g.anchor)),ap=(D.appeals||[]).filter(g=>inT(g.anchor));
+ let h='<div class="wrap">';
+ if(!gs.length&&!ap.length)h+=`<div class="sec-title"><h3>审批</h3><span class="more">主播的等级建议与归属异议</span></div><div class="empty">没有待处理事项 🎉<br>主播提交的等级建议、归属异议会出现在这里</div>`;
  if(gs.length){
   h+=`<div class="sec-title"><h3>等级建议待审批</h3><span class="more">${gs.length} 条</span></div>`;
   h+=gs.map((g,i)=>`<div class="todo"><div class="who">${esc(nameOf(g))}　<span class="tag t-amber">建议 ${g.grade}</span></div>
    <div class="meta">${esc(g.anchor)} · ${fmtTs(g.ts)}</div>
    ${g.note?`<div class="txt">${esc(g.note)}</div>`:''}
    <div class="acts"><button class="btn ok" data-rv="grade|${g.sub_id}|approve|${i}">通过 · 写入档案库</button>
-   <button class="btn no" data-rv="grade|${g.sub_id}|reject|${i}">驳回</button></div></div>`).join('');
- }
- const ap=(D.appeals||[]).filter(g=>inT(g.anchor));
+   <button class="btn no" data-rv="grade|${g.sub_id}|reject|${i}">驳回</button></div></div>`).join('');}
  if(ap.length){
   h+=`<div class="sec-title"><h3>归属异议待处理</h3><span class="more">${ap.length} 条</span></div>`;
-  h+=ap.map((g,i)=>{
-   const opts=(D.anchors||[]).map(a=>`<option value="${a.gid}|${a.tid}" ${a.name===g.anchor?'selected':''}>${a.team.replace('梦华录','')}·${a.name}</option>`).join('');
+  h+=ap.map((g,i)=>{const opts=(D.anchors||[]).map(a=>`<option value="${a.gid}|${a.tid}">${esc(a.team||a.tid)}</option>`).join('');
    return `<div class="todo"><div class="who">${esc(nameOf(g))}</div>
    <div class="meta">${esc(g.anchor)} 提交 · ${fmtTs(g.ts)}</div>
    <div class="txt">${esc(g.appeal)}</div>
    <div class="acts"><select id="ovr${i}">${opts}</select>
    <button class="btn ok" data-rv="appeal|${g.sub_id}|approve|${i}">通过 · 改主归属</button>
-   <button class="btn no" data-rv="appeal|${g.sub_id}|reject|${i}">驳回</button></div></div>`;}).join('');
- }
- return h;
-}
-function urow(x,right,sub){return `<div class="urow"><div class="avatar" style="background:${colorOf(x.nick||x.sec)}">${(x.nick||'?')[0]||'?'}</div>
- <div class="u-main"><div class="u-line1"><span class="u-nick">${esc(nameOf(x))}</span><span class="u-t">${fmtTs(x.ts)}</span></div>
- <div class="u-tags">${sub||''}</div>${x.note?`<div class="u-note">${esc(x.note)}</div>`:''}</div></div>`;}
-function render(){
- Object.keys(name2team).forEach(k=>delete name2team[k]);(D.anchors||[]).forEach(a=>name2team[a.name]=a.team);
+   <button class="btn no" data-rv="appeal|${g.sub_id}|reject|${i}">驳回</button></div></div>`;}).join('');}
+ return h+'</div>';}
+
+/* ===== 视图：流水 ===== */
+function vFlow(){
  const teams=['梦华录寻音','梦华录行舟','梦华录水月'];
  const tchipHtml=['',...teams].map(t=>`<span class="chip${t===_tf?' on':''}" data-tf="${t}">${t?t.replace('梦华录',''):'全部团'}</span>`).join('');
  let anchors=[...new Set((D.subs||[]).map(s=>s.anchor))];
  if(_tf)anchors=anchors.filter(a=>teamOf(a)===_tf);
  const chipHtml=['',...anchors].map(a=>`<span class="chip${a===_af?' on':''}" data-af="${a}">${a||'全部'}</span>`).join('');
  const subs=(D.subs||[]).filter(s=>(!_af||s.anchor===_af)&&inT(s.anchor));
- const subsHtml=subs.length?subs.map(s=>urow(s,'',`${(s.actions||[]).map(tagFor).join('')}<span class="tag t-gray">${esc(s.anchor)}</span>${s.kind!=='日常维护'?`<span class="tag t-blue">${esc(s.kind)}</span>`:''}`)).join('')
+ const subsHtml=subs.length?subs.map(s=>urow(s,`${(s.actions||[]).map(tagFor).join('')}<span class="tag t-gray">${esc(s.anchor)}</span>${s.kind!=='日常维护'?`<span class="tag t-blue">${esc(s.kind)}</span>`:''}`)).join('')
   :'<div class="empty">还没有回传流水</div>';
- const fl=(D.flags||[]).filter(f=>inT(f.anchor));
- const flagsHtml=fl.length?fl.map(f=>urow(f,'',tagFor(f.flag)+`<span class="tag t-gray">${esc(f.anchor)}</span>`)).join('')
-  :'<div class="empty">还没有点亮标记</div>';
- const st=(D.status||[]).filter(f=>inT(f.anchor));
- const stHtml=st.length?st.map(f=>urow(f,'',tagFor(f.status)+`<span class="tag t-gray">${esc(f.anchor)}</span>`)).join('')
-  :'<div class="empty">还没有状态记录</div>';
- const todo=todoHtml();
- root.innerHTML=`<div class="topbar"><div class="avatar">运</div><div><div class="name">画像助手 · 运营版</div>
-  <div class="meta">${esc(D.scope||'运营')} · 实时数据</div></div>
-  <div style="display:flex;gap:6px;margin-left:auto">
-  <button class="rf" id="rf">刷新</button><button class="rf" id="oa" style="background:rgba(255,255,255,.28)">下播了</button></div></div>
-  <div class="wrap">
-  ${todo}
+ return `<div class="wrap">
   <div class="sec-title"><h3>回传流水</h3><span class="more">按团 / 主播过滤</span></div>
   <div class="chips">${tchipHtml}</div>
   <div class="chips">${chipHtml}</div>
   <div class="tier"><div class="t-head"><div class="t-ico" style="background:var(--blue-bg);color:var(--blue)">流</div>
    <div><div class="t-name">维护动作明细</div><div class="t-sub">最近 ${subs.length} 条 · 实时</div></div>
-   <div class="t-cnt">${subs.length}<small> 条</small></div></div>${subsHtml}</div>
+   <div class="t-cnt">${subs.length}<small> 条</small></div></div>${subsHtml}</div></div>`;}
+
+/* ===== 视图：客情 ===== */
+function vRel(){
+ const fl=(D.flags||[]).filter(f=>inT(f.anchor));
+ const flagsHtml=fl.length?fl.map(f=>urow(f,tagFor(f.flag)+`<span class="tag t-gray">${esc(f.anchor)}</span>`)).join('')
+  :'<div class="empty">还没有点亮标记</div>';
+ const st=(D.status||[]).filter(f=>inT(f.anchor));
+ const stHtml=st.length?st.map(f=>urow(f,tagFor(f.status)+`<span class="tag t-gray">${esc(f.anchor)}</span>`)).join('')
+  :'<div class="empty">还没有状态记录</div>';
+ return `<div class="wrap">
   <div class="sec-title"><h3>持久点亮</h3><span class="more">已拉群 / 已互关</span></div>
   <div class="tier"><div class="t-head"><div class="t-ico" style="background:var(--green-bg);color:var(--green)">亮</div>
-   <div><div class="t-name">点亮清单</div><div class="t-sub">点亮后一直亮，人工取消才灭</div></div>
+   <div><div class="t-name">点亮清单</div><div class="t-sub">亮后一直亮，主播取消才灭</div></div>
    <div class="t-cnt">${fl.length}<small> 条</small></div></div>${flagsHtml}</div>
   <div class="sec-title"><h3>跟进状态</h3><span class="more">各主播视角</span></div>
   <div class="tier"><div class="t-head"><div class="t-ico" style="background:var(--amber-bg);color:var(--amber)">态</div>
    <div><div class="t-name">状态总览</div><div class="t-sub">每主播对每个用户的最新进度</div></div>
-   <div class="t-cnt">${st.length}<small> 条</small></div></div>${stHtml}</div>
-  <div class="foot">运营版 v2.3 · 明细与归档在 Notion 回传库</div></div>`;
+   <div class="t-cnt">${st.length}<small> 条</small></div></div>${stHtml}</div></div>`;}
+
+/* ===== 视图：管理 ===== */
+function vAdmin(){
+ const tids=[...new Set((D.anchors||[]).map(a=>a.tid))];
+ const tn={'menghualu_xunyin':'寻音','menghualu_xingzhou':'行舟','menghualu_shuiyue':'水月'};
+ const teamBtns=tids.map(t=>`<button class="btn big" data-oa="${t}" style="margin-bottom:10px">${esc(tn[t]||t)} 下播了 · AI 自动采集</button>`).join('');
+ const anchors=[...new Set((D.anchors||[]).map(a=>a.name))];
+ return `<div class="wrap">
+  <div class="sec-title"><h3>下播采集</h3><span class="more">标记后自动跑一条龙</span></div>
+  ${teamBtns||'<div class="empty">当前范围没有可标记的团</div>'}
+  <div class="sec-title"><h3>当前范围</h3></div>
+  <div class="tier"><div class="t-head"><div class="t-ico" style="background:var(--brand-soft);color:var(--brand)">围</div>
+   <div><div class="t-name">${esc(D.scope||'运营')}</div><div class="t-sub">可见主播 ${anchors.length} 人 · 数据实时出自 D1</div></div></div></div>
+  <div class="sec-title"><h3>规划预留</h3><span class="more">陆续上线</span></div>
+  <div class="tier">
+   <div class="mrow dim"><div class="mi">期</div>排期表 · 化妆表录入<span class="ms">筹备中</span></div>
+   <div class="mrow dim"><div class="mi">诉</div>主播申诉处理<span class="ms">筹备中</span></div>
+   <div class="mrow dim"><div class="mi">讯</div>主播信息维护<span class="ms">筹备中</span></div></div>
+  <div class="foot">运营工作台 ${OPS_VERSION} · 明细与归档在 Notion 回传库</div></div>`;}
+
+const TABS=['todo','flow','rel','admin'];
+function switchTab(t){_tab=t;
+ TABS.forEach(x=>{const v=document.getElementById('v-'+x);if(v)v.classList.toggle('show',x===t);});
+ document.querySelectorAll('.tabbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+ try{window.scrollTo(0,0);const r=document.getElementById('phone');if(r)r.scrollTop=0;}catch(e){}}
+const TB_ICONS={
+ todo:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h9"/></svg>',
+ flow:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
+ rel:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>',
+ admin:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.2a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.9-2.9l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.2a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1a1.7 1.7 0 001.9.3h0a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.2a1.7 1.7 0 001 1.5h0a1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.9 2.9l-.1.1a1.7 1.7 0 00-.3 1.9v0a1.7 1.7 0 001.5 1h.2a2 2 0 110 4h-.2a1.7 1.7 0 00-1.5 1z"/></svg>'};
+function tabbar(todoN){return `<div class="tabbar">
+ <button class="tb${_tab==='todo'?' on':''}" data-tab="todo">${TB_ICONS.todo}审批${todoN?`<span class="bdg">${todoN}</span>`:''}</button>
+ <button class="tb${_tab==='flow'?' on':''}" data-tab="flow">${TB_ICONS.flow}流水</button>
+ <button class="tb${_tab==='rel'?' on':''}" data-tab="rel">${TB_ICONS.rel}客情</button>
+ <button class="tb${_tab==='admin'?' on':''}" data-tab="admin">${TB_ICONS.admin}管理</button></div>`;}
+
+function render(){
+ Object.keys(name2team).forEach(k=>delete name2team[k]);(D.anchors||[]).forEach(a=>name2team[a.name]=a.team);
+ const todoN=(D.grades||[]).filter(g=>inT(g.anchor)).length+(D.appeals||[]).filter(g=>inT(g.anchor)).length;
+ root.innerHTML=`<div class="topbar"><div class="avatar">运</div><div><div class="name">运营工作台</div>
+  <div class="meta">${esc(D.scope||'运营')} · 实时数据</div></div>
+  <button class="rf" id="rf">刷新</button></div>
+ <div class="view" id="v-todo">${vTodo()}</div>
+ <div class="view" id="v-flow">${vFlow()}</div>
+ <div class="view" id="v-rel">${vRel()}</div>
+ <div class="view" id="v-admin">${vAdmin()}</div>${tabbar(todoN)}`;
+ switchTab(_tab);
  document.getElementById('rf').onclick=()=>load(storedToken());
- document.getElementById('oa').onclick=()=>{
-  const ts=(D.anchors||[]).map(a=>a.tid).filter((v,i,arr)=>arr.indexOf(v)===i);
-  const tn={'menghualu_xunyin':'寻音','menghualu_xingzhou':'行舟','menghualu_shuiyue':'水月'};
-  if(ts.length===1){offair(ts[0],tn[ts[0]]);return;}
-  const pick=prompt('哪个团下播了？输入：寻音 / 行舟 / 水月','');if(!pick)return;
-  const tid=Object.keys(tn).find(k=>tn[k]===pick.trim());
-  if(!tid){toast('团名不对');return;}
-  offair(tid,pick.trim());};
  document.querySelectorAll('[data-af]').forEach(c=>c.onclick=()=>{_af=c.dataset.af;render();});
  document.querySelectorAll('[data-tf]').forEach(c=>c.onclick=()=>{_tf=c.dataset.tf;_af='';render();});
+ document.querySelectorAll('[data-oa]').forEach(b=>b.onclick=()=>offair(b.dataset.oa,({'menghualu_xunyin':'寻音','menghualu_xingzhou':'行舟','menghualu_shuiyue':'水月'})[b.dataset.oa]||b.dataset.oa));
+ document.querySelectorAll('.tabbar .tb').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
  document.querySelectorAll('[data-rv]').forEach(b=>b.onclick=()=>{
   const [type,subId,action,idx]=b.dataset.rv.split('|');
   if(type==='grade'){const g=(D.grades||[]).filter(g=>inT(g.anchor))[+idx];review(type,subId,action,{sec:g.sec,grade:g.grade,anchor:g.anchor});}
