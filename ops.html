@@ -135,7 +135,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.4';
+const OPS_VERSION='v3.5';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -180,15 +180,32 @@ async function offair(tid,name){
   if(!r.ok||!d.ok)throw new Error(String(d.error||'失败').replace(/^Error: /,''));
   toast(d.dedup?'已在队列里（30分钟内不重复）':'已标记，AI 将自动采集');
  }catch(e){toast(e.message);}}
-async function review(type,subId,action,extra){
+async function review(type,subId,action,extra,btn){
+ const card=btn?btn.closest('.todo'):null;
+ const acts=card?card.querySelectorAll('.acts button,.acts select'):[];
+ acts.forEach(b=>b.disabled=true);
+ if(card){card.style.transition='opacity .28s ease,transform .28s var(--spring-settle)';card.style.opacity='0';card.style.transform='translateX(48px)';}
  const body={token:storedToken(),sub_id:subId,type,action,...extra};
  try{
   const r=await fetch(REVIEW_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   const d=await r.json();
   if(!r.ok||!d.ok)throw new Error(String(d.error||'失败').replace(/^Error: /,''));
   toast(action==='approve'?'已通过并生效':'已驳回');
-  load(storedToken());
- }catch(e){toast(e.message);}}
+  // 乐观更新（v3.5）：本地移除+角标减一，不全量重载；清空才重渲染出空态
+  if(type==='grade')D.grades=(D.grades||[]).filter(g=>g.sub_id!==subId);
+  else D.appeals=(D.appeals||[]).filter(g=>g.sub_id!==subId);
+  setTimeout(()=>{
+   if(card)card.remove();
+   const n=(D.grades||[]).filter(g=>inT(g.anchor)).length+(D.appeals||[]).filter(g=>inT(g.anchor)).length;
+   const bdg=document.querySelector('.tabbar .bdg');
+   if(bdg){if(n>0)bdg.textContent=n;else bdg.remove();}
+   if(n===0&&_tab==='todo')render();
+  },280);
+ }catch(e){
+  toast(e.message);
+  if(card){card.style.opacity='1';card.style.transform='none';}
+  acts.forEach(b=>b.disabled=false);
+ }}
 function tagFor(a){const key=a.split('·').pop();const m={'已拉群':'t-green','已互关':'t-blue','已流失':'t-red','已回复':'t-green','已私信':'t-blue','已关注':'t-green','已复购':'t-amber','已建联':'t-green','未回复':'t-red'};
  return `<span class="tag ${m[key]||'t-gray'}">${a}</span>`;}
 function nameOf(x){return x.nick||('sec…'+x.sec_tail);}
@@ -341,8 +358,7 @@ function openOpNote(sec){
 const TABS=['proj','todo','flow','rel','admin'];
 function switchTab(t){_tab=t;
  TABS.forEach(x=>{const v=document.getElementById('v-'+x);if(v)v.classList.toggle('show',x===t);});
- document.querySelectorAll('.tabbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
- try{window.scrollTo(0,0);const r=document.getElementById('phone');if(r)r.scrollTop=0;}catch(e){}}
+ document.querySelectorAll('.tabbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));}
 const TB_ICONS={
  proj:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>',
  todo:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h9"/></svg>',
@@ -373,13 +389,13 @@ function render(){
  document.querySelectorAll('[data-af]').forEach(c=>c.onclick=()=>{_af=c.dataset.af;render();});
  document.querySelectorAll('[data-tf]').forEach(c=>c.onclick=()=>{_tf=c.dataset.tf;_af='';render();});
  document.querySelectorAll('[data-oa]').forEach(b=>b.onclick=()=>offair(b.dataset.oa,({'menghualu_xunyin':'寻音','menghualu_xingzhou':'行舟','menghualu_shuiyue':'水月'})[b.dataset.oa]||b.dataset.oa));
- document.querySelectorAll('.tabbar .tb').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+ document.querySelectorAll('.tabbar .tb').forEach(b=>b.onclick=()=>{switchTab(b.dataset.tab);try{window.scrollTo(0,0);}catch(e){}});
  document.querySelectorAll('.urow[data-sec]').forEach(r=>r.onclick=()=>{const sec=r.dataset.sec;if(sec)openOpNote(sec);});
  document.querySelectorAll('[data-rv]').forEach(b=>b.onclick=()=>{
   const [type,subId,action,idx]=b.dataset.rv.split('|');
-  if(type==='grade'){const g=(D.grades||[]).filter(g=>inT(g.anchor))[+idx];review(type,subId,action,{sec:g.sec,grade:g.grade,anchor:g.anchor});}
+  if(type==='grade'){const g=(D.grades||[]).filter(g=>inT(g.anchor))[+idx];review(type,subId,action,{sec:g.sec,grade:g.grade,anchor:g.anchor},b);}
   else{const g=(D.appeals||[]).filter(g=>inT(g.anchor))[+idx];const sel=document.getElementById('ovr'+idx).value.split('|');
-   review(type,subId,action,{sec:g.sec,gid:sel[0],tid:sel[1],anchor:g.anchor});}
+   review(type,subId,action,{sec:g.sec,gid:sel[0],tid:sel[1],anchor:g.anchor},b);}
  });}
 const t0=new URLSearchParams(location.search).get('t');
 if(t0){localStorage.setItem('ops_token',t0.trim().toLowerCase());history.replaceState(null,'',location.pathname);}
