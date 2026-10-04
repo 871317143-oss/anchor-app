@@ -222,7 +222,7 @@ main{display:flex;height:calc(100% - 60px - 38px);}
 </div>
 
 <script>
-const RADAR_VERSION='v0.1';
+const RADAR_VERSION='v0.2';
 const API='https://fb.menghualu.com.co';
 document.getElementById('ver').textContent='雷达 '+RADAR_VERSION;
 
@@ -316,10 +316,28 @@ function setConn(ok){
 }
 
 /* ================= 事件处理 ================= */
+// 昵称→sec：先精确（昵称+曾用名索引）；平台脱敏期「前缀+***」用唯一前缀匹配（≥2 字前缀、全库唯一命中才认，认不出按路人卡兜底）
+function resolveNick(nick){
+  const k=normNick(nick);
+  if(!k)return '';
+  if(S.nick2sec[k])return S.nick2sec[k];
+  if(k.indexOf('*')>-1){
+    const prefix=k.replace(/\*+.*$/,'');
+    if(prefix.length>=2){
+      let hit='',multi=false;
+      for(const sec in S.users){
+        const n=normNick(S.users[sec].n);
+        if(n&&n.indexOf(prefix)===0){if(hit&&hit!==sec){multi=true;break;}hit=sec;}
+      }
+      if(!multi)return hit;
+    }
+  }
+  return '';
+}
 function handleEvents(events){
   const secs=[];
   for(const ev of events){
-    ev.sec=S.nick2sec[normNick(ev.nick)]||'';
+    ev.sec=resolveNick(ev.nick);
     if(ev.sec)secs.push(ev.sec);
   }
   ensureCards([...new Set(secs)]).then(()=>{
@@ -327,12 +345,14 @@ function handleEvents(events){
   });
 }
 function processEvent(ev){
-  if(!ev.sec)ev.sec=S.nick2sec[normNick(ev.nick)]||'';   // 演示/直推事件同样走昵称→sec 解析（否则大哥榜同人两行）
+  if(!ev.sec)ev.sec=resolveNick(ev.nick);   // 演示/直推事件同样走昵称→sec 解析（否则大哥榜同人两行）
   const key=ev.sec||('~'+normNick(ev.nick));
   if(ev.kind==='enter'){
     $('#stEnter').textContent=+$('#stEnter').textContent+1;
     const now=Date.now();
-    if(S.seenEnter[key]&&now-S.seenEnter[key]<300000){ticker(lineOf(ev));return;}  // 5 分钟内重复进场只走 ticker
+    // 已识别用户 5 分钟去重；脱敏路人同码名易撞，60 秒即放行（宁可多弹不漏人）
+    const dedupWin=ev.sec?300000:60000;
+    if(S.seenEnter[key]&&now-S.seenEnter[key]<dedupWin){ticker(lineOf(ev));return;}
     S.seenEnter[key]=now;
     pushCard(ev);
   }else if(ev.kind==='chat'){

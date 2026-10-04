@@ -1,15 +1,18 @@
-/* 主持雷达探针 v0.1（2026-10-04）
+/* 主持雷达探针 v0.2（2026-10-04，寻音直播间实测校准）
  * 用法：抖音网页版直播间页面 → F12 Console → 整段粘贴回车。
  * 只读弹幕区公开消息（进场「XX 来了」/ 发言 / 礼物名与件数），分类后经 Worker 队列推到雷达屏。
  * 页面右下角出现「🛰 雷达」徽标 = 接入成功；刷新直播间需重新粘贴。
  * 安全：不点击、不输入、不碰账号任何操作；凭证=主播访问码（__TOKEN__ 由雷达屏「复制探针」自动带入）。
+ * 实测口径（v0.2）：弹幕容器 .webcast-chatroom___list（虚拟列表，MutationObserver 监听新增节点）；
+ *   进场「nick 来了」｜送礼「nick：送出了 礼物 × N」（全角冒号+×）｜发言「nick：内容」；
+ *   平台脱敏期昵称=「前缀+*****」，昵称→sec 由雷达屏做唯一前缀匹配，探针原样上送。
  */
 (function () {
   if (window.__RADAR_PROBE__) { return '雷达探针已在运行'; }
   window.__RADAR_PROBE__ = true;
   var TOKEN = '__TOKEN__';
   var API = 'https://fb.menghualu.com.co/api/live/event';
-  var VER = 'v0.1';
+  var VER = 'v0.2';
 
   /* ---------- 徽标 ---------- */
   var badge = document.createElement('div');
@@ -49,19 +52,19 @@
     });
   }, 2500);
 
-  /* ---------- 消息分类 ---------- */
+  /* ---------- 消息分类（顺序敏感：送礼先于发言） ---------- */
   function classify(text) {
     var t = String(text || '').replace(/\s+/g, ' ').trim();
     if (!t || t.length > 220) return null;
     var m;
     // 进场：「XX 来了」「XX来了」「XX 进入直播间」
-    m = t.match(/^(.{1,30}?)\s*(?:来了|进入直播间)[！!~～。]?$/);
+    m = t.match(/^(.{1,40}?)\s*(?:来了|进入直播间)[！!~～。]?$/);
     if (m && !/[:：]/.test(m[1])) return { kind: 'enter', nick: m[1].trim() };
-    // 送礼：「XX 送出了 嘉年华 x3」「XX 为主播送出 小心心」
-    m = t.match(/^(.{1,30}?)\s*(?:送出了|送出|为主播送出|为主播送上了)\s*(.{1,20}?)\s*(?:[x×*]\s*(\d{1,4}))?[！!~～。]?$/);
+    // 送礼：「XX：送出了 大小姐驾到 × 1」「XX 送出了 礼物 x3」
+    m = t.match(/^(.{1,40}?)\s*(?:[：:]\s*)?(?:送出了|送出|为主播送出|为主播送上了)\s*(.{1,24}?)\s*(?:[×xX*]\s*(\d{1,4}))?[！!~～。]?$/);
     if (m) return { kind: 'gift', nick: m[1].trim(), gift: m[2].trim(), count: parseInt(m[3], 10) || 1 };
     // 发言：「XX：内容」
-    m = t.match(/^(.{1,30}?)\s*[:：]\s*(.{1,150})$/);
+    m = t.match(/^(.{1,40}?)\s*[：:]\s*(.{1,150})$/);
     if (m) {
       var nick = m[1].trim();
       if (/^(?:系统|官方|直播间|主播|管理)/.test(nick)) return null;
@@ -70,18 +73,12 @@
     return null;
   }
 
-  /* ---------- DOM 监听 ---------- */
-  // 优先锁定聊天容器；找不到先观察 body，容器出现后再收窄（选择器按实战校准更新）
-  var CHAT_SEL = [
-    '[class*="chatroom"] [class*="item"]', '[class*="ChatRoom"] [class*="Item"]',
-    '[class*="danmu"] [class*="item"]', '[class*="Danmu"] [class*="Item"]',
-    '[data-e2e*="chat"] [class*="item"]', '[class*="message"][class*="item"]'
-  ];
+  /* ---------- DOM 监听：锁定弹幕虚拟列表，未渲染出来前每 3s 重试 ---------- */
+  var LIST_SEL = '.webcast-chatroom___list';
   var marked = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
   function harvest(node) {
     if (!node || node.nodeType !== 1) return;
     var cands = [];
-    // 新增节点本身 + 其内可疑消息节点（消息通常是短文本叶子块）
     if (node.textContent && node.textContent.length < 240) cands.push(node);
     var inner = node.querySelectorAll ? node.querySelectorAll('div,li,span') : [];
     for (var i = 0; i < inner.length && cands.length < 40; i++) {
@@ -94,13 +91,25 @@
       if (ev) { push(ev); if (marked) marked.add(el); }
     }
   }
-  var mo = new MutationObserver(function (recs) {
-    for (var i = 0; i < recs.length; i++) {
-      var adds = recs[i].addedNodes;
-      for (var k = 0; k < adds.length; k++) harvest(adds[k]);
+  var mo = null, attached = false, tries = 0;
+  function attach() {
+    var list = document.querySelector(LIST_SEL);
+    if (!list) {
+      if (++tries <= 40) setTimeout(attach, 3000);   // 等 2 分钟，找不到就放弃（徽标提示）
+      else { badge.style.background = '#d64f18'; badge.textContent = '🛰 雷达 找不到弹幕区'; }
+      return;
     }
-  });
-  mo.observe(document.body, { childList: true, subtree: true });
+    attached = true;
+    badge.textContent = '🛰 雷达 已接入·等待消息';
+    mo = new MutationObserver(function (recs) {
+      for (var i = 0; i < recs.length; i++) {
+        var adds = recs[i].addedNodes;
+        for (var k = 0; k < adds.length; k++) harvest(adds[k]);
+      }
+    });
+    mo.observe(list, { childList: true, subtree: true });
+  }
+  attach();
 
   /* ---------- 自报 ---------- */
   push({ kind: 'chat', nick: '雷达探针', content: '探针 ' + VER + ' 已上线（本条为自报，忽略即可）' });
