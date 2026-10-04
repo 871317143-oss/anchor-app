@@ -110,7 +110,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .urow.done .u-nick{color:var(--ink3);}
 .urow .done-tag{flex:none;}
 .trows .urow-wrap{border-top:1px solid var(--line);}
-.tier.closed .trows .urow:nth-child(n+6){display:none;}
+.tier.closed .trows>*:nth-child(n+6){display:none;}
 .tier .t-foot{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line);}
 .tier .tf{flex:1;text-align:center;font-size:12px;font-weight:600;padding:10px 4px;border-radius:9px;cursor:pointer;}
 .tier .tf.exp{color:var(--brand);background:var(--brand-soft);}
@@ -325,7 +325,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v65';
+const APP_VERSION='v66';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
