@@ -135,7 +135,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.3';
+const OPS_VERSION='v3.4';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -256,8 +256,9 @@ function vTodo(){
 
 /* ===== 视图：流水 ===== */
 function vFlow(){
- const teams=['梦华录寻音','梦华录行舟','梦华录水月'];
- const tchipHtml=['',...teams].map(t=>`<span class="chip${t===_tf?' on':''}" data-tf="${t}">${t?t.replace('梦华录',''):'全部团'}</span>`).join('');
+ // 团过滤 chips 按可见范围生成（v3.4）：单团运营只见本团，不再硬编码三团
+ const teams=[...new Set((D.anchors||[]).map(a=>a.team).filter(Boolean))];
+ const tchipHtml=teams.length>1?['',...teams].map(t=>`<span class="chip${t===_tf?' on':''}" data-tf="${t}">${t?t.replace('梦华录',''):'全部团'}</span>`).join(''):'';
  let anchors=[...new Set((D.subs||[]).map(s=>s.anchor))];
  if(_tf)anchors=anchors.filter(a=>teamOf(a)===_tf);
  const chipHtml=['',...anchors].map(a=>`<span class="chip${a===_af?' on':''}" data-af="${a}">${a||'全部'}</span>`).join('');
