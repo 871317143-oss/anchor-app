@@ -1,4 +1,4 @@
-/* 主持雷达探针 v0.2（2026-10-04，寻音直播间实测校准）
+/* 主持雷达探针 v0.3（2026-10-04，寻音直播间实测校准）
  * 用法：抖音网页版直播间页面 → F12 Console → 整段粘贴回车。
  * 只读弹幕区公开消息（进场「XX 来了」/ 发言 / 礼物名与件数），分类后经 Worker 队列推到雷达屏。
  * 页面右下角出现「🛰 雷达」徽标 = 接入成功；刷新直播间需重新粘贴。
@@ -12,7 +12,7 @@
   window.__RADAR_PROBE__ = true;
   var TOKEN = '__TOKEN__';
   var API = 'https://fb.menghualu.com.co/api/live/event';
-  var VER = 'v0.2';
+  var VER = 'v0.3';
 
   /* ---------- 徽标 ---------- */
   var badge = document.createElement('div');
@@ -22,8 +22,8 @@
   badge.textContent = '🛰 雷达 接入中…';
   document.documentElement.appendChild(badge);
 
-  /* ---------- 队列与发送 ---------- */
-  var queue = [], sent = 0, failStreak = 0, seen = {};
+  /* ---------- 队列与发送（图片信标：页面 CSP connect-src 拦 fetch，img-src 放行；回 1x1 GIF 作送达确认） ---------- */
+  var queue = [], sent = 0, failStreak = 0, seen = {}, inFlight = 0;
   function push(ev) {
     var fp = ev.kind + '|' + ev.nick + '|' + (ev.content || '') + '|' + (ev.gift || '') + '|' + (ev.count || 1);
     var now = Date.now();
@@ -32,25 +32,31 @@
     if (Object.keys(seen).length > 600) seen = {};
     queue.push(ev);
   }
-  setInterval(function () {
-    if (!queue.length) return;
-    var batch = queue.splice(0, 50);
-    fetch(API, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: TOKEN, events: batch })
-    }).then(function (r) { return r.json(); }).then(function (j) {
-      if (j && j.ok) {
-        sent += batch.length; failStreak = 0;
-        badge.style.background = '#33462c';
-        badge.textContent = '🛰 雷达 已推 ' + sent + ' 条';
-      } else { throw new Error((j && j.error) || 'bad'); }
-    }).catch(function (e) {
-      failStreak++;
-      queue = batch.concat(queue).slice(-200);
+  function flush() {
+    if (!queue.length || inFlight > 4) return;
+    var batch = [], len = 0;
+    while (queue.length && batch.length < 20) {
+      var s = JSON.stringify(queue[0]);
+      if (batch.length && (len + s.length) > 1100) break;   // 单信标 URL 控长
+      batch.push(queue.shift()); len += s.length;
+    }
+    if (!batch.length) return;
+    inFlight++;
+    var img = new Image();
+    img.onload = function () {
+      inFlight--; sent += batch.length; failStreak = 0;
+      badge.style.background = '#33462c';
+      badge.textContent = '🛰 雷达 已推 ' + sent + ' 条';
+    };
+    img.onerror = function () {
+      inFlight--; failStreak++;
+      queue = batch.concat(queue).slice(-300);
       badge.style.background = '#d64f18';
-      badge.textContent = '🛰 雷达 发送失败×' + failStreak + '（' + String(e).slice(0, 30) + '）';
-    });
-  }, 2500);
+      badge.textContent = '🛰 雷达 发送失败×' + failStreak;
+    };
+    img.src = API + '?token=' + TOKEN + '&events=' + encodeURIComponent(JSON.stringify(batch));
+  }
+  setInterval(flush, 2500);
 
   /* ---------- 消息分类（顺序敏感：送礼先于发言） ---------- */
   function classify(text) {
