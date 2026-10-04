@@ -135,7 +135,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.6';
+const OPS_VERSION='v3.7';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -160,6 +160,11 @@ function showLogin(err){
 function fmtTs(t){if(!t)return'';const d=new Date(t.replace(' ','T')+(t.includes('Z')?'':'Z'));
  const m=d.getMonth()+1,dd=d.getDate(),h=d.getHours(),mi=d.getMinutes();const now=new Date();
  return (m===now.getMonth()+1&&dd===now.getDate())?`${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')}`:`${m}/${dd} ${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')}`;}
+function fmtM(n){n=Math.round(n||0);return n>=10000?(n/10000).toFixed(1).replace(/\.0$/,'')+'w':String(n);}
+let _perfs=null;
+async function loadPerfs(){
+ try{const r=await fetch('https://fb.menghualu.com.co/api/anchor/perf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken()})});
+  const d=await r.json();if(d.ok&&d.list){_perfs={};d.list.forEach(p=>_perfs[p.name]=p);render();}}catch(e){}}
 async function load(tok){
  root.innerHTML='<div class="sk sk-top"></div><div class="sk sk-card"></div><div class="sk sk-card" style="height:150px"></div>';
  try{
@@ -168,7 +173,7 @@ async function load(tok){
   clearTimeout(to);
   const d=await r.json();
   if(!r.ok||!d.ok)throw new Error(d.error||'访问码无效');
-  D=d;render();
+  D=d;render();loadPerfs();
  }catch(e){
   if(String(e).includes('AbortError')){root.innerHTML='<div class="empty">网络超时，点这里重试</div>';root.onclick=()=>{root.onclick=null;load(tok);};return;}
   localStorage.removeItem('ops_token');showLogin(e.message||'加载失败');}}
@@ -248,6 +253,70 @@ function vProj(){
   h+='</div>';});
  return h+'<div class="foot">曝光=进入直播间人数 · ACU=平均在线人数 · PCU 后续接入</div></div>';}
 
+/* ===== 视图：人员（主播卡+业绩+她的用户） ===== */
+function vPeople(){
+ const groups={};
+ (D.anchors||[]).forEach(a=>{(groups[a.team||a.tid]=groups[a.team||a.tid]||[]).push(a);});
+ let h='<div class="wrap"><div class="sec-title"><h3>人员</h3><span class="more">点主播看业绩与她的用户</span></div>';
+ const tids=Object.keys(groups);
+ if(!tids.length)h+='<div class="empty">当前范围没有主播</div>';
+ tids.forEach(tn=>{
+  h+=`<div class="sec-title" style="margin:14px 2px 10px"><h3 style="font-size:15px;color:var(--on-bg2)">${esc(tn.replace('梦华录',''))}</h3><span class="more">${groups[tn].length} 人</span></div><div class="tier">`;
+  groups[tn].forEach((a,i)=>{
+   const p=_perfs&&_perfs[a.name];
+   const st=p?p.status:'';
+   const stTag=st==='上播中'?`<span class="tag t-green">${st}</span>`:st?`<span class="tag t-gray">${st}</span>`:'';
+   const perfTag=p?`<span class="tag t-gray">评分 ${p.score||'—'}</span>`:(_perfs?'<span class="tag t-gray">档案未找到</span>':'<span class="tag t-gray">业绩加载中…</span>');
+   h+=`<div class="urow" data-person="${esc(a.name)}" style="${i?'border-top:1px solid var(--line)':''}">
+    <div class="avatar" style="background:${colorOf(a.name)};width:38px;height:38px;font-size:15px">${a.name[0]}</div>
+    <div class="u-main"><div class="u-line1"><span class="u-nick">${esc(a.name)}</span><span class="u-val">${p?('¥'+fmtM(p.month_income)):' '}</span></div>
+    <div class="u-tags">${stTag}${p&&p.warn?`<span class="tag ${p.warn.includes('🟢')?'t-green':p.warn.includes('🟡')?'t-amber':'t-red'}">${esc(p.warn)}</span>`:''}${perfTag}</div></div></div>`;});
+  h+='</div>';});
+ return h+'</div>';}
+function openPerson(name){
+ const p=_perfs&&_perfs[name];
+ const flags=(D.flags||[]).filter(f=>f.anchor===name);
+ const status=(D.status||[]).filter(f=>f.anchor===name);
+ const subs=(D.subs||[]).filter(s=>s.anchor===name).slice(0,30);
+ const flm={};flags.forEach(f=>{(flm[f.sec]=flm[f.sec]||{sec:f.sec,nick:f.nick,av:f.av,op:f.op,ts:f.ts,flags:[]}).flags.push(f.flag);});
+ const flagRows=Object.values(flm).map(f=>urow(f,f.flags.map(tagFor).join(''))).join('')||'<div class="empty">还没有点亮</div>';
+ const stRows=status.map(f=>urow(f,tagFor(f.status))).join('')||'<div class="empty">还没有状态</div>';
+ const subRows=subs.map(s=>urow(s,(s.actions||[]).map(tagFor).join('')+`<span class="tag t-gray">${esc(s.kind)}</span>`)).join('')||'<div class="empty">今天还没有回传</div>';
+ const prog=p&&p.base?Math.min(100,Math.round((p.base_progress||0)*100)):0;
+ const ov=document.createElement('div');ov.className='nov';ov.style.alignItems='stretch';
+ ov.innerHTML=`<div class="noc" style="height:100%;border-radius:0;padding:calc(14px + env(safe-area-inset-top)) 0 0;overflow-y:auto">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:0 16px 12px">
+   <span data-x="1" style="color:var(--brand);font-weight:700;font-size:15px;cursor:pointer">‹ 人员</span>
+   <span style="color:var(--ink3);font-size:12px">${esc(name)}</span></div>
+  <div style="padding:0 16px">
+  ${p?`<div class="tier"><div class="t-head"><div class="t-ico" style="background:var(--brand-soft);color:var(--brand)">绩</div>
+   <div><div class="t-name">本月业绩</div><div class="t-sub">${esc(p.status||'')} · 最近开播 ${esc(p.last_live||'—')}</div></div>
+   <div class="t-cnt">¥${fmtM(p.month_income)}</div></div>
+   <div class="pgrid">
+    <div class="pcell"><div class="pnum">¥${fmtM(p.month_commission)}</div><div class="plab">本月提成</div></div>
+    <div class="pcell"><div class="pnum">${p.month_days||0}天</div><div class="plab">开播天数</div></div>
+    <div class="pcell"><div class="pnum">${p.score||'—'}</div><div class="plab">综合评分</div></div>
+    <div class="pcell"><div class="pnum">¥${fmtM(p.avg7)}</div><div class="plab">7场均线</div></div>
+    <div class="pcell"><div class="pnum">${esc(p.last_income||'—')}</div><div class="plab">最近一场</div></div>
+    <div class="pcell"><div class="pnum">${esc(p.trend||'—')}</div><div class="plab">趋势</div></div>
+   </div>
+   <div style="padding:12px 16px 16px">
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink2);margin-bottom:5px"><span>保底 ¥${fmtM(p.base)}</span><span>${prog}%</span></div>
+    <div class="pbar"><div class="pbar-fill" style="width:${Math.max(3,prog)}%"></div></div>
+    <div style="font-size:11px;color:var(--ink3);margin-top:8px">${esc(p.trend_warn||'')}${p.level?' · '+esc(p.level):''}</div>
+   </div></div>
+  ${p.brief?`<div class="sec-title"><h3>最新场次简报</h3></div><div class="tier" style="padding:14px 16px"><div style="font-size:12px;line-height:1.7;color:var(--ink2);white-space:pre-line">${esc(p.brief)}</div></div>`:''}`
+  :'<div class="empty">业绩档案加载中或未找到</div>'}
+  <div class="sec-title"><h3>她的点亮</h3><span class="more">${Object.keys(flm).length} 人</span></div>
+  <div class="tier">${flagRows}</div>
+  <div class="sec-title"><h3>她的跟进状态</h3><span class="more">${status.length} 条</span></div>
+  <div class="tier">${stRows}</div>
+  <div class="sec-title"><h3>她的回传</h3><span class="more">最近 ${subs.length} 条</span></div>
+  <div class="tier">${subRows}</div>
+  <div style="height:30px"></div></div></div>`;
+ ov.addEventListener('click',e=>{if(e.target===ov||e.target.closest('[data-x]'))ov.remove();});
+ document.getElementById('phone').appendChild(ov);}
+
 /* ===== 视图：审批 ===== */
 function vTodo(){
  const gs=(D.grades||[]).filter(g=>inT(g.anchor)),ap=(D.appeals||[]).filter(g=>inT(g.anchor));
@@ -291,33 +360,6 @@ function vFlow(){
    <div class="t-cnt">${subs.length}<small> 条</small></div></div>${subsHtml}</div></div>`;}
 
 /* ===== 视图：客情 ===== */
-function vRel(){
- // 点亮按人合并（v3.2）：同一用户只占一行；跨团用户的多主播徽章合成「主播·动作」chip 同排展示
- const flm={};
- (D.flags||[]).filter(f=>inT(f.anchor)).forEach(f=>{
-  const k=f.sec;
-  if(!flm[k])flm[k]={sec:f.sec,nick:f.nick,av:f.av,op:f.op,ts:f.ts,byAnchor:{}};
-  const e=flm[k];(e.byAnchor[f.anchor]=e.byAnchor[f.anchor]||[]).push(f.flag);
-  if(String(f.ts)>String(e.ts))e.ts=f.ts;});
- const fl=Object.values(flm);
- const flagsHtml=fl.length?fl.map(f=>{
-  const anchors=Object.keys(f.byAnchor),multi=anchors.length>1;
-  const tags=anchors.map(a=>f.byAnchor[a].map(fl2=>tagFor(multi?a+'·'+fl2:fl2)).join('')).join('')+(multi?'':`<span class="tag t-gray">${esc(anchors[0])}</span>`);
-  return urow(f,tags);}).join('')
-  :'<div class="empty">还没有点亮标记</div>';
- const st=(D.status||[]).filter(f=>inT(f.anchor));
- const stHtml=st.length?st.map(f=>urow(f,tagFor(f.status)+`<span class="tag t-gray">${esc(f.anchor)}</span>`)).join('')
-  :'<div class="empty">还没有状态记录</div>';
- return `<div class="wrap">
-  <div class="sec-title"><h3>持久点亮</h3><span class="more">已拉群 / 已互关</span></div>
-  <div class="tier"><div class="t-head"><div class="t-ico" style="background:var(--green-bg);color:var(--green)">亮</div>
-   <div><div class="t-name">点亮清单</div><div class="t-sub">按人合并 · 跨团用户徽章带主播名</div></div>
-   <div class="t-cnt">${fl.length}<small> 人</small></div></div>${flagsHtml}</div>
-  <div class="sec-title"><h3>跟进状态</h3><span class="more">各主播视角</span></div>
-  <div class="tier"><div class="t-head"><div class="t-ico" style="background:var(--amber-bg);color:var(--amber)">态</div>
-   <div><div class="t-name">状态总览</div><div class="t-sub">每主播对每个用户的最新进度</div></div>
-   <div class="t-cnt">${st.length}<small> 条</small></div></div>${stHtml}</div></div>`;}
-
 /* ===== 视图：管理 ===== */
 function vAdmin(){
  const tids=[...new Set((D.anchors||[]).map(a=>a.tid))];
@@ -356,21 +398,22 @@ function openOpNote(sec){
    toast('已保存，主播画像页可见');ov.remove();
   }catch(e){toast(e.message);btn.disabled=false;btn.textContent='保存';}};}
 
-const TABS=['proj','todo','flow','rel','admin'];
+const TABS=['proj','people','todo','flow','admin'];
 function switchTab(t){_tab=t;
  TABS.forEach(x=>{const v=document.getElementById('v-'+x);if(v)v.classList.toggle('show',x===t);});
  document.querySelectorAll('.tabbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));}
 const TB_ICONS={
  proj:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>',
+ people:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.7c3 .3 5.4 2.1 5.4 5.3"/></svg>',
  todo:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h9"/></svg>',
  flow:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
  rel:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>',
  admin:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.2a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.9-2.9l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.2a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1a1.7 1.7 0 001.9.3h0a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.2a1.7 1.7 0 001 1.5h0a1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.9 2.9l-.1.1a1.7 1.7 0 00-.3 1.9v0a1.7 1.7 0 001.5 1h.2a2 2 0 110 4h-.2a1.7 1.7 0 00-1.5 1z"/></svg>'};
 function tabbar(todoN){return `<div class="tabbar">
  <button class="tb${_tab==='proj'?' on':''}" data-tab="proj">${TB_ICONS.proj}项目</button>
+ <button class="tb${_tab==='people'?' on':''}" data-tab="people">${TB_ICONS.people}人员</button>
  <button class="tb${_tab==='todo'?' on':''}" data-tab="todo">${TB_ICONS.todo}审批${todoN?`<span class="bdg">${todoN}</span>`:''}</button>
  <button class="tb${_tab==='flow'?' on':''}" data-tab="flow">${TB_ICONS.flow}流水</button>
- <button class="tb${_tab==='rel'?' on':''}" data-tab="rel">${TB_ICONS.rel}客情</button>
  <button class="tb${_tab==='admin'?' on':''}" data-tab="admin">${TB_ICONS.admin}管理</button></div>`;}
 
 function render(){
@@ -383,7 +426,7 @@ function render(){
  <div class="view" id="v-proj">${vProj()}</div>
  <div class="view" id="v-todo">${vTodo()}</div>
  <div class="view" id="v-flow">${vFlow()}</div>
- <div class="view" id="v-rel">${vRel()}</div>
+ <div class="view" id="v-people">${vPeople()}</div>
  <div class="view" id="v-admin">${vAdmin()}</div>${tabbar(todoN)}`;
  switchTab(_tab);
  document.getElementById('rf').onclick=()=>load(storedToken());
@@ -393,6 +436,7 @@ function render(){
  document.querySelectorAll('[data-oa]').forEach(b=>b.onclick=()=>offair(b.dataset.oa,({'menghualu_xunyin':'寻音','menghualu_xingzhou':'行舟','menghualu_shuiyue':'水月'})[b.dataset.oa]||b.dataset.oa));
  document.querySelectorAll('.tabbar .tb').forEach(b=>b.onclick=()=>{switchTab(b.dataset.tab);try{window.scrollTo(0,0);}catch(e){}});
  document.querySelectorAll('.urow[data-sec]').forEach(r=>r.onclick=()=>{const sec=r.dataset.sec;if(sec)openOpNote(sec);});
+ document.querySelectorAll('[data-person]').forEach(r=>r.onclick=()=>openPerson(r.dataset.person));
  document.querySelectorAll('[data-rv]').forEach(b=>b.onclick=()=>{
   const [type,subId,action,idx]=b.dataset.rv.split('|');
   if(type==='grade'){const g=(D.grades||[]).filter(g=>inT(g.anchor))[+idx];review(type,subId,action,{sec:g.sec,grade:g.grade,anchor:g.anchor},b);}

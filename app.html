@@ -296,7 +296,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v55';
+const APP_VERSION='v56';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -474,13 +474,14 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
   <button class="btn btn-ghost" data-act="correct">纠错</button></div>
   </div></div></div>
  </div></div>`;}
-const TABS=['today','search','me'];   /* 5 tab 骨架预留：新模块把 id 追加进来、补一份 view 即接入滑切 */
+const TABS=['today','perf','search','me'];   /* 5 tab 骨架预留：新模块把 id 追加进来、补一份 view 即接入滑切 */
 function switchTab(t,dir){TABS.forEach(x=>{const v=document.getElementById('v-'+x);if(v)v.classList.toggle('show',x===t);});
  try{window.scrollTo(0,0);const r=document.getElementById('root');if(r)r.scrollTop=0;}catch(e){}
  document.querySelectorAll('.tabbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
  if(dir){const v=document.getElementById('v-'+t);if(v){v.classList.remove('sl','sr');void v.offsetWidth;v.classList.add(dir==='l'?'sl':'sr');}}
- if(t==='search'){renderList(_curTier);}}
-function render(){root.innerHTML=viewToday()+viewSearch()+viewMe();switchTab('today');}
+ if(t==='search'){renderList(_curTier);}
+ if(t==='perf'){loadPerf();}}
+function render(){root.innerHTML=viewToday()+viewPerf()+viewSearch()+viewMe();switchTab('today');}
 function openProfile(sec){closeProfile();root.insertAdjacentHTML('beforeend',viewProfile(sec));
  const _pv=document.getElementById('pv');
  if(_pv){const _ss=window.matchMedia('(display-mode: standalone)')&&window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;if(!_ss)_pv.classList.add('in-browser');}
@@ -807,8 +808,52 @@ document.addEventListener('touchend',e=>{
 document.addEventListener('click',e=>{if(_suppressClick){e.stopPropagation();e.preventDefault();}},true);
 document.addEventListener('touchstart',()=>{_suppressClick=false;},true);   /* 下一次触摸即解除抑制：拖拽后的鬼点击仍被吃，新点按不受影响 */
 document.addEventListener('input',e=>{if(e.target.id==='q')renderSearch(e.target.value);});
+/* ===== 数据·业绩 tab（v56）：读 Worker /api/anchor/perf（主播档案库），只显示本人 ===== */
+const PERF_URL='https://fb.menghualu.com.co/api/anchor/perf';
+let _perfState=0;   // 0未加载 1加载中 2成功 3失败/无档
+function viewPerf(){
+ return `<div class="view" id="v-perf"><div id="perfBox"><div class="sk sk-top"></div><div class="sk sk-card"></div></div></div>`;}
+function loadPerf(){
+ if(_perfState===1||_perfState===2)return;_perfState=1;
+ fetch(PERF_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken()})})
+ .then(r=>r.json()).then(d=>{
+  const el=document.getElementById('perfBox');
+  if(d.ok&&d.perf){_perfState=2;if(el)el.innerHTML=perfHtml(d.perf);}
+  else{_perfState=3;if(el)el.innerHTML=perfHtml(null);}
+ }).catch(()=>{_perfState=3;const el=document.getElementById('perfBox');
+  if(el)el.innerHTML=`<div class="empty" style="color:var(--on-bg3)">网络异常，稍后切回来重试</div>`;});}
+function perfHtml(p){
+ if(!p)return `${topbar()}<div class="wrap"><div class="empty">业绩档案未找到（测试号无业绩）<br>正式主播的档案在主播档案库</div></div>`;
+ const prog=p.base?Math.min(100,Math.round((p.base_progress||0)*100)):0;
+ return `${topbar()}<div class="wrap">
+ <div class="profile" style="min-height:auto">
+  <div style="padding:20px 16px 14px;text-align:center">
+   <div style="font-size:12px;color:var(--ink3)">本月流水（元）</div>
+   <div style="font-size:34px;font-weight:900;margin:4px 0">¥${Math.round(p.month_income||0).toLocaleString()}</div>
+   <div style="font-size:12px;color:var(--ink2)">提成 ¥${Math.round(p.month_commission||0).toLocaleString()} · 开播 ${p.month_days||0} 天 · ${escapeHtml(p.status||'')}</div>
+  </div>
+  <div style="padding:0 16px 16px">
+   <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink2);margin-bottom:5px"><span>保底 ¥${(p.base||0).toLocaleString()}</span><span>${prog}%</span></div>
+   <div style="height:12px;border-radius:999px;background:var(--gray-bg);overflow:hidden"><div style="height:100%;width:${Math.max(3,prog)}%;border-radius:999px;background:linear-gradient(90deg,var(--brand-soft),var(--lime))"></div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:repeat(3,1fr)">
+   <div class="cell"><div class="num">¥${Math.round(p.avg7||0)}</div><div class="lab">7场均线</div></div>
+   <div class="cell"><div class="num" style="font-size:14px">${escapeHtml(p.last_income||'—')}</div><div class="lab">最近一场</div></div>
+   <div class="cell"><div class="num" style="font-size:14px">${escapeHtml(p.trend||'—')}</div><div class="lab">趋势</div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)">
+   <div class="cell"><div class="num">${escapeHtml(String(p.score||'—'))}</div><div class="lab">综合评分</div></div>
+   <div class="cell"><div class="num" style="font-size:12px">${escapeHtml(p.warn||'—')}</div><div class="lab">预警状态</div></div>
+   <div class="cell"><div class="num" style="font-size:12px">${escapeHtml(p.level||'—')}</div><div class="lab">水位分层</div></div>
+  </div>
+ </div>
+ <div class="sec-title"><h3>最新场次简报</h3><span class="more">${escapeHtml(p.last_live||'')}</span></div>
+ <div class="tier" style="padding:14px 16px;margin-bottom:14px"><div style="font-size:12px;line-height:1.75;color:var(--ink2);white-space:pre-line">${escapeHtml(p.brief||'暂无')}</div></div>
+ <div style="text-align:center;color:var(--on-bg3);font-size:11px;padding:4px 0 10px">数据来自主播档案库 · 仅你本人可见</div>
+ </div>`;}
 const TABBAR=`<div class="tabbar">
  <button class="tb on" data-tab="today"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>今日</button>
+ <button class="tb" data-tab="perf"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>业绩</button>
  <button class="tb" data-tab="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.3"/><circle cx="3.5" cy="12" r="1.3"/><circle cx="3.5" cy="18" r="1.3"/></svg>清单</button>
  <button class="tb" data-tab="me"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>我的</button></div>`;
 function storedToken(){return localStorage.getItem('anchor_token')||'';}
