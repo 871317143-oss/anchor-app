@@ -325,7 +325,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v67';
+const APP_VERSION='v68';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -642,7 +642,7 @@ function switchTab(t,dir){TABS.forEach(x=>{const v=document.getElementById('v-'+
  if(t==='search'){renderList(_curTier);}
  if(t==='perf'){loadPerf();}}
 function render(){root.innerHTML=viewToday()+viewPerf()+viewSearch()+viewMe();switchTab('today');updateNotifBadge();}
-function openProfile(sec){closeProfile();root.insertAdjacentHTML('beforeend',viewProfile(sec));
+function openProfile(sec){closeProfile();root.insertAdjacentHTML('beforeend',viewProfile(sec));track('profile_open',sec.slice(-4));
  const _pv=document.getElementById('pv');
  if(_pv){const _ss=window.matchMedia('(display-mode: standalone)')&&window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;if(!_ss)_pv.classList.add('in-browser');}
  bindAiPanel(sec);}
@@ -820,6 +820,7 @@ function doneTagHTML(sec){
  var st=loadFbDone()[sec];return st?fbTagHTML(st):'';}
 function doSubmit(body,ok){
  body.sub_id=storedToken()+'_'+(body.sec||'all')+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+ track('feedback_submit',body.kind||'');
  const btn=document.getElementById('sheetSubmit');if(btn){btn.disabled=true;btn.textContent='提交中…';}
  submitToWorker(body).then(()=>{if(body.sec)markFeedbackDone(body.sec,body.kind,body.actions);try{ok();}catch(e){}
    toast((body.kind==='归属异议'||body.kind==='提名大哥')?'已提交，运营会核对':'已回传，运营可见');})
@@ -1035,9 +1036,13 @@ function showLogin(err){
    if(!v){document.getElementById('loginErr').textContent='请输入访问码';return;}
    localStorage.setItem('anchor_token',v);loadData(v);};
  btn.onclick=go;code.onkeydown=e=>{if(e.key==='Enter')go();};setTimeout(()=>code.focus(),60);}
+/* v68 使用率埋点（backlog⑤）：只记事件类型不含内容（open/profile_open/feedback_submit/ai_open），beacon 优先失败静默 */
+function track(ev,meta){try{const b=JSON.stringify({token:storedToken(),ev:ev,meta:meta||''});
+ if(navigator.sendBeacon&&navigator.sendBeacon('https://fb.menghualu.com.co/api/track',new Blob([b],{type:'application/json'})))return;
+ fetch('https://fb.menghualu.com.co/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:b}).catch(()=>{});}catch(e){}}
 function loadData(tok){
  fetch(`data/${tok}.json`).then(r=>{if(!r.ok)throw 0;_dataMod=r.headers.get('Last-Modified')||'';return r.json();}).then(d=>{DATA=d;
-  document.title='画像·'+d.anchor.name;root.insertAdjacentHTML('afterend',TABBAR+BELLF);render();loadLiveFollow();loadD1Notifs();})
+  document.title='画像·'+d.anchor.name;root.insertAdjacentHTML('afterend',TABBAR+BELLF);render();loadLiveFollow();loadD1Notifs();track('open');})
  .catch(()=>{localStorage.removeItem('anchor_token');
    showLogin('访问码无效或已失效，请重新输入或找运营补发');});
  setupSW();}
@@ -1124,7 +1129,7 @@ function bindAiPanel(sec){
   const box=card.querySelector('#aiBody');
   card.querySelectorAll('.ai-tab').forEach(t=>t.onclick=()=>{
     card.querySelectorAll('.ai-tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');
-    const k=t.dataset.ai;let p;
+    const k=t.dataset.ai;let p;track('ai_open',k);
     box.innerHTML='<div class="ai-ph">上传截图后小梦开始分析</div>';
     if(k==='homepage')p=aiShowFive(sec,box,'homepage');
     else if(k==='chat')p=aiShowFive(sec,box,'chat');
