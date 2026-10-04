@@ -196,7 +196,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.15';
+const OPS_VERSION='v3.16';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -335,7 +335,7 @@ function vPeople(){
    const p=_perfs&&_perfs[a.name];
    const st=p?p.status:'';
    const stTag=st==='上播中'?`<span class="tag t-green">${st}</span>`:st?`<span class="tag t-gray">${st}</span>`:'';
-   const perfTag=p?`<span class="tag t-gray">评分 ${p.score||'—'}</span>`:(_perfs?'<span class="tag t-gray">档案未找到</span>':'<span class="tag t-gray">业绩加载中…</span>');
+   const perfTag=p?'':(_perfs?'<span class="tag t-gray">档案未找到</span>':'<span class="tag t-gray">业绩加载中…</span>');
    h+=`<div class="urow" data-person="${esc(a.name)}" style="${i?'border-top:1px solid var(--line)':''}">
     <div class="avatar" style="background:${colorOf(a.name)};width:38px;height:38px;font-size:15px">${a.name[0]}</div>
     <div class="u-main"><div class="u-line1"><span class="u-nick">${esc(a.name)}</span><span class="u-val">${p?('¥'+fmtM(p.month_income)):' '}</span></div>
@@ -392,7 +392,6 @@ function openPerson(name){
    <div class="pgrid">
     <div class="pcell"><div class="pnum">¥${fmtM(p.month_commission)}</div><div class="plab">本月提成</div></div>
     <div class="pcell"><div class="pnum">${p.month_days||0}天</div><div class="plab">开播天数</div></div>
-    <div class="pcell"><div class="pnum">${p.score||'—'}</div><div class="plab">综合评分</div></div>
     <div class="pcell"><div class="pnum">¥${fmtM(p.avg7)}</div><div class="plab">7场均线</div></div>
     <div class="pcell"><div class="pnum">${esc(p.last_income||'—')}</div><div class="plab">最近一场</div></div>
     <div class="pcell"><div class="pnum">${esc(p.trend||'—')}</div><div class="plab">趋势</div></div>

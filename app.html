@@ -325,7 +325,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v64';
+const APP_VERSION='v65';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -990,8 +990,7 @@ function perfHtml(p){
    <div class="cell"><div class="num" style="font-size:14px">${escapeHtml(p.last_income||'—')}</div><div class="lab">最近一场</div></div>
    <div class="cell"><div class="num" style="font-size:14px">${escapeHtml(p.trend||'—')}</div><div class="lab">趋势</div></div>
   </div>
-  <div class="grid" style="grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)">
-   <div class="cell"><div class="num">${escapeHtml(String(p.score||'—'))}</div><div class="lab">综合评分</div></div>
+  <div class="grid" style="grid-template-columns:repeat(2,1fr);border-top:1px solid var(--line)">
    <div class="cell"><div class="num" style="font-size:12px">${escapeHtml(p.warn||'—')}</div><div class="lab">预警状态</div></div>
    <div class="cell"><div class="num" style="font-size:12px">${escapeHtml(p.level||'—')}</div><div class="lab">水位分层</div></div>
   </div>
