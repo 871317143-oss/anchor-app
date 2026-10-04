@@ -135,7 +135,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.7';
+const OPS_VERSION='v3.8';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -173,7 +173,7 @@ async function load(tok){
   clearTimeout(to);
   const d=await r.json();
   if(!r.ok||!d.ok)throw new Error(d.error||'访问码无效');
-  D=d;render();loadPerfs();
+  D=d;render();loadPerfs();loadOffairStatus();
  }catch(e){
   if(String(e).includes('AbortError')){root.innerHTML='<div class="empty">网络超时，点这里重试</div>';root.onclick=()=>{root.onclick=null;load(tok);};return;}
   localStorage.removeItem('ops_token');showLogin(e.message||'加载失败');}}
@@ -183,8 +183,14 @@ async function offair(tid,name){
   const r=await fetch('https://fb.menghualu.com.co/api/ops/offair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken(),tid})});
   const d=await r.json();
   if(!r.ok||!d.ok)throw new Error(String(d.error||'失败').replace(/^Error: /,''));
-  toast(d.dedup?'已在队列里（30分钟内不重复）':'已标记，AI 将自动采集');
+  toast(d.dedup?'已在队列里（30分钟内不重复）':'已标记，排队等待采集');
+  if(!d.dedup)_offairRows.unshift({id:d.id,tid,done:0,status:'pending',step:''});
+  render();
  }catch(e){toast(e.message);}}
+let _offairRows=[];
+async function loadOffairStatus(){
+ try{const r=await fetch('https://fb.menghualu.com.co/api/ops/offair-status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken()})});
+  const d=await r.json();if(d.ok){_offairRows=d.rows||[];if(_tab==='admin')render();}}catch(e){}}
 async function review(type,subId,action,extra,btn){
  const card=btn?btn.closest('.todo'):null;
  const acts=card?card.querySelectorAll('.acts button,.acts select'):[];
@@ -364,7 +370,14 @@ function vFlow(){
 function vAdmin(){
  const tids=[...new Set((D.anchors||[]).map(a=>a.tid))];
  const tn={'menghualu_xunyin':'寻音','menghualu_xingzhou':'行舟','menghualu_shuiyue':'水月'};
- const teamBtns=tids.map(t=>`<button class="btn big" data-oa="${t}" style="margin-bottom:10px">${esc(tn[t]||t)} 下播了 · AI 自动采集</button>`).join('');
+ const teamBtns=tids.map(t=>{
+  const r=_offairRows.find(x=>x.tid===t);
+  if(r&&!r.done){
+   const lab=(r.status==='collecting'&&r.step)?`采集中 · ${r.step}`:'已标记 · 排队采集中';
+   return `<button class="btn big" disabled style="margin-bottom:10px;opacity:.55;cursor:not-allowed">⏳ ${esc(tn[t]||t)} ${esc(lab)}</button>`;}
+  if(r&&r.done&&r.done_ts&&(Date.now()-new Date(String(r.done_ts).replace(' ','T')+'Z')<8*3600e3))
+   return `<button class="btn big" disabled style="margin-bottom:10px;opacity:.6;cursor:not-allowed">✓ ${esc(tn[t]||t)} 已采集 ${String(r.done_ts).slice(11,16)}</button>`;
+  return `<button class="btn big" data-oa="${t}" style="margin-bottom:10px">${esc(tn[t]||t)} 下播了 · AI 自动采集</button>`;}).join('');
  const anchors=[...new Set((D.anchors||[]).map(a=>a.name))];
  return `<div class="wrap">
   <div class="sec-title"><h3>下播采集</h3><span class="more">标记后自动跑一条龙</span></div>
