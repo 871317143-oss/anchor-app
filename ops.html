@@ -44,7 +44,8 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .t-sub{font-size:12px;color:var(--ink3);margin-top:2px;letter-spacing:.3px;}
 .t-cnt{margin-left:auto;font-size:16px;font-weight:800;}
 .t-cnt small{font-weight:400;color:var(--ink3);font-size:11px;}
-.urow{display:flex;align-items:flex-start;gap:11px;padding:13px 16px;border-top:1px solid var(--line);}
+.urow{display:flex;align-items:flex-start;gap:11px;padding:13px 16px;border-top:1px solid var(--line);cursor:pointer;transition:transform .12s ease;}
+.urow:active{transform:scale(.98);}
 .urow .avatar{width:36px;height:36px;font-size:14px;}
 .u-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;}
 .u-line1{display:flex;align-items:baseline;gap:8px;}
@@ -88,7 +89,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .login-err{font-size:12px;color:var(--red);margin-top:10px;min-height:14px;}
 #toast{position:absolute;left:50%;bottom:108px;transform:translateX(-50%) translateY(16px);background:rgba(26,36,22,.95);color:#fff;font-size:13px;padding:11px 18px;border-radius:10px;max-width:82%;text-align:center;opacity:0;transition:all .25s;pointer-events:none;z-index:60;}
 .view{display:none;}.view.show{display:block;}
-.tabbar{position:absolute;bottom:0;left:0;right:0;background:rgba(28,41,26,.72);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);border-top:1px solid rgba(255,255,255,.08);display:flex;padding:9px 0 calc(11px + env(safe-area-inset-bottom));}
+.tabbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:414px;background:rgba(28,41,26,.72);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);border-top:1px solid rgba(255,255,255,.08);display:flex;padding:9px 0 calc(11px + env(safe-area-inset-bottom));z-index:30;}
 .tabbar .tb{flex:1;text-align:center;font-size:11px;color:var(--on-bg3);background:none;border:none;cursor:pointer;font-family:inherit;transition:transform .12s ease;position:relative;}
 .tabbar .tb:active{transform:scale(.94);}
 .tabbar .tb svg{margin:0 auto 3px;display:block;}
@@ -106,6 +107,14 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .sk{background:linear-gradient(100deg,rgba(255,255,255,.05) 30%,rgba(255,255,255,.13) 50%,rgba(255,255,255,.05) 70%);background-size:220% 100%;animation:skmove 1.15s linear infinite;}
 @keyframes skmove{from{background-position:170% 0}to{background-position:-70% 0}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;}}
+/* 运营备注弹窗（v3.1） */
+.nov{position:fixed;inset:0;background:rgba(20,28,18,.55);z-index:70;display:flex;align-items:flex-end;justify-content:center;}
+.noc{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:414px;padding:18px 16px calc(16px + env(safe-area-inset-bottom));animation:sheetUp .3s cubic-bezier(.22,.9,.3,1) both;}
+.not{font-size:16px;font-weight:700;margin-bottom:10px;}
+.noc textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px;font-size:14px;font-family:inherit;resize:none;outline:none;background:#fff;color:var(--ink);}
+.noa{display:flex;gap:9px;margin-top:10px;}
+.noa .btn.big{flex:2;padding:12px;}
+@keyframes sheetUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -114,9 +123,9 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.0';
+const OPS_VERSION='v3.1';
 const root=document.getElementById('root');
-let D=null, _af='', _tf='', _tab='todo';
+let D=null, _af='', _tf='', _tab='todo', _rowMeta={};
 const name2team={};
 const teamOf=n=>name2team[n]||'';
 const inT=n=>!_tf||teamOf(n)===_tf;
@@ -171,7 +180,8 @@ async function review(type,subId,action,extra){
 function tagFor(a){const m={'已拉群':'t-green','已互关':'t-blue','已流失':'t-red','已回复':'t-green','已私信':'t-blue','已关注':'t-green','已复购':'t-amber','已建联':'t-green','未回复':'t-red'};
  return `<span class="tag ${m[a]||'t-gray'}">${a}</span>`;}
 function nameOf(x){return x.nick||('sec…'+x.sec_tail);}
-function urow(x,sub){return `<div class="urow"><div class="avatar" style="background:${colorOf(x.nick||x.sec)};width:36px;height:36px;font-size:14px">${(x.nick||'?')[0]||'?'}</div>
+function urow(x,sub){const inner=(x.nick||'?')[0]+(x.av?`<img src="${esc(x.av)}" style="position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.remove()">`:'');
+ return `<div class="urow" data-sec="${esc(x.sec||'')}"><div class="avatar" style="position:relative;background:${colorOf(x.nick||x.sec)};width:36px;height:36px;font-size:14px">${inner}</div>
  <div class="u-main"><div class="u-line1"><span class="u-nick">${esc(nameOf(x))}</span><span class="u-t">${fmtTs(x.ts)}</span></div>
  <div class="u-tags">${sub||''}</div>${x.note?`<div class="u-note">${esc(x.note)}</div>`:''}</div></div>`;}
 
@@ -253,6 +263,24 @@ function vAdmin(){
    <div class="mrow dim"><div class="mi">讯</div>主播信息维护<span class="ms">筹备中</span></div></div>
   <div class="foot">运营工作台 ${OPS_VERSION} · 明细与归档在 Notion 回传库</div></div>`;}
 
+function openOpNote(sec){
+ const m=_rowMeta[sec]||{};
+ const ov=document.createElement('div');ov.className='nov';
+ ov.innerHTML=`<div class="noc"><div class="not">运营备注 · ${esc(m.nick||('sec…'+sec.slice(-6)))}</div>
+  <textarea id="noTa" rows="4" placeholder="写点只有运营能看的备注…">${esc(m.op||'')}</textarea>
+  <div class="noa"><button class="btn no" id="noX">取消</button><button class="btn big" id="noGo">保存</button></div></div>`;
+ ov.addEventListener('click',e=>{if(e.target===ov||e.target.id==='noX')ov.remove();});
+ document.getElementById('phone').appendChild(ov);
+ document.getElementById('noGo').onclick=async()=>{
+  const note=document.getElementById('noTa').value.trim();
+  const btn=document.getElementById('noGo');btn.disabled=true;btn.textContent='保存中…';
+  try{const r=await fetch('https://fb.menghualu.com.co/api/ops/note',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken(),sec,note})});
+   const d=await r.json().catch(()=>({}));
+   if(!r.ok||!d.ok)throw new Error(d.error||'保存失败');
+   if(_rowMeta[sec])_rowMeta[sec].op=note;
+   toast('已保存，主播画像页可见');ov.remove();
+  }catch(e){toast(e.message);btn.disabled=false;btn.textContent='保存';}};}
+
 const TABS=['todo','flow','rel','admin'];
 function switchTab(t){_tab=t;
  TABS.forEach(x=>{const v=document.getElementById('v-'+x);if(v)v.classList.toggle('show',x===t);});
@@ -271,6 +299,7 @@ function tabbar(todoN){return `<div class="tabbar">
 
 function render(){
  Object.keys(name2team).forEach(k=>delete name2team[k]);(D.anchors||[]).forEach(a=>name2team[a.name]=a.team);
+ _rowMeta={};(D.subs||[]).concat(D.flags||[],D.status||[],D.appeals||[],D.grades||[]).forEach(x=>{if(x.sec)_rowMeta[x.sec]={nick:nameOf(x),op:x.op||''};});
  const todoN=(D.grades||[]).filter(g=>inT(g.anchor)).length+(D.appeals||[]).filter(g=>inT(g.anchor)).length;
  root.innerHTML=`<div class="topbar"><div class="avatar">运</div><div><div class="name">运营工作台</div>
   <div class="meta">${esc(D.scope||'运营')} · 实时数据</div></div>
@@ -285,6 +314,7 @@ function render(){
  document.querySelectorAll('[data-tf]').forEach(c=>c.onclick=()=>{_tf=c.dataset.tf;_af='';render();});
  document.querySelectorAll('[data-oa]').forEach(b=>b.onclick=()=>offair(b.dataset.oa,({'menghualu_xunyin':'寻音','menghualu_xingzhou':'行舟','menghualu_shuiyue':'水月'})[b.dataset.oa]||b.dataset.oa));
  document.querySelectorAll('.tabbar .tb').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+ document.querySelectorAll('.urow[data-sec]').forEach(r=>r.onclick=()=>{const sec=r.dataset.sec;if(sec)openOpNote(sec);});
  document.querySelectorAll('[data-rv]').forEach(b=>b.onclick=()=>{
   const [type,subId,action,idx]=b.dataset.rv.split('|');
   if(type==='grade'){const g=(D.grades||[]).filter(g=>inT(g.anchor))[+idx];review(type,subId,action,{sec:g.sec,grade:g.grade,anchor:g.anchor});}
