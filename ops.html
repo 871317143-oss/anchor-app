@@ -123,7 +123,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.1';
+const OPS_VERSION='v3.2';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='todo', _rowMeta={};
 const name2team={};
@@ -177,8 +177,8 @@ async function review(type,subId,action,extra){
   toast(action==='approve'?'已通过并生效':'已驳回');
   load(storedToken());
  }catch(e){toast(e.message);}}
-function tagFor(a){const m={'已拉群':'t-green','已互关':'t-blue','已流失':'t-red','已回复':'t-green','已私信':'t-blue','已关注':'t-green','已复购':'t-amber','已建联':'t-green','未回复':'t-red'};
- return `<span class="tag ${m[a]||'t-gray'}">${a}</span>`;}
+function tagFor(a){const key=a.split('·').pop();const m={'已拉群':'t-green','已互关':'t-blue','已流失':'t-red','已回复':'t-green','已私信':'t-blue','已关注':'t-green','已复购':'t-amber','已建联':'t-green','未回复':'t-red'};
+ return `<span class="tag ${m[key]||'t-gray'}">${a}</span>`;}
 function nameOf(x){return x.nick||('sec…'+x.sec_tail);}
 function urow(x,sub){const inner=(x.nick||'?')[0]+(x.av?`<img src="${esc(x.av)}" style="position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.remove()">`:'');
  return `<div class="urow" data-sec="${esc(x.sec||'')}"><div class="avatar" style="position:relative;background:${colorOf(x.nick||x.sec)};width:36px;height:36px;font-size:14px">${inner}</div>
@@ -228,8 +228,18 @@ function vFlow(){
 
 /* ===== 视图：客情 ===== */
 function vRel(){
- const fl=(D.flags||[]).filter(f=>inT(f.anchor));
- const flagsHtml=fl.length?fl.map(f=>urow(f,tagFor(f.flag)+`<span class="tag t-gray">${esc(f.anchor)}</span>`)).join('')
+ // 点亮按人合并（v3.2）：同一用户只占一行；跨团用户的多主播徽章合成「主播·动作」chip 同排展示
+ const flm={};
+ (D.flags||[]).filter(f=>inT(f.anchor)).forEach(f=>{
+  const k=f.sec;
+  if(!flm[k])flm[k]={sec:f.sec,nick:f.nick,av:f.av,op:f.op,ts:f.ts,byAnchor:{}};
+  const e=flm[k];(e.byAnchor[f.anchor]=e.byAnchor[f.anchor]||[]).push(f.flag);
+  if(String(f.ts)>String(e.ts))e.ts=f.ts;});
+ const fl=Object.values(flm);
+ const flagsHtml=fl.length?fl.map(f=>{
+  const anchors=Object.keys(f.byAnchor),multi=anchors.length>1;
+  const tags=anchors.map(a=>f.byAnchor[a].map(fl2=>tagFor(multi?a+'·'+fl2:fl2)).join('')).join('')+(multi?'':`<span class="tag t-gray">${esc(anchors[0])}</span>`);
+  return urow(f,tags);}).join('')
   :'<div class="empty">还没有点亮标记</div>';
  const st=(D.status||[]).filter(f=>inT(f.anchor));
  const stHtml=st.length?st.map(f=>urow(f,tagFor(f.status)+`<span class="tag t-gray">${esc(f.anchor)}</span>`)).join('')
@@ -237,8 +247,8 @@ function vRel(){
  return `<div class="wrap">
   <div class="sec-title"><h3>持久点亮</h3><span class="more">已拉群 / 已互关</span></div>
   <div class="tier"><div class="t-head"><div class="t-ico" style="background:var(--green-bg);color:var(--green)">亮</div>
-   <div><div class="t-name">点亮清单</div><div class="t-sub">亮后一直亮，主播取消才灭</div></div>
-   <div class="t-cnt">${fl.length}<small> 条</small></div></div>${flagsHtml}</div>
+   <div><div class="t-name">点亮清单</div><div class="t-sub">按人合并 · 跨团用户徽章带主播名</div></div>
+   <div class="t-cnt">${fl.length}<small> 人</small></div></div>${flagsHtml}</div>
   <div class="sec-title"><h3>跟进状态</h3><span class="more">各主播视角</span></div>
   <div class="tier"><div class="t-head"><div class="t-ico" style="background:var(--amber-bg);color:var(--amber)">态</div>
    <div><div class="t-name">状态总览</div><div class="t-sub">每主播对每个用户的最新进度</div></div>
