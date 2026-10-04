@@ -57,6 +57,16 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .nc-actions{display:flex;gap:8px;margin:2px 0 8px;}
 .nc-actions .tf{flex:1;text-align:center;font-size:12px;font-weight:600;padding:9px 4px;border-radius:9px;cursor:pointer;background:var(--gray-bg);color:var(--ink2);border:none;font-family:inherit;}
 .nc-actions .tf.on{background:var(--brand-soft);color:var(--brand);}
+/* v3.15 顶部横幅堆叠（iOS 风） */
+.nstack{position:fixed;top:calc(8px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:min(92%,390px);z-index:90;pointer-events:none;}
+.nban{pointer-events:auto;display:flex;gap:10px;align-items:flex-start;background:rgba(28,41,26,.62);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);border:1px solid rgba(255,255,255,.16);color:var(--on-bg);border-radius:18px;padding:12px 14px;box-shadow:0 8px 24px rgba(15,25,15,.35);margin-bottom:8px;transform-origin:top center;animation:nbanIn .34s var(--spring-settle) both;cursor:pointer;}
+@keyframes nbanIn{from{opacity:0;transform:translateY(-18px) scale(.96)}to{opacity:1;transform:none}}
+.nban.out{transition:transform .22s ease,opacity .22s;transform:translateY(-16px);opacity:0;}
+.nban .nc-ico{font-size:17px;margin-top:1px;flex:none;}
+.nban .nb-t{font-size:13px;font-weight:700;color:var(--on-bg);}
+.nban .nb-b{font-size:11px;color:var(--on-bg2);line-height:1.5;margin-top:2px;word-break:break-word;}
+.nban .nb-time{font-size:10px;color:var(--on-bg3);flex:none;margin-left:2px;}
+.nstack .npill{pointer-events:auto;margin:2px auto 0;width:max-content;font-size:10px;color:var(--on-bg2);background:rgba(28,41,26,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:4px 10px;cursor:pointer;}
 .wrap{padding:0 16px;}
 .sec-title{display:flex;align-items:center;justify-content:space-between;margin:20px 2px 12px;}
 .sec-title h3{font-size:20px;font-weight:800;color:var(--on-bg);}
@@ -186,7 +196,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.14';
+const OPS_VERSION='v3.15';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -531,9 +541,40 @@ function vAdmin(){
 
 /* ===== v3.13 通知中心（D1 messages，未回复介入/采集完成直达） ===== */
 let _d1Notifs=[],_ncShowRead=false;
-function loadD1Notifs(){
+function loadD1Notifs(){pollNotifs(true);setInterval(()=>pollNotifs(false),60000);
+ new MutationObserver(()=>{if(!overlayOpen())checkQueue();}).observe(document.getElementById('phone'),{childList:true,subtree:true});}
+function pollNotifs(first){
  fetch('https://fb.menghualu.com.co/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken(),include_read:true})})
- .then(r=>r.json()).then(d=>{if(d.ok){_d1Notifs=d.messages||[];updateNotifBadge();}}).catch(()=>{});}
+ .then(r=>r.json()).then(d=>{
+  if(!d.ok)return;
+  const fresh=d.messages||[];
+  if(!first){const known=new Set(_d1Notifs.map(m=>m.id));
+   fresh.filter(m=>!m.read&&!known.has(m.id)).forEach(m=>pushBanner({kind:m.kind,level:m.level,title:m.title,body:m.body,ref:m.ref_sec,time:'现在'}));}
+  _d1Notifs=fresh;updateNotifBadge();
+ }).catch(()=>{});}
+/* v3.15 顶部横幅堆叠（iOS 风） */
+let _nbQ=[];
+function notifStackEl(){let s=document.getElementById('nstack');if(!s){s=document.createElement('div');s.id='nstack';s.className='nstack';document.getElementById('phone').appendChild(s);}return s;}
+function overlayOpen(){return !!document.querySelector('.nov');}
+function pushBanner(m){
+ if(overlayOpen()){_nbQ.push(m);return;}
+ const s=notifStackEl();
+ const ban=document.createElement('div');ban.className='nban';
+ ban.innerHTML=`<div class="nc-ico">${NICO[m.kind]||'🔔'}</div><div style="flex:1;min-width:0"><div class="nb-t">${esc(m.title)}</div><div class="nb-b">${esc(m.body).slice(0,90)}</div></div><div class="nb-time">${m.time||'现在'}</div>`;
+ ban.onclick=()=>{dismissBanner(ban);openNotif();};
+ ban.addEventListener('touchstart',e=>{ban._y=e.touches[0].clientY;},{passive:true});
+ ban.addEventListener('touchend',e=>{if(ban._y!=null&&ban._y-e.changedTouches[0].clientY>40)dismissBanner(ban,true);ban._y=null;});
+ s.prepend(ban);
+ trimStack();
+ if(m.level!=='alert')setTimeout(()=>dismissBanner(ban),5200);
+}
+function dismissBanner(ban,swipe){if(!ban.isConnected)return;ban.classList.add('out');setTimeout(()=>{ban.remove();trimStack();checkQueue();},220);}
+function trimStack(){const s=notifStackEl();const bs=[...s.querySelectorAll('.nban:not(.out)')];
+ bs.forEach((b,i)=>{b.style.display=i<2?'flex':'none';});
+ let pill=s.querySelector('.npill');const hidden=Math.max(0,bs.length-2);
+ if(hidden>0){if(!pill){pill=document.createElement('div');pill.className='npill';s.appendChild(pill);}pill.textContent=`还有 ${hidden} 个通知`;pill.onclick=()=>openNotif();}
+ else if(pill)pill.remove();}
+function checkQueue(){if(!overlayOpen()&&_nbQ.length){const q=_nbQ;_nbQ=[];q.forEach(pushBanner);}}
 function updateNotifBadge(){const b=document.getElementById('notifBdg');if(b){const n=_d1Notifs.filter(m=>!m.read).length;b.textContent=n>99?'99+':n;b.style.display=n?'flex':'none';}}
 const NICO={review_result:'✅',appeal_result:'🧭',nr_alert:'🔴',offair_done:'📦',data_updated:'🔄',bday:'🎂',cross:'🌐',returned:'💫',ops_note:'📝'};
 function openNotif(){
