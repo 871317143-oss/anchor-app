@@ -255,7 +255,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .view.show.sl .wrap>*,.view.show.sr .wrap>*{animation:none;}
 /* v47 画像双页：主页在左、更多信息页在右（左滑更多信息/右滑退出，10-04 老板口径；flex order 换序不改 DOM） */
 .pview{overflow:hidden;}
-.pv-track{display:flex;width:200%;height:100%;transition:transform .28s cubic-bezier(.22,.9,.3,1);transform:translateX(0);}
+.pv-track{display:flex;width:200%;height:100%;transition:transform .33s var(--spring-settle);transform:translateX(0);}
 .pv-track.show-quick{transform:translateX(-50%);}
 .pv-page{width:50%;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .pv-main{order:1;}.pv-quick{order:2;}
@@ -264,15 +264,23 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .urow-wrap.open{--p:1;}
 .urow-acts{position:absolute;top:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;padding-right:12px;}
 .ua{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;font-family:inherit;cursor:pointer;padding:0;
- --lag:36px;transform:translateX(calc((1 - var(--p,0))*var(--lag)));transition:transform .22s cubic-bezier(.22,.9,.3,1);}
+ --lag:36px;transform:translateX(calc((1 - var(--p,0))*var(--lag)));transition:transform .43s var(--spring-bounce);}
 .ua:nth-child(2){--lag:84px;transition-delay:.03s;}
 .ua:nth-child(3){--lag:136px;transition-delay:.06s;}
+/* v52 弹簧动效 token：弹簧方程烘焙 linear()（Safari 17.2+），老机回退 cubic-bezier；参数 bounce=stiffness320/damping26、settle=180/22，见设计规范 */
+:root{--spring-bounce:cubic-bezier(.3,.9,.35,1.12);--spring-settle:cubic-bezier(.32,.72,.35,1);}
+@supports (animation-timing-function:linear(0,1)){
+ :root{--spring-bounce:linear(0.0, 0.0168, 0.0612, 0.1249, 0.2012, 0.2847, 0.3707, 0.4561, 0.5381, 0.615, 0.6855, 0.7489, 0.8049, 0.8536, 0.8951, 0.9298, 0.9584, 0.9813, 0.9992, 1.0128, 1.0227, 1.0294, 1.0335, 1.0356, 1.036, 1.0351, 1.0334, 1.031, 1.0281, 1.0251, 1.022, 1.0189, 1.016, 1.0133, 1.0108, 1.0086, 1.0066, 1.0049, 1.0035, 1.0023, 1.0013);
+ --spring-settle:linear(0.0, 0.0058, 0.0217, 0.0459, 0.0768, 0.1129, 0.153, 0.1958, 0.2406, 0.2864, 0.3326, 0.3786, 0.424, 0.4682, 0.5111, 0.5523, 0.5917, 0.6291, 0.6644, 0.6977, 0.7288, 0.7578, 0.7847, 0.8095, 0.8323, 0.8533, 0.8724, 0.8897, 0.9054, 0.9196, 0.9323, 0.9437, 0.9538, 0.9627, 0.9706, 0.9775, 0.9835, 0.9887, 0.9931, 0.9969, 1.0001);}
+}
+/* 拖动期禁过渡：JS 跟手逐帧驱动与 duration 过渡叠加会产生糖浆延迟（v52 核心修复） */
+.urow-wrap.dragging .ua{transition:none;}
 .ua-c{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;}
 .ua-l{font-size:10px;color:var(--ink2);}
 .ua-fb .ua-c{background:#3d6b9a;color:#fff;}
 .ua-jl .ua-c{background:#7a5fa8;color:#fff;}
 .ua-nr .ua-c{background:var(--red);color:#fff;}
-.trows .urow{position:relative;background:var(--card);transition:transform .18s ease;}
+.trows .urow{position:relative;background:var(--card);transition:transform .33s var(--spring-settle);}
 .urow-wrap.open .urow{transform:translateX(-198px);}
 .urow.nr{background:linear-gradient(rgba(214,79,24,.07),rgba(214,79,24,.07)),var(--card);}   /* 未回复：灰中带红 */
 .pv-hint{margin-left:auto;font-size:12px;color:var(--on-bg2);font-weight:500;}
@@ -288,7 +296,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v51';
+const APP_VERSION='v52';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -727,19 +735,24 @@ document.addEventListener('touchmove',e=>{
  if(!_sw||!e.touches.length)return;const t=e.touches[0];
  const dx=t.clientX-_sx;
  if(Math.abs(t.clientY-_sy)>Math.abs(dx)*1.2){_sw=0;return;}
- if(_dg&&dx>0){_dg.el.style.transition='none';_dg.el.style.transform='translateX('+dx+'px)';_dg.moved=1;}
+ if(_dg&&dx>0){
+  const now=e.timeStamp;_dg.vx=0.7*(_dg.vx||0)+0.3*((t.clientX-(_dg.lx||t.clientX))/Math.max(1,now-(_dg.lt||now)));_dg.lx=t.clientX;_dg.lt=now;
+  let fx=dx;const lim=window.innerWidth*0.9;
+  if(fx>lim)fx=lim+(fx-lim)*0.28;   /* 橡皮筋阻尼 */
+  _dg.el.style.transition='none';_dg.el.style.transform='translateX('+fx+'px)';_dg.moved=1;}
 },{passive:true});
 /* v51 手势：右滑退出全程跟手（弹层/画像主页），拖过 1/3 屏完成退出、否则弹回；画像页内左滑=更多信息页，信息页右滑=回画像（阈值式保留）；列表页不滑切 tab */
 document.addEventListener('touchend',e=>{
  if(!_sw)return;_sw=0;
  const dx=e.changedTouches[0].clientX-_sx;
  if(_dg&&_dg.moved){
-  const el=_dg.el,isSheet=el.id==='sheet';_dg=null;
-  el.style.transition='transform .24s cubic-bezier(.22,.9,.3,1)';
-  if(dx>window.innerWidth*0.33){el.style.transform='translateX(110%)';
-   setTimeout(()=>{if(isSheet)closeSheet();else closeProfile();},200);}
+  const el=_dg.el,isSheet=el.id==='sheet';
+  const fast=(_dg.vx||0)>0.5;_dg=null;
+  el.style.transition='transform .33s var(--spring-settle)';
+  if(dx>window.innerWidth*0.33||fast){el.style.transform='translateX(110%)';   /* 过1/3屏或快速扫都完成退出 */
+   setTimeout(()=>{if(isSheet)closeSheet();else closeProfile();},280);}
   else el.style.transform='translateX(0)';
-  setTimeout(()=>{if(el.isConnected){el.style.transform='';el.style.transition='';}},320);
+  setTimeout(()=>{if(el.isConnected){el.style.transform='';el.style.transition='';}},400);
   return;}
  _dg=null;
  if(Math.abs(dx)<64)return;
@@ -758,24 +771,30 @@ document.addEventListener('touchstart',e=>{
  const inActs=e.target&&e.target.closest?e.target.closest('.urow-acts'):null;
  if(!inActs)document.querySelectorAll('.urow-wrap.open').forEach(w=>{if(!rw||w!==rw.parentElement)w.classList.remove('open');});
  if(!rw){_rs=null;return;}
- const t=e.touches[0];_rs={row:rw,wrap:rw.parentElement,x:t.clientX,y:t.clientY,hor:0};
+ const t=e.touches[0];_rs={row:rw,wrap:rw.parentElement,x:t.clientX,y:t.clientY,hor:0,vx:0,lx:t.clientX,lt:e.timeStamp};
+ rw.parentElement.classList.add('dragging');   /* v52：拖动期禁用过渡，避免糖浆感 */
 },{passive:true});
 document.addEventListener('touchmove',e=>{
  if(!_rs||!e.touches.length)return;const t=e.touches[0];
  const dx=t.clientX-_rs.x,dy=t.clientY-_rs.y;
- if(!_rs.hor){if(Math.abs(dy)>Math.abs(dx)*1.2){_rs=null;return;}if(Math.abs(dx)<8)return;_rs.hor=1;}
+ if(!_rs.hor){if(Math.abs(dy)>Math.abs(dx)*1.2){_rs.wrap.classList.remove('dragging');_rs=null;return;}if(Math.abs(dx)<8)return;_rs.hor=1;}
  e.preventDefault();
+ const now=e.timeStamp;_rs.vx=0.7*_rs.vx+0.3*((t.clientX-_rs.lx)/Math.max(1,now-_rs.lt));_rs.lx=t.clientX;_rs.lt=now;   /* 平滑速度 px/ms */
  const base=_rs.wrap.classList.contains('open')?-ROWW:0;
- const nx=Math.max(-ROWW,Math.min(0,base+dx));
+ let nx=base+dx;
+ if(nx>0)nx=nx*0.28;   /* 橡皮筋：过界阻尼 */
+ if(nx<-ROWW)nx=-ROWW+(nx+ROWW)*0.28;
  _rs.row.style.transition='none';_rs.row.style.transform='translateX('+nx+'px)';
- _rs.wrap.style.setProperty('--p',(-nx/ROWW).toFixed(3));   /* 按钮跟随拖拽进度级联滑入（v51） */
+ _rs.wrap.style.setProperty('--p',Math.max(0,Math.min(1,-nx/ROWW)).toFixed(3));   /* 按钮跟随拖拽进度级联滑入（v51） */
 },{passive:false});
 document.addEventListener('touchend',e=>{
  if(!_rs)return;const rs=_rs;_rs=null;
+ rs.wrap.classList.remove('dragging');
  if(!rs.hor){rs.row.style.transform='';rs.row.style.transition='';return;}
  const m=(rs.row.style.transform||'').match(/-?[\d.]+/);const cur=m?parseFloat(m[0]):0;
  rs.row.style.transform='';rs.row.style.transition='';rs.wrap.style.removeProperty('--p');
- if(cur<-ROWW/2){document.querySelectorAll('.urow-wrap.open').forEach(w=>{if(w!==rs.wrap)w.classList.remove('open');});rs.wrap.classList.add('open');}
+ const flickL=rs.vx<-0.45,flickR=rs.vx>0.45;   /* v52：快扫认速度方向，慢拖认位置 */
+ if(flickL||(!flickR&&cur<-ROWW/2)){document.querySelectorAll('.urow-wrap.open').forEach(w=>{if(w!==rs.wrap)w.classList.remove('open');});rs.wrap.classList.add('open');}
  else rs.wrap.classList.remove('open');
  _suppressClick=true;setTimeout(()=>_suppressClick=false,400);
 },{passive:true});
