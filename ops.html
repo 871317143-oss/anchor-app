@@ -38,7 +38,24 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .avatar{width:46px;height:46px;border-radius:50%;background:#4f6b43;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:19px;flex:none;}
 .topbar .name{font-size:24px;font-weight:800;letter-spacing:.5px;}
 .topbar .meta{font-size:12px;color:var(--on-bg2);margin-top:4px;letter-spacing:.5px;}
-.topbar .rf{margin-left:auto;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);color:var(--on-bg);border-radius:999px;padding:8px 15px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+.topbar .rf{margin-left:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);color:var(--on-bg);border-radius:999px;padding:8px 15px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+.bell{position:relative;margin-left:auto;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);color:var(--on-bg);border-radius:999px;padding:7px 12px;font-size:14px;cursor:pointer;font-family:inherit;line-height:1;}
+.bell .bdg{position:absolute;top:-3px;right:-5px;min-width:16px;height:16px;border-radius:999px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+.ncard{display:flex;gap:10px;align-items:flex-start;background:var(--card);border-radius:16px;padding:13px 14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(20,30,18,.07);transition:opacity .25s,transform .25s var(--spring-settle);}
+.ncard.alert{border-left:4px solid var(--red);}
+.ncard.banner{border-left:4px solid var(--amber);opacity:.92;}
+.ncard.read{opacity:.45;}
+.nc-ico{font-size:18px;flex:none;margin-top:1px;}
+.nc-main{flex:1;min-width:0;}
+.nc-t{font-size:14px;font-weight:700;}
+.nc-b{font-size:12px;color:var(--ink2);line-height:1.55;margin-top:3px;word-break:break-word;}
+.nc-time{font-size:10px;color:var(--ink3);margin-top:5px;}
+.nc-read{flex:none;font-size:11px;font-weight:600;color:var(--brand);background:var(--brand-soft);border:none;border-radius:999px;padding:6px 11px;cursor:pointer;font-family:inherit;}
+.nc-go{flex:none;font-size:11px;font-weight:600;color:#223014;background:var(--lime);border:none;border-radius:999px;padding:6px 11px;cursor:pointer;font-family:inherit;}
+.nc-group{font-size:12px;font-weight:700;color:var(--on-bg3);margin:16px 2px 8px;letter-spacing:.3px;}
+.nc-actions{display:flex;gap:8px;margin:2px 0 8px;}
+.nc-actions .tf{flex:1;text-align:center;font-size:12px;font-weight:600;padding:9px 4px;border-radius:9px;cursor:pointer;background:var(--gray-bg);color:var(--ink2);border:none;font-family:inherit;}
+.nc-actions .tf.on{background:var(--brand-soft);color:var(--brand);}
 .wrap{padding:0 16px;}
 .sec-title{display:flex;align-items:center;justify-content:space-between;margin:20px 2px 12px;}
 .sec-title h3{font-size:20px;font-weight:800;color:var(--on-bg);}
@@ -168,7 +185,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.12';
+const OPS_VERSION='v3.13';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -206,7 +223,7 @@ async function load(tok){
   clearTimeout(to);
   const d=await r.json();
   if(!r.ok||!d.ok)throw new Error(d.error||'访问码无效');
-  D=d;render();loadPerfs();loadOffairStatus();
+  D=d;render();loadPerfs();loadOffairStatus();loadD1Notifs();
  }catch(e){
   if(String(e).includes('AbortError')){root.innerHTML='<div class="empty">网络超时，点这里重试</div>';root.onclick=()=>{root.onclick=null;load(tok);};return;}
   localStorage.removeItem('ops_token');showLogin(e.message||'加载失败');}}
@@ -511,6 +528,50 @@ function vAdmin(){
   <div class="tier"><div class="mrow" id="logoutBtn" style="cursor:pointer"><div class="mi" style="background:var(--red-bg);color:var(--red)">出</div>切换账号<span class="ms">退出当前运营码</span></div></div>
   <div class="foot">运营工作台 ${OPS_VERSION} · 明细与归档在 Notion 回传库</div></div>`;}
 
+/* ===== v3.13 通知中心（D1 messages，未回复介入/采集完成直达） ===== */
+let _d1Notifs=[],_ncShowRead=false;
+function loadD1Notifs(){
+ fetch('https://fb.menghualu.com.co/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken(),include_read:true})})
+ .then(r=>r.json()).then(d=>{if(d.ok){_d1Notifs=d.messages||[];updateNotifBadge();}}).catch(()=>{});}
+function updateNotifBadge(){const b=document.getElementById('notifBdg');if(b){const n=_d1Notifs.filter(m=>!m.read).length;b.textContent=n>99?'99+':n;b.style.display=n?'flex':'none';}}
+const NICO={review_result:'✅',appeal_result:'🧭',nr_alert:'🔴',offair_done:'📦',data_updated:'🔄',bday:'🎂',cross:'🌐',returned:'💫',ops_note:'📝'};
+function openNotif(){
+ const ov=document.createElement('div');ov.className='nov';ov.style.alignItems='stretch';
+ ov.innerHTML=`<div class="noc" style="height:100%;border-radius:0;padding:calc(14px + env(safe-area-inset-top)) 0 0;overflow-y:auto">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:0 16px 12px">
+   <span data-x="1" style="color:var(--brand);font-weight:700;font-size:15px;cursor:pointer">‹ 返回</span>
+   <span style="color:var(--ink3);font-size:12px">右滑返回 · 通知中心</span></div>
+  <div style="padding:0 16px" id="ncBody"></div></div>`;
+ ov.addEventListener('click',e=>{
+  if(e.target===ov||e.target.closest('[data-x]')){ov.remove();return;}
+  const nr=e.target.closest('[data-nr]');if(nr){readNotif(nr.dataset.nr);return;}
+  if(e.target.closest('[data-nall]')){readAllNotifs();return;}
+  if(e.target.closest('[data-ntoggle]')){_ncShowRead=!_ncShowRead;renderNotifBody();return;}
+  const nsec=e.target.closest('[data-nsec]');if(nsec){ov.remove();switchTab('people');return;}
+ });
+ document.getElementById('phone').appendChild(ov);
+ renderNotifBody();}
+function renderNotifBody(){
+ const el=document.getElementById('ncBody');if(!el)return;
+ const actions=`<div class="nc-actions"><button class="tf" data-nall="1">全部已读</button><button class="tf${_ncShowRead?' on':''}" data-ntoggle="1">${_ncShowRead?'隐藏已读':'显示已读'}</button></div>`;
+ const list=_ncShowRead?_d1Notifs:_d1Notifs.filter(m=>!m.read);
+ if(!list.length){el.innerHTML=actions+`<div class="empty">没有未读通知 🎉<br>未回复介入、采集完成会出现在这里</div>`;return;}
+ const today=new Date().toISOString().slice(5,10);
+ const g1=list.filter(m=>(m.created_at||'').slice(5,10)===today),g2=list.filter(m=>(m.created_at||'').slice(5,10)!==today);
+ const card=m=>`<div class="ncard ${m.level}${m.read?' read':''}">
+  <div class="nc-ico">${NICO[m.kind]||'🔔'}</div>
+  <div class="nc-main"><div class="nc-t">${esc(m.title)}</div><div class="nc-b">${esc(m.body)}</div><div class="nc-time">${(m.created_at||'').slice(5,16)}</div></div>
+  ${m.kind==='nr_alert'?`<button class="nc-go" data-nsec="1">去人员</button>`:''}
+  ${!m.read?`<button class="nc-read" data-nr="${m.id}">已读</button>`:''}</div>`;
+ el.innerHTML=actions+(g1.length?`<div class="nc-group">今天</div>`+g1.map(card).join(''):'')+(g2.length?`<div class="nc-group">更早</div>`+g2.map(card).join(''):'');
+}
+function readNotif(id){
+ fetch('https://fb.menghualu.com.co/api/messages/read',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken(),id})}).catch(()=>{});
+ const m=_d1Notifs.find(x=>String(x.id)===String(id));if(m)m.read=1;renderNotifBody();updateNotifBadge();}
+function readAllNotifs(){
+ fetch('https://fb.menghualu.com.co/api/messages/read',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken(),all:true})}).catch(()=>{});
+ _d1Notifs.forEach(m=>m.read=1);renderNotifBody();updateNotifBadge();}
+
 function openOpNote(sec){
  const m=_rowMeta[sec]||{};
  const ov=document.createElement('div');ov.className='nov';
@@ -601,7 +662,7 @@ function render(){
  const todoN=(D.grades||[]).filter(g=>inT(g.anchor)).length+(D.appeals||[]).filter(g=>inT(g.anchor)).length;
  root.innerHTML=`<div class="topbar"><div class="avatar" style="background:transparent"><img src="assets/logo-white.png" alt="梦华录" style="width:34px;height:auto;display:block"></div><div><div class="name">运营工作台</div>
   <div class="meta">${esc(D.scope||'运营')} · ${(()=>{const ti=Object.values(D.teams||{}).reduce((s,t)=>s+(t.today.income||0),0),yi=Object.values(D.teams||{}).reduce((s,t)=>s+(t.yesterday.income||0),0);return ti>0?`<b style="color:var(--lime)">今日 ¥${fmtM(ti)}</b>`:(yi>0?`昨日 ¥${fmtM(yi)}`:'今日未开');})()} · 实时数据</div></div>
-  <button class="rf" id="rf">刷新</button></div>
+  <button class="bell" id="nf">🔔<span class="bdg" id="notifBdg" style="display:none"></span></button><button class="rf" id="rf">刷新</button></div>
  <div class="view" id="v-proj">${vProj()}</div>
  <div class="view" id="v-todo">${vTodo()}</div>
  <div class="view" id="v-flow">${vFlow()}</div>
@@ -609,6 +670,7 @@ function render(){
  <div class="view" id="v-admin">${vAdmin()}</div>${tabbar(todoN)}`;
  switchTab(_tab);
  document.getElementById('rf').onclick=()=>load(storedToken());
+ document.getElementById('nf').onclick=()=>openNotif();
  const lo=document.getElementById('logoutBtn');if(lo)lo.onclick=()=>{if(confirm('退出当前运营账号？')){localStorage.removeItem('ops_token');location.reload();}};
  document.querySelectorAll('[data-af]').forEach(c=>c.onclick=()=>{_af=c.dataset.af;render();});
  document.querySelectorAll('[data-tf]').forEach(c=>c.onclick=()=>{_tf=c.dataset.tf;_af='';render();});

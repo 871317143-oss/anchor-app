@@ -260,6 +260,24 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .pv-page{width:50%;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}   /* 禁止滚动串联：画像到顶后不再把上滑接力给底下主页（v55） */
 .pv-main{order:1;}.pv-quick{order:2;}
 /* v48 用户条左滑快捷操作（仿 iOS 备忘录圆钮）；v51 按钮级联滑入：--p=展开进度 0→1，越靠右的钮行程越长（错落丝滑） */
+/* v58 通知中心：铃铛角标 + 苹果两态卡片（提醒红边/横幅琥珀边） */
+.bell{position:relative;margin-left:auto;background:none;border:none;color:var(--on-bg);cursor:pointer;padding:4px;font-size:20px;line-height:1;}
+.bell .bdg{position:absolute;top:-1px;right:-5px;min-width:16px;height:16px;border-radius:999px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+.ncard{display:flex;gap:10px;align-items:flex-start;background:var(--card);border-radius:16px;padding:13px 14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(20,30,18,.07);transition:opacity .25s,transform .25s var(--spring-settle);}
+.ncard.alert{border-left:4px solid var(--red);}
+.ncard.banner{border-left:4px solid var(--amber);opacity:.92;}
+.ncard.read{opacity:.45;}
+.nc-ico{font-size:18px;flex:none;margin-top:1px;}
+.nc-main{flex:1;min-width:0;}
+.nc-t{font-size:14px;font-weight:700;}
+.nc-b{font-size:12px;color:var(--ink2);line-height:1.55;margin-top:3px;word-break:break-word;}
+.nc-time{font-size:10px;color:var(--ink3);margin-top:5px;}
+.nc-read{flex:none;font-size:11px;font-weight:600;color:var(--brand);background:var(--brand-soft);border:none;border-radius:999px;padding:6px 11px;cursor:pointer;font-family:inherit;}
+.nc-go{flex:none;font-size:11px;font-weight:600;color:#223014;background:var(--lime);border:none;border-radius:999px;padding:6px 11px;cursor:pointer;font-family:inherit;}
+.nc-group{font-size:12px;font-weight:700;color:var(--on-bg3);margin:16px 2px 8px;letter-spacing:.3px;}
+.nc-actions{display:flex;gap:8px;margin:2px 0 8px;}
+.nc-actions .tf{flex:1;text-align:center;font-size:12px;font-weight:600;padding:9px 4px;border-radius:9px;cursor:pointer;background:var(--gray-bg);color:var(--ink2);border:none;font-family:inherit;}
+.nc-actions .tf.on{background:var(--brand-soft);color:var(--brand);}
 .urow-wrap{position:relative;overflow:hidden;--p:0;}
 .urow-wrap.open{--p:1;}
 .urow-acts{position:absolute;top:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;padding-right:12px;}
@@ -296,7 +314,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v61';
+const APP_VERSION='v62';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -317,7 +335,7 @@ function rowTags(u){let t=[gradeTag(u)];
   if(u.w>1200)t.push(tag('green','高陪伴'));return t.join('');}
 function topbar(){const a=DATA.anchor;return `<div class="topbar"><div class="who">
   <div class="avatar">${a.name[0]}</div><div><div class="name">${a.teamName} · ${a.name}</div>
-  <div class="meta">${a.date} · 主播专属</div></div></div></div>`;}
+  <div class="meta">${a.date} · 主播专属</div></div></div><button class="bell" data-act="notif">🔔<span class="bdg" id="notifBdg" style="display:none"></span></button></div>`;}
 const GLOBE=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5a7a35" stroke-width="2" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>`;
 
 function tier(cls,code,name,sub,secs){if(!secs.length)return '';
@@ -366,7 +384,7 @@ function viewToday(){const c=DATA.counts,ch=DATA.churn;
   ${ch.b.slice(0,2).map(s=>churnCard(s,'cb','老客流失')).join('')}
   ${ch.c.slice(0,1).map(s=>churnCard(s,'cc2','长尾')).join('')}</div>`;
  return `<div class="view show" id="v-today">${topbar()}<div class="wrap">
-  <div class="sec-title"><h3>今日维护</h3><span class="more">按对我消费分层</span></div>${cross}${returnedBanner()}${bdayBanner()}
+  <div class="sec-title"><h3>今日维护</h3><span class="more">按对我消费分层</span></div>
   ${tier('l3','L3','重点维护','消费 > 99 元 · 今天必聊',DATA.l3)}
   ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2)}
   ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1)}${greetBlock()}${mysteryBlock()}${churn}</div></div>`;}
@@ -474,6 +492,79 @@ function viewProfile(sec){const u=DATA.users[sec];if(!u)return '';
   <button class="btn btn-ghost" data-act="correct">纠错</button></div>
   </div></div></div>
  </div></div>`;}
+/* ===== v58 通知中心：铃铛+苹果两态卡片（D1 消息 + 本地横幅，已读隐藏不过载） ===== */
+const NOTIF_URL='https://fb.menghualu.com.co/api/messages';
+let _d1Notifs=[], _ncShowRead=false;
+function _lrKey(){return 'notif_lr_'+(DATA&&DATA.anchor?DATA.anchor.team:'')+'_'+(DATA&&DATA.anchor?DATA.anchor.date:'');}
+function _lrGet(){try{return JSON.parse(localStorage.getItem(_lrKey())||'{}');}catch(e){return{};}}
+function _lrSet(k){const a=_lrGet();a[k]=1;localStorage.setItem(_lrKey(),JSON.stringify(a));}
+function localNotifs(){
+ const out=[],d=DATA.anchor.date;
+ if((DATA.crossToday||[]).length)out.push({key:'cross_'+d,level:'banner',kind:'cross',title:'跨团用户提醒',body:`今天有 ${DATA.crossToday.length} 位跨团用户给你送礼，也在其他团消费，注意客情；不显示对方归属。`,ref:'',time:d});
+ if((DATA.returned||[]).length)out.push({key:'ret_'+d,level:'banner',kind:'returned',title:'老客回归',body:`${DATA.returned.length} 位「已流失」老客今天回来给你刷礼物了（${DATA.returned.slice(0,3).map(s=>DATA.users[s].n).join('、')}），已标记回归，重点走心接待、给足独宠感。`,ref:DATA.returned[0],time:d});
+ (DATA.bday||[]).forEach(x=>{const u=DATA.users[x[0]];if(!u)return;
+  out.push({key:'bday_'+d+'_'+x[0],level:'alert',kind:'bday',title:x[1]===0?'今天生日！':(x[1]===1?'明天生日':'生日还有 '+x[1]+' 天'),body:`${u.n}${u.birth?'（'+String(u.birth).slice(5,10)+'）':''}——提前备好心意，当天给足排面。`,ref:x[0],time:d});});
+ return out;
+}
+function loadD1Notifs(){
+ fetch(NOTIF_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken(),include_read:true})})
+ .then(r=>r.json()).then(d=>{if(d.ok){_d1Notifs=d.messages||[];updateNotifBadge();}}).catch(()=>{});
+}
+function notifList(){
+ const lr=_lrGet();
+ const d1=_d1Notifs.map(m=>({id:m.id,level:m.level,kind:m.kind,title:m.title,body:m.body,ref:m.ref_sec,time:(m.created_at||'').slice(5,16),d1:1,read:!!m.read}));
+ const lc=localNotifs().map(m=>({...m,time:(m.time||'').slice(5),read:!!lr[m.key]}));
+ const all=[...d1,...lc];
+ if(!_ncShowRead)return all.filter(m=>!m.read);
+ return all;
+}
+function updateNotifBadge(){
+ const lr=_lrGet();
+ const n=_d1Notifs.filter(m=>!m.read).length+localNotifs().filter(m=>!lr[m.key]).length;
+ const b=document.getElementById('notifBdg');
+ if(b){b.textContent=n>99?'99+':n;b.style.display=n?'flex':'none';}
+}
+function openNotif(){
+ closeNotif();
+ root.insertAdjacentHTML('beforeend',`<div class="pview show" id="nc"><div class="pv-back"><span data-nc-back="1">‹ 返回</span><span class="pv-hint">右滑返回 · 通知中心</span></div><div class="wrap" id="ncBody"></div></div>`);
+ const _nc=document.getElementById('nc');
+ if(_nc){const _ss=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;if(!_ss)_nc.classList.add('in-browser');}
+ renderNotifBody();
+}
+function closeNotif(){const n=document.getElementById('nc');if(n)n.remove();}
+const NICO={review_result:'✅',appeal_result:'🧭',nr_alert:'🔴',offair_done:'📦',data_updated:'🔄',bday:'🎂',cross:'🌐',returned:'💫',ops_note:'📝'};
+function renderNotifBody(){
+ const el=document.getElementById('ncBody');if(!el)return;
+ const list=notifList();
+ const actions=`<div class="nc-actions">
+  <button class="tf" data-nall="1">全部已读</button>
+  <button class="tf${_ncShowRead?' on':''}" data-ntoggle="1">${_ncShowRead?'隐藏已读':'显示已读'}</button></div>`;
+ if(!list.length){el.innerHTML=actions+`<div class="empty">没有${_ncShowRead?'':'未读'}通知 🎉<br>审批结果、生日提醒、采集完成会出现在这里</div>`;updateNotifBadge();return;}
+ const today=new Date().toISOString().slice(5,10);
+ const g1=list.filter(m=>(m.time||'').startsWith(today)),g2=list.filter(m=>!(m.time||'').startsWith(today));
+ const card=m=>`<div class="ncard ${m.level}${m.read?' read':''}">
+  <div class="nc-ico">${NICO[m.kind]||'🔔'}</div>
+  <div class="nc-main"><div class="nc-t">${m.title}</div><div class="nc-b">${m.body}</div><div class="nc-time">${m.time||''}</div></div>
+  ${m.ref?`<button class="nc-go" data-nsec="${m.ref}">去看 TA</button>`:''}
+  ${!m.read?`<button class="nc-read" data-nr="${m.d1?m.id:m.key}">已读</button>`:''}
+ </div>`;
+ el.innerHTML=actions+(g1.length?`<div class="nc-group">今天</div>`+g1.map(card).join(''):'')+(g2.length?`<div class="nc-group">更早</div>`+g2.map(card).join(''):'');
+ updateNotifBadge();
+}
+function readNotif(rid){
+ const m1=_d1Notifs.find(m=>String(m.id)===String(rid));
+ if(m1){
+  fetch('https://fb.menghualu.com.co/api/messages/read',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken(),id:m1.id})}).catch(()=>{});
+  m1.read=1;
+ }else{_lrSet(rid);}
+ renderNotifBody();
+}
+function readAllNotifs(){
+ fetch('https://fb.menghualu.com.co/api/messages/read',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken(),all:true})}).catch(()=>{});
+ _d1Notifs.forEach(m=>m.read=1);
+ localNotifs().forEach(m=>_lrSet(m.key));
+ renderNotifBody();
+}
 const TABS=['today','perf','search','me'];   /* 5 tab 骨架预留：新模块把 id 追加进来、补一份 view 即接入滑切 */
 function switchTab(t,dir){TABS.forEach(x=>{const v=document.getElementById('v-'+x);if(v)v.classList.toggle('show',x===t);});
  try{window.scrollTo(0,0);const r=document.getElementById('root');if(r)r.scrollTop=0;}catch(e){}
@@ -481,7 +572,7 @@ function switchTab(t,dir){TABS.forEach(x=>{const v=document.getElementById('v-'+
  if(dir){const v=document.getElementById('v-'+t);if(v){v.classList.remove('sl','sr');void v.offsetWidth;v.classList.add(dir==='l'?'sl':'sr');}}
  if(t==='search'){renderList(_curTier);}
  if(t==='perf'){loadPerf();}}
-function render(){root.innerHTML=viewToday()+viewPerf()+viewSearch()+viewMe();switchTab('today');}
+function render(){root.innerHTML=viewToday()+viewPerf()+viewSearch()+viewMe();switchTab('today');updateNotifBadge();}
 function openProfile(sec){closeProfile();root.insertAdjacentHTML('beforeend',viewProfile(sec));
  const _pv=document.getElementById('pv');
  if(_pv){const _ss=window.matchMedia('(display-mode: standalone)')&&window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;if(!_ss)_pv.classList.add('in-browser');}
@@ -694,11 +785,17 @@ document.addEventListener('click',e=>{
  if(e.target.closest('[data-qopen]')){const tr=document.getElementById('pvTrack');if(tr)tr.classList.add('show-quick');return;}
  if(e.target.closest('[data-qback]')){const tr=document.getElementById('pvTrack');if(tr)tr.classList.remove('show-quick');return;}
  if(e.target.closest('[data-back]')){closeProfile();return;}
+ if(e.target.closest('[data-nc-back]')){closeNotif();return;}
+ const nr=e.target.closest('[data-nr]');if(nr){readNotif(nr.dataset.nr);return;}
+ if(e.target.closest('[data-nall]')){readAllNotifs();return;}
+ if(e.target.closest('[data-ntoggle]')){_ncShowRead=!_ncShowRead;renderNotifBody();return;}
+ const nsec=e.target.closest('[data-nsec]');if(nsec){closeNotif();openProfile(nsec.dataset.nsec);return;}
  const ac=e.target.closest('[data-act]');
  const se=e.target.closest('.urow[data-sec],.churn-card[data-sec],.srow[data-sec]');   /* v48 修闪屏：不再匹配 #pv 容器自身，否则画像页内点哪都重开 */
  const tb=e.target.closest('.tabbar .tb');
  if(ac){const act=ac.dataset.act;
  if(act==='logout'){localStorage.removeItem('anchor_token');location.reload();return;}
+ if(act==='notif'){openNotif();return;}
  if(act==='expand'){const tEl=ac.closest('.tier');const closed=tEl.classList.toggle('closed');
   ac.textContent=closed?ac.textContent.replace('收起','查看全部').replace('▴','▾'):ac.textContent.replace('查看全部','收起').replace('▾','▴');return;}
  const pv=document.getElementById('pv');if(!pv)return;const k=pv.dataset.sec;
@@ -728,8 +825,8 @@ document.addEventListener('touchstart',e=>{
  _sx=t.clientX;_sy=t.clientY;_sw=1;
  /* v51 跟手退出候选：弹层 or 画像主页（更多信息页/列表页不设） */
  _dg=null;
- const _sh=document.getElementById('sheet');
- if(_sh)_dg={el:_sh,moved:0};
+ const _ovl=document.getElementById('sheet')||document.getElementById('nc');
+ if(_ovl)_dg={el:_ovl,moved:0};
  else{const _pv=document.getElementById('pv'),_tr=document.getElementById('pvTrack');
   if(_pv&&_tr&&!_tr.classList.contains('show-quick'))_dg={el:_pv,moved:0};}
 },{passive:true});
@@ -757,7 +854,7 @@ document.addEventListener('touchend',e=>{
   const fast=(_dg.vx||0)>0.35;_dg=null;
   el.style.transition='transform .33s var(--spring-settle)';
   if(dx>window.innerWidth*0.28||fast){el.style.transform='translateX(110%)';   /* 过28%屏或快速扫都完成退出（v54 灵敏度对齐） */
-   setTimeout(()=>{if(isSheet)closeSheet();else closeProfile();},280);}
+   setTimeout(()=>{if(el.id==='sheet')closeSheet();else if(el.id==='nc')closeNotif();else closeProfile();},280);}
   else el.style.transform='translateX(0)';
   setTimeout(()=>{if(el.isConnected){el.style.transform='';el.style.transition='';}},400);
   return;}
@@ -872,7 +969,7 @@ function showLogin(err){
  btn.onclick=go;code.onkeydown=e=>{if(e.key==='Enter')go();};setTimeout(()=>code.focus(),60);}
 function loadData(tok){
  fetch(`data/${tok}.json`).then(r=>{if(!r.ok)throw 0;return r.json();}).then(d=>{DATA=d;
-  document.title='画像·'+d.anchor.name;root.insertAdjacentHTML('afterend',TABBAR);render();loadLiveFollow();})
+  document.title='画像·'+d.anchor.name;root.insertAdjacentHTML('afterend',TABBAR);render();loadLiveFollow();loadD1Notifs();})
  .catch(()=>{localStorage.removeItem('anchor_token');
    showLogin('访问码无效或已失效，请重新输入或找运营补发');});
  setupSW();}
