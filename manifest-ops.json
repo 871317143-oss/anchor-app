@@ -1,0 +1,13 @@
+{
+  "name": "梦华录 · 运营工作台",
+  "short_name": "运营工作台",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#2f412c",
+  "background_color": "#2f412c",
+  "start_url": "ops.html",
+  "icons": [
+    {"src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}
