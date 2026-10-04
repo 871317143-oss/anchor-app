@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN" style="background:#2f412c">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#2f412c">
+<title>主持雷达</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2333462c'/%3E%3Ctext x='32' y='44' font-size='30' text-anchor='middle' fill='white' font-family='sans-serif'%3E🛰%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap">
+<style>
+:root{
+  /* 设计规范 v1（技能库/anchor-app/references/design-system.md）同 token；雷达屏=桌面全屏，布局按 16:9 副屏 */
+  --ink:#1d2817;--ink2:#4a5a42;--ink3:#8a957e;
+  --on-bg:#eef3e4;--on-bg2:#b3bfa6;--on-bg3:#79856c;
+  --bg:#2f412c;--card:#f7f9f0;--card2:#e9f3d2;--line:#dde6cb;
+  --brand:#33462c;--brand-soft:#e4f0c9;--lime:#c9ec5a;
+  --red:#d64f18;--red-bg:#f6d9c6;--blue:#4f6f63;--blue-bg:#dce8d6;
+  --green:#5a8a2e;--green-bg:#e2f0c6;--amber:#a5760f;--amber-bg:#f3e5b8;
+  --gray:#75816b;--gray-bg:#e6ecd4;
+  --spring-settle:linear(0,.16,.36,.58,.76,.87,.94,.985,1.01,1.02,1.01,1.003,1);
+  --spring-bounce:linear(0,.22,.5,.74,.9,1,1.06,1.08,1.07,1.04,1.01,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;
+  background:radial-gradient(130% 55% at 50% 0%,#42573a 0%,#32452d 45%,#22301e 100%);
+  color:var(--on-bg);overflow:hidden;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+
+/* ===== 顶栏 ===== */
+header{height:60px;display:flex;align-items:center;gap:14px;padding:0 20px;
+  border-bottom:1px solid rgba(238,243,228,.08);}
+.logo{font-size:22px;}
+.h-name{font-size:20px;font-weight:800;letter-spacing:.5px;}
+.h-meta{font-size:12px;color:var(--on-bg2);}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--gray);display:inline-block;margin-right:5px;}
+.dot.on{background:var(--lime);box-shadow:0 0 8px rgba(201,236,90,.7);}
+.dot.bad{background:var(--red);}
+.h-conn{font-size:12px;color:var(--on-bg2);display:flex;align-items:center;}
+.h-sp{flex:1;}
+.h-btn{font-size:12px;color:var(--on-bg2);border:1px solid rgba(238,243,228,.18);border-radius:999px;
+  padding:8px 14px;min-height:36px;}
+.h-btn:active{transform:scale(.96);}
+.h-btn.demo-on{background:var(--lime);color:var(--brand);border-color:var(--lime);font-weight:700;}
+.h-clock{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;}
+.h-ver{font-size:10px;color:var(--on-bg3);letter-spacing:.3px;}
+
+/* ===== 主区 ===== */
+main{display:flex;height:calc(100% - 60px - 38px);}
+#stage{flex:1;position:relative;overflow:hidden;padding:22px;}
+#cards{display:flex;flex-direction:column;gap:16px;max-width:520px;}
+.empty-hint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:var(--on-bg3);gap:10px;pointer-events:none;text-align:center;padding:0 40px;}
+.empty-hint .radar-ring{width:150px;height:150px;border-radius:50%;position:relative;
+  border:1px solid rgba(201,236,90,.25);}
+.empty-hint .radar-ring::before{content:"";position:absolute;inset:22px;border-radius:50%;border:1px solid rgba(201,236,90,.18);}
+.empty-hint .radar-ring::after{content:"";position:absolute;inset:44px;border-radius:50%;border:1px solid rgba(201,236,90,.12);}
+.empty-hint .radar-sweep{position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from 0deg,rgba(201,236,90,.28),transparent 22%);animation:sweep 3.6s linear infinite;}
+@keyframes sweep{to{transform:rotate(360deg);}}
+
+/* ===== 用户卡 ===== */
+.ucard{background:var(--card);color:var(--ink);border-radius:20px;padding:16px 18px;
+  box-shadow:0 4px 14px rgba(20,30,18,.08);width:100%;
+  transform:translateX(-110%);opacity:0;transition:transform .42s var(--spring-settle),opacity .3s;}
+.ucard.in{transform:none;opacity:1;}
+.ucard.out{transform:translateX(-30%);opacity:0;transition:transform .3s ease-in,opacity .28s ease-in;}
+.ucard.gift-card{box-shadow:0 0 0 1.5px rgba(214,79,24,.35),0 4px 14px rgba(20,30,18,.08);}
+.u-top{display:flex;align-items:center;gap:12px;}
+.u-av{width:52px;height:52px;border-radius:50%;background:#4f6b43;color:#fff;flex:none;
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:21px;overflow:hidden;}
+.u-av img{width:100%;height:100%;object-fit:cover;}
+.u-id{flex:1;min-width:0;}
+.u-nick{font-size:18px;font-weight:800;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.u-sub{font-size:12px;color:var(--ink3);margin-top:3px;}
+.tier{font-size:12px;font-weight:800;border-radius:7px;padding:2px 8px;color:#fff;}
+.tier.S{background:var(--red);}.tier.A{background:var(--amber);}.tier.B{background:var(--blue);}
+.tier.C{background:var(--green);}.tier.D{background:var(--gray);}.tier.none{display:none;}
+.u-ev{font-size:12px;font-weight:700;border-radius:999px;padding:5px 12px;flex:none;}
+.u-ev.enter{background:var(--brand-soft);color:var(--brand);}
+.u-ev.chat{background:var(--blue-bg);color:var(--blue);}
+.u-ev.gift{background:var(--red-bg);color:var(--red);}
+.u-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.tag{font-size:11px;font-weight:600;border-radius:7px;padding:3px 8px;}
+.tag.ret{background:var(--amber-bg);color:var(--amber);}
+.tag.bday{background:var(--red-bg);color:var(--red);}
+.tag.new{background:var(--green-bg);color:var(--green);}
+.tag.cross{background:var(--blue-bg);color:var(--blue);}
+.tag.own{background:var(--brand-soft);color:var(--brand);}
+.tag.lost{background:var(--gray-bg);color:var(--gray);}
+.tag.ff{background:var(--brand-soft);color:var(--brand);}
+.tag.done{background:var(--gray-bg);color:var(--gray);}
+.tag.fs-nr{background:var(--red-bg);color:var(--red);}
+.u-money{display:flex;gap:18px;margin-top:12px;background:var(--card2);border-radius:14px;padding:12px 14px;}
+.m-cell{flex:1;}
+.m-lab{font-size:11px;color:var(--ink3);}
+.m-val{font-size:19px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums;}
+.m-val.live{color:var(--red);}
+.u-grid{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:12px;color:var(--ink2);}
+.u-grid b{color:var(--ink);font-weight:700;}
+.u-pot{margin-top:10px;font-size:13px;color:var(--ink2);line-height:1.55;}
+.u-pot b{color:var(--ink);}
+.u-note{margin-top:8px;font-size:12px;color:var(--ink2);background:var(--brand-soft);border-radius:10px;
+  padding:8px 10px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.u-note .n-lab{font-weight:700;color:var(--brand);margin-right:4px;}
+.u-line{margin-top:8px;font-size:12px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.u-line.gift-line{color:var(--red);font-weight:700;}
+
+/* ===== 右侧大哥榜 ===== */
+#rail{width:330px;flex:none;border-left:1px solid rgba(238,243,228,.08);display:flex;flex-direction:column;padding:18px 16px;}
+.rail-title{font-size:16px;font-weight:800;display:flex;align-items:baseline;gap:8px;}
+.rail-title .sub{font-size:11px;color:var(--on-bg3);font-weight:400;}
+#toplist{flex:1;overflow-y:auto;margin-top:12px;display:flex;flex-direction:column;gap:8px;scrollbar-width:none;}
+#toplist::-webkit-scrollbar{display:none;}
+.trow{display:flex;align-items:center;gap:10px;background:rgba(247,249,240,.06);border-radius:14px;padding:10px 12px;}
+.trow.top1{background:rgba(201,236,90,.14);box-shadow:inset 0 0 0 1px rgba(201,236,90,.3);}
+.t-rank{width:22px;font-size:15px;font-weight:800;color:var(--on-bg3);text-align:center;flex:none;}
+.trow:nth-child(1) .t-rank{color:var(--lime);}
+.trow:nth-child(2) .t-rank,.trow:nth-child(3) .t-rank{color:var(--on-bg2);}
+.t-av{width:34px;height:34px;border-radius:50%;background:#4f6b43;color:#fff;flex:none;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;overflow:hidden;}
+.t-av img{width:100%;height:100%;object-fit:cover;}
+.t-main{flex:1;min-width:0;}
+.t-nick{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;}
+.t-sub{font-size:11px;color:var(--on-bg3);margin-top:2px;}
+.t-val{font-size:15px;font-weight:800;color:var(--lime);font-variant-numeric:tabular-nums;flex:none;}
+.rail-empty{font-size:12px;color:var(--on-bg3);text-align:center;margin-top:30px;line-height:1.8;}
+#stats{margin-top:14px;display:flex;gap:8px;}
+.stat{flex:1;background:rgba(247,249,240,.06);border-radius:14px;padding:10px;text-align:center;}
+.stat .v{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;}
+.stat .l{font-size:10px;color:var(--on-bg3);margin-top:3px;}
+
+/* ===== 底部滚动条 ===== */
+#ticker{height:38px;border-top:1px solid rgba(238,243,228,.08);display:flex;align-items:center;
+  padding:0 20px;gap:10px;font-size:12px;color:var(--on-bg2);}
+#ticker .tk-lab{color:var(--on-bg3);flex:none;}
+#tickerText{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ===== 登录 / 指引 ===== */
+.overlay{position:fixed;inset:0;background:rgba(24,34,22,.82);display:flex;align-items:center;justify-content:center;z-index:60;}
+.login-card,.help-card{background:var(--card);color:var(--ink);border-radius:20px;padding:28px;width:400px;max-width:92vw;}
+.login-card h1,.help-card h2{font-size:20px;font-weight:800;margin-bottom:6px;}
+.login-card p,.help-card p{font-size:12px;color:var(--ink3);line-height:1.7;}
+.login-card input{width:100%;margin-top:16px;padding:13px 14px;border-radius:12px;border:1.5px solid var(--line);
+  font-size:14px;font-family:inherit;outline:none;background:#fff;}
+.login-card input:focus{border-color:var(--brand);}
+.login-card .err{color:var(--red);font-size:12px;margin-top:8px;min-height:16px;}
+.btn-lime{display:block;width:100%;margin-top:14px;background:var(--lime);color:var(--brand);font-weight:800;
+  font-size:15px;border-radius:12px;padding:13px;min-height:48px;}
+.btn-lime:active{transform:scale(.97);}
+.help-card{width:460px;}
+.help-card ol{font-size:13px;color:var(--ink2);line-height:2;margin:12px 0 0 18px;}
+.help-card .row{display:flex;gap:10px;margin-top:18px;}
+.help-card .btn-ghost{flex:1;border:1.5px solid var(--line);border-radius:12px;padding:12px;font-size:14px;font-weight:700;color:var(--ink2);}
+.help-card .btn-lime{flex:1;margin-top:0;}
+.toast{position:fixed;left:50%;bottom:60px;transform:translateX(-50%);background:var(--card);color:var(--ink);
+  border-radius:999px;padding:10px 20px;font-size:13px;font-weight:600;z-index:70;box-shadow:0 4px 14px rgba(20,30,18,.2);}
+
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">🛰️</span>
+  <div>
+    <span class="h-name" id="hName">主持雷达</span>
+    <span class="h-meta" id="hMeta"></span>
+  </div>
+  <div class="h-conn"><span class="dot" id="dotEvt"></span><span id="connText">未接入</span></div>
+  <div class="h-sp"></div>
+  <button class="h-btn" id="btnHelp">接入指引</button>
+  <button class="h-btn" id="btnDemo">演示</button>
+  <div class="h-clock" id="clock"></div>
+  <div class="h-ver" id="ver"></div>
+</header>
+
+<main>
+  <section id="stage">
+    <div id="cards"></div>
+    <div class="empty-hint" id="emptyHint">
+      <div class="radar-ring"><div class="radar-sweep"></div></div>
+      <div id="emptyText">雷达待命中<br>按「接入指引」把探针挂进直播间，进场/发言/送礼会自动弹卡</div>
+    </div>
+  </section>
+  <aside id="rail">
+    <div class="rail-title">本场大哥榜 <span class="sub" id="topSub">礼物开刷后排位</span></div>
+    <div id="toplist"><div class="rail-empty">还没有礼物事件<br>大哥来了这里实时排位</div></div>
+    <div id="stats">
+      <div class="stat"><div class="v" id="stEnter">0</div><div class="l">进场</div></div>
+      <div class="stat"><div class="v" id="stChat">0</div><div class="l">发言</div></div>
+      <div class="stat"><div class="v" id="stGift">¥0</div><div class="l">本场礼物</div></div>
+    </div>
+  </aside>
+</main>
+<footer id="ticker"><span class="tk-lab">最新动态</span><span id="tickerText">—</span></footer>
+
+<div class="overlay" id="loginOv" style="display:none">
+  <div class="login-card">
+    <h1>🛰️ 主持雷达</h1>
+    <p>输入主播访问码进入（与画像助手同码）。用户进直播间自动弹卡：回归/生日/累计消费/本场消费/潜力等级/维护进度一屏看清。</p>
+    <input id="tokenIn" placeholder="粘贴访问码" autocomplete="off">
+    <div class="err" id="loginErr"></div>
+    <button class="btn-lime" id="btnLogin">进入雷达</button>
+  </div>
+</div>
+
+<div class="overlay" id="helpOv" style="display:none">
+  <div class="help-card">
+    <h2>接入直播间（3 步）</h2>
+    <ol>
+      <li>主持电脑 Chrome 打开<b>抖音网页版直播间</b>（已登录）</li>
+      <li>点下方「复制探针」→ 直播间页面按 <b>F12 → Console</b> → 粘贴回车</li>
+      <li>页面右下角出现「🛰 雷达」徽标即接入成功，本屏开始弹卡</li>
+    </ol>
+    <p style="margin-top:10px">探针只读弹幕区公开消息（进场/发言/礼物名），不碰账号任何操作。刷新直播间需重新粘贴。</p>
+    <div class="row">
+      <button class="btn-ghost" id="btnHelpClose">关闭</button>
+      <button class="btn-lime" id="btnCopyProbe">复制探针</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const RADAR_VERSION='v0.1';
+const API='https://fb.menghualu.com.co';
+document.getElementById('ver').textContent='雷达 '+RADAR_VERSION;
+
+/* ================= 登录 ================= */
+function storedToken(){return localStorage.getItem('radar_token')||'';}
+const urlT=new URLSearchParams(location.search).get('t');
+if(urlT){localStorage.setItem('radar_token',urlT);
+  history.replaceState(null,'',location.pathname);}
+
+/* ================= 全局状态 ================= */
+const S={
+  token:'', data:null, users:{},
+  nick2sec:{},                 // 归一昵称/曾用名 -> sec
+  cards:{},                    // sec -> {card, ts} lookup 缓存
+  session:{},                  // sec 或 nick:anon -> {value, gifts, nick, sec}
+  lastId:0, pollOk:false,
+  seenEnter:{},                // sec/nick -> ts（进场去重）
+  recentLines:[],              // ticker
+  giftPrices:{},
+  demoTimer:null, demoIdx:0,
+  queue:[], showing:0,
+};
+const MAX_CARDS=5;
+const LIFE={enter:12000,chat:10000,gift:20000,anon:9000};
+
+/* ================= 工具 ================= */
+const $=(s)=>document.querySelector(s);
+const esc=(s)=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const yuan=(yl)=>{const v=(yl||0)/10;return v>=10000?(v/10000).toFixed(v>=100000?0:1)+'万':v%1?v.toFixed(1):String(v);};
+const normNick=(s)=>String(s||'').normalize('NFC').replace(/\s+/g,'').toLowerCase();
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);
+  setTimeout(()=>d.remove(),2200);}
+function firstChar(n){return (n||'?').trim().charAt(0)||'?';}
+
+/* ================= 数据加载 ================= */
+async function loadData(token){
+  const r=await fetch('data/'+token+'.json',{cache:'no-cache'});
+  if(!r.ok)throw new Error('bad token');
+  S.data=await r.json();
+  S.users=S.data.users||{};
+  S.nick2sec={};
+  for(const sec in S.users){
+    const u=S.users[sec];
+    if(u.n)S.nick2sec[normNick(u.n)]=sec;
+    String(u.former||'').split(/[,，、/]/).forEach(x=>{
+      const k=normNick(x);if(k&&!S.nick2sec[k])S.nick2sec[k]=sec;});
+  }
+  const a=S.data.anchor||{};
+  $('#hName').textContent='🛰 '+ (a.display||a.name||'主持雷达');
+  $('#hMeta').textContent='数据 '+ (a.date||'?') +' · 客群 '+Object.keys(S.users).length;
+  document.title=(a.display||a.name||'')+' · 主持雷达';
+}
+async function loadGiftPrices(){
+  try{const r=await fetch('data/gift_prices.json',{cache:'no-cache'});
+    if(r.ok)S.giftPrices=await r.json();}catch(e){}
+}
+
+/* ================= lookup 聚合（Worker） ================= */
+async function ensureCards(secs){
+  const stale=secs.filter(s=>!S.cards[s]||Date.now()-S.cards[s].ts>300000);
+  if(!stale.length)return;
+  try{
+    const r=await fetch(API+'/api/live/lookup',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token:S.token,secs:stale.slice(0,30)})});
+    const j=await r.json();
+    if(j&&j.cards)for(const sec in j.cards)S.cards[sec]={card:j.cards[sec],ts:Date.now()};
+  }catch(e){/* 网络抖动下轮再试 */}
+}
+const cardOf=(sec)=>S.cards[sec]?S.cards[sec].card:null;
+
+/* ================= 事件轮询 ================= */
+async function poll(){
+  try{
+    const r=await fetch(API+'/api/live/events',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token:S.token,after_id:S.lastId})});
+    const j=await r.json();
+    if(j&&j.ok){
+      S.pollOk=true;setConn(true);
+      if(j.events&&j.events.length){
+        S.lastId=j.events[j.events.length-1].id;
+        handleEvents(j.events);
+      }
+      return;
+    }
+    throw new Error(j&&j.error||'bad');
+  }catch(e){S.pollOk=false;setConn(false);}
+}
+function setConn(ok){
+  const d=$('#dotEvt');d.className='dot '+(ok?'on':'bad');
+  $('#connText').textContent=ok?'事件流已接入':'事件流中断·重连中';
+}
+
+/* ================= 事件处理 ================= */
+function handleEvents(events){
+  const secs=[];
+  for(const ev of events){
+    ev.sec=S.nick2sec[normNick(ev.nick)]||'';
+    if(ev.sec)secs.push(ev.sec);
+  }
+  ensureCards([...new Set(secs)]).then(()=>{
+    for(const ev of events)processEvent(ev);
+  });
+}
+function processEvent(ev){
+  const key=ev.sec||('~'+normNick(ev.nick));
+  if(ev.kind==='enter'){
+    $('#stEnter').textContent=+$('#stEnter').textContent+1;
+    const now=Date.now();
+    if(S.seenEnter[key]&&now-S.seenEnter[key]<300000){ticker(lineOf(ev));return;}  // 5 分钟内重复进场只走 ticker
+    S.seenEnter[key]=now;
+    pushCard(ev);
+  }else if(ev.kind==='chat'){
+    $('#stChat').textContent=+$('#stChat').textContent+1;
+    const c=cardOf(ev.sec);
+    if(c&&(c.t==='S'||c.t==='A'||(c.sv||0)>=9900))pushCard(ev);   // 发言弹卡只给值得注意的
+    else if(!ev.sec)pushCard(ev);                                // 路人发言也给（主持可判断要不要理）
+  }else if(ev.kind==='gift'){
+    const price=S.giftPrices[ev.gift]||0;
+    const val=price*(ev.count||1);
+    addToBoard(ev,val);
+    pushCard(ev);
+  }
+  ticker(lineOf(ev));
+}
+function lineOf(ev){
+  if(ev.kind==='enter')return ev.nick+' 来了';
+  if(ev.kind==='chat')return ev.nick+'：'+ev.content;
+  return ev.nick+' 送出了 '+ev.gift+(ev.count>1?' ×'+ev.count:'');
+}
+function ticker(t){
+  S.recentLines.push(t);if(S.recentLines.length>20)S.recentLines.shift();
+  $('#tickerText').textContent=t;
+}
+
+/* ================= 大哥榜 ================= */
+function addToBoard(ev,val){
+  const key=ev.sec||('~'+normNick(ev.nick));
+  const e=S.session[key]=S.session[key]||{value:0,gifts:0,nick:ev.nick,sec:ev.sec||''};
+  e.value+=val;e.gifts+=(ev.count||1);e.nick=ev.nick;
+  const total=Object.values(S.session).reduce((s,x)=>s+x.value,0);
+  $('#stGift').textContent='¥'+yuan(total);
+  renderBoard();
+}
+function renderBoard(){
+  const rows=Object.entries(S.session).sort((a,b)=>b[1].value-a[1].value).slice(0,15);
+  const el=$('#toplist');
+  if(!rows.length){el.innerHTML='<div class="rail-empty">还没有礼物事件<br>大哥来了这里实时排位</div>';return;}
+  el.innerHTML=rows.map(([k,e],i)=>{
+    const c=e.sec?cardOf(e.sec):null;
+    const nick=(c&&c.n)||e.nick;
+    const av=(c&&c.av)?'<img src="'+esc(c.av)+'" onerror="this.remove()">':esc(firstChar(nick));
+    const tier=(c&&c.t)?'<span class="tier '+esc(c.t)+'">'+esc(c.t)+'</span>':'';
+    const tags=[];
+    if(c&&c.mine)tags.push('自己人');else if(c&&c.cr)tags.push('别家');
+    return '<div class="trow'+(i===0?' top1':'')+'"><div class="t-rank">'+(i+1)+'</div>'+
+      '<div class="t-av">'+av+'</div><div class="t-main">'+
+      '<div class="t-nick">'+esc(nick)+' '+tier+'</div>'+
+      '<div class="t-sub">'+esc(tags.join('·')||'本场 '+e.gifts+' 件')+'</div></div>'+
+      '<div class="t-val">¥'+yuan(e.value)+'</div></div>';
+  }).join('');
+  $('#topSub').textContent='按本场礼物估值排位（'+rows.length+' 人）';
+}
+
+/* ================= 弹卡 ================= */
+function pushCard(ev){
+  $('#emptyHint').style.display='none';
+  S.queue.push(ev);
+  drainQueue();
+}
+function drainQueue(){
+  while(S.showing<MAX_CARDS&&S.queue.length){
+    const ev=S.queue.shift();
+    renderCard(ev);
+  }
+}
+function renderCard(ev){
+  const c=ev.sec?cardOf(ev.sec):null;
+  const known=c&&c.known;
+  const sess=S.session[ev.sec||('~'+normNick(ev.nick))];
+  const liveVal=sess?sess.value:0;
+  const el=document.createElement('div');
+  el.className='ucard'+(ev.kind==='gift'?' gift-card':'');
+  const life=known?LIFE[ev.kind]:LIFE.anon;
+
+  let nick=ev.nick,avHtml=esc(firstChar(nick)),tierHtml='',tags=[],moneyHtml='',gridHtml='',potHtml='',noteHtml='',subHtml='';
+  if(known){
+    nick=c.n||ev.nick;
+    if(c.av)avHtml='<img src="'+esc(c.av)+'" onerror="this.remove()">';
+    if(c.t)tierHtml='<span class="tier '+esc(c.t)+'">'+esc(c.t)+'</span>';
+    // 归属
+    if(c.cross_only){tags.push('<span class="tag cross">别家大哥</span>');}
+    else if(c.mine&&c.cr){tags.push('<span class="tag own">跨团·归我</span>');}
+    else if(c.mine){tags.push('<span class="tag own">自己人</span>');}
+    else if(c.cr){tags.push('<span class="tag cross">别家</span>');}
+    // 回归/生日/新客
+    const today=(S.data.anchor||{}).date||'';
+    if(c.lost&&c.ret)tags.push('<span class="tag ret">🔄 流失回归·今天有消费</span>');
+    else if(c.lost)tags.push('<span class="tag lost">已流失·回流</span>');
+    else if(c.last&&today&&c.last<today){
+      const gap=Math.round((new Date(today)-new Date(c.last))/86400000);
+      if(gap>=7)tags.push('<span class="tag ret">🔄 '+gap+' 天没来</span>');
+    }
+    if(c.bg===0)tags.push('<span class="tag bday">🎂 今天生日！</span>');
+    else if(c.bg&&c.bg<=7)tags.push('<span class="tag bday">🎂 '+c.bg+' 天后生日</span>');
+    if(c.nf)tags.push('<span class="tag new">🆕 新客</span>');
+    if(Array.isArray(c.ff))c.ff.forEach(f=>tags.push('<span class="tag ff">'+esc(f==='已拉群'?'群':'互')+'</span>'));
+    if(c.fs)tags.push('<span class="tag '+(c.fs==='未回复'?'fs-nr':'done')+'">'+esc(c.fs)+'</span>');
+    if(c.done&&c.done.length)tags.push('<span class="tag done">今日已回传·'+esc(c.done.join('/'))+'</span>');
+    if(!c.cross_only){
+      moneyHtml='<div class="u-money"><div class="m-cell"><div class="m-lab">💰 累计消费</div><div class="m-val">¥'+yuan(c.sv)+'</div></div>'+
+        '<div class="m-cell"><div class="m-lab">本场消费</div><div class="m-val live">¥'+yuan(liveVal)+'</div></div>'+
+        (c.tv?'<div class="m-cell"><div class="m-lab">今日(截至下播数据)</div><div class="m-val">¥'+yuan(c.tv)+'</div></div>':'')+'</div>';
+      const grid=[];
+      if(c.fl)grid.push('灯牌 <b>Lv'+c.fl+'</b>');
+      if(c.gr)grid.push('荣耀 <b>'+c.gr+'</b>');
+      if(c.days)grid.push('陪伴 <b>'+c.days+' 天</b>');
+      if(c.cnt)grid.push('到场 <b>'+c.cnt+' 场</b>');
+      if(c.fs0)grid.push('首来 <b>'+esc(c.fs0.slice(5))+'</b>');
+      if(grid.length)gridHtml='<div class="u-grid">'+grid.join('<span></span>')+'</div>';
+      if(c.t||c.gd)potHtml='<div class="u-pot">⭐ 潜力 <b>'+esc(c.t||'未评级')+'</b>'+(c.gd?' · '+esc(c.gd):'')+'</div>';
+      const note=c.opnote||c.adv||'';
+      if(note)noteHtml='<div class="u-note"><span class="n-lab">'+(c.opnote?'运营备注':'维护建议')+'</span>'+esc(note)+'</div>';
+      if(c.former)subHtml='曾用名 '+esc(c.former);
+      if(c.rh)subHtml+=(subHtml?' · ':'')+esc(c.rh);
+    }
+  }else{
+    tags.push('<span class="tag cross">新面孔·未入库</span>');
+    noteHtml='';
+  }
+  let lineHtml='';
+  if(ev.kind==='chat'&&ev.content)lineHtml='<div class="u-line">💬 '+esc(ev.content)+'</div>';
+  if(ev.kind==='gift'){
+    const p=S.giftPrices[ev.gift];
+    lineHtml='<div class="u-line gift-line">🎁 '+esc(ev.gift)+(ev.count>1?' ×'+ev.count:'')+(p?'（约 ¥'+yuan(p*(ev.count||1))+'）':'')+'</div>';
+  }
+  const evLabel=ev.kind==='enter'?'进场':ev.kind==='chat'?'发言':'送礼';
+  el.innerHTML='<div class="u-top"><div class="u-av">'+avHtml+'</div><div class="u-id">'+
+    '<div class="u-nick">'+esc(nick)+' '+tierHtml+'</div>'+
+    (subHtml?'<div class="u-sub">'+subHtml+'</div>':'')+'</div>'+
+    '<span class="u-ev '+ev.kind+'">'+evLabel+'</span></div>'+
+    (tags.length?'<div class="u-tags">'+tags.join('')+'</div>':'')+
+    moneyHtml+gridHtml+potHtml+noteHtml+lineHtml;
+  const wrap=$('#cards');
+  wrap.prepend(el);
+  S.showing++;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('in')));
+  setTimeout(()=>{el.classList.add('out');setTimeout(()=>{el.remove();S.showing--;drainQueue();},320);},life);
+  if(ev.kind==='gift')renderBoard();
+}
+
+/* ================= 演示模式 ================= */
+const DEMO_SEQ=[
+  {kind:'enter',nick:'李老板'},
+  {kind:'gift',nick:'李老板',gift:'嘉年华',count:1},
+  {kind:'enter',nick:'路人甲'},
+  {kind:'chat',nick:'李老板',content:'婉婉今天妆造绝了'},
+  {kind:'gift',nick:'路人甲',gift:'为你闪耀',count:2},
+  {kind:'enter',nick:'刘六'},
+];
+function toggleDemo(){
+  if(S.demoTimer){clearInterval(S.demoTimer);S.demoTimer=null;
+    $('#btnDemo').classList.remove('demo-on');toast('演示已停');return;}
+  $('#btnDemo').classList.add('demo-on');
+  $('#emptyHint').style.display='none';
+  toast('演示模式：假事件循环弹卡');
+  const fire=()=>{processEvent(DEMO_SEQ[S.demoIdx%DEMO_SEQ.length]);S.demoIdx++;};
+  fire();S.demoTimer=setInterval(fire,3200);
+}
+
+/* ================= 探针复制 ================= */
+async function copyProbe(){
+  try{
+    const r=await fetch('radar-probe.js',{cache:'no-cache'});
+    let js=await r.text();
+    js=js.replace(/__TOKEN__/g,S.token);
+    try{await navigator.clipboard.writeText(js);}
+    catch(e){const ta=document.createElement('textarea');ta.value=js;document.body.appendChild(ta);
+      ta.select();document.execCommand('copy');ta.remove();}
+    toast('探针已复制，去直播间控制台粘贴');
+  }catch(e){toast('复制失败：'+e.message);}
+}
+
+/* ================= 启动 ================= */
+async function boot(){
+  const t=storedToken();
+  if(!t){$('#loginOv').style.display='flex';return;}
+  S.token=t;
+  try{await loadData(t);}
+  catch(e){$('#loginOv').style.display='flex';$('#loginErr').textContent='访问码无效或数据不存在';return;}
+  await loadGiftPrices();
+  ensureCards(Object.keys(S.users).slice(0,0)); // 预热无操作
+  setInterval(poll,2000);poll();
+}
+$('#btnLogin').onclick=()=>{
+  const v=$('#tokenIn').value.trim();
+  if(!v){$('#loginErr').textContent='请输入访问码';return;}
+  localStorage.setItem('radar_token',v);
+  $('#loginOv').style.display='none';$('#loginErr').textContent='';boot();
+};
+$('#btnDemo').onclick=toggleDemo;
+$('#btnHelp').onclick=()=>$('#helpOv').style.display='flex';
+$('#btnHelpClose').onclick=()=>$('#helpOv').style.display='none';
+$('#btnCopyProbe').onclick=copyProbe;
+setInterval(()=>{const d=new Date();
+  $('#clock').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
+},1000);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+boot();
+</script>
+</body>
+</html>
