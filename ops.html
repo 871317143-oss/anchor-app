@@ -121,6 +121,33 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .noa{display:flex;gap:9px;margin-top:10px;}
 .noa .btn.big{flex:2;padding:12px;}
 @keyframes sheetUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+/* 人员详情 v3.12：用户行左滑备注 + 用户画像对齐主播版 */
+.urow-wrap{position:relative;overflow:hidden;}
+.urow-acts{position:absolute;top:0;right:0;bottom:0;display:flex;align-items:center;padding-right:14px;}
+.ua{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;font-family:inherit;cursor:pointer;padding:0;}
+.ua-c{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;background:var(--lime);color:#223014;}
+.ua-l{font-size:10px;color:var(--ink2);}
+.urow-wrap .urow{position:relative;background:var(--card);transition:transform .18s ease;border-top:none;}
+.urow-wrap.open .urow{transform:translateX(-96px);}
+.nov2{z-index:80;}
+.profile{background:var(--card);border-radius:20px;overflow:hidden;box-shadow:0 4px 16px rgba(20,30,18,.10);}
+.profile .head{padding:16px 16px 13px;display:flex;gap:12px;align-items:flex-start;}
+.profile .h-main{flex:1;min-width:0;}
+.profile .nick{font-size:17px;font-weight:700;}
+.profile .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.profile .grade{font-size:11px;color:var(--ink3);margin-top:6px;}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);}
+.grid .cell{padding:12px 8px;text-align:center;border-right:1px solid var(--line);}
+.grid .cell:last-child{border-right:none;}
+.grid .num{font-size:17px;font-weight:700;line-height:1.1;}
+.grid .num small{font-size:11px;font-weight:500;color:var(--ink2);}
+.grid .lab{font-size:11px;color:var(--ink2);margin-top:4px;}
+.advice{margin:12px 16px 0;background:var(--card2);border-radius:12px;padding:13px 15px;}
+.advice .at{font-size:11px;font-weight:700;color:var(--brand);margin-bottom:4px;letter-spacing:.5px;}
+.advice p{font-size:13px;line-height:1.6;color:var(--ink2);word-break:break-word;}
+.pv-info{display:flex;align-items:center;gap:8px;margin:8px 16px 0;font-size:12px;color:var(--ink2);}
+.pv-info .pvi-label{flex:none;min-width:42px;color:var(--ink3);font-size:11px;}
+.pv-info span:last-child{word-break:break-all;}
 /* 项目 tab（v3.3 团经营） */
 .pgrid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);}
 .pcell{padding:13px 8px;text-align:center;border-right:1px solid var(--line);}
@@ -141,7 +168,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.11';
+const OPS_VERSION='v3.12';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -289,19 +316,47 @@ function vPeople(){
  return h+'</div>';}
 function openPerson(name){
  const p=_perfs&&_perfs[name];
- const flags=(D.flags||[]).filter(f=>f.anchor===name);
- const status=(D.status||[]).filter(f=>f.anchor===name);
- const subs=(D.subs||[]).filter(s=>s.anchor===name).slice(0,30);
- const flm={};flags.forEach(f=>{(flm[f.sec]=flm[f.sec]||{sec:f.sec,nick:f.nick,av:f.av,op:f.op,ts:f.ts,flags:[]}).flags.push(f.flag);});
- const flagRows=Object.values(flm).map(f=>urow(f,f.flags.map(tagFor).join(''))).join('')||'<div class="empty">还没有点亮</div>';
- const stRows=status.map(f=>urow(f,tagFor(f.status))).join('')||'<div class="empty">还没有状态</div>';
- const subRows=subs.map(s=>urow(s,(s.actions||[]).map(tagFor).join('')+`<span class="tag t-gray">${esc(s.kind)}</span>`)).join('')||'<div class="empty">今天还没有回传</div>';
+ const um=D.umeta||{};
+ // 今日执行摘要（v3.12）：该主播今天回传的动作分布 + 未回复名单
+ const today=new Date().toISOString().slice(0,10);
+ const subsT=(D.subs||[]).filter(s=>s.anchor===name&&String(s.ts||'').startsWith(today));
+ const dist={};subsT.forEach(s=>(s.actions||[]).forEach(a=>dist[a]=(dist[a]||0)+1));
+ const nr=subsT.filter(s=>(s.actions||[]).includes('未回复'));
+ const distHtml=Object.keys(dist).length?Object.entries(dist).map(([k,v])=>`${tagFor(k)}<span class="tag t-gray">×${v}</span>`).join(''):'<span class="tag t-gray">今天还没回传</span>';
+ const nrHtml=nr.length?`<div style="margin-top:9px;font-size:12px;color:var(--red);font-weight:600">🔴 未回复 ${nr.length} 人：${nr.map(s=>esc(nameOf(s))).join('、')}——需要介入</div>`:'';
+ // 统一用户列表：点亮+状态+回传按 sec 合并，配画像包
+ const users={};
+ const up=(sec)=>{if(!users[sec])users[sec]={sec,flags:[],acts:[]};return users[sec];};
+ (D.flags||[]).filter(f=>f.anchor===name).forEach(f=>up(f.sec).flags.push(f.flag));
+ (D.status||[]).filter(f=>f.anchor===name).forEach(f=>{up(f.sec).status=f.status;});
+ (D.subs||[]).filter(s=>s.anchor===name).forEach(s=>{const u=up(s.sec);(s.actions||[]).forEach(a=>{if(!u.acts.includes(a))u.acts.push(a);});});
+ const fmtY=v=>{v=(v||0)/10;return '¥'+(v>=100?Math.round(v):Math.round(v*10)/10);};
+ const list=Object.values(users).map(u=>({...u,m:um[u.sec]||{}}))
+  .sort((a,b)=>((b.m.tv||0)-(a.m.tv||0))||((b.m.sv||0)-(a.m.sv||0)));
+ const gcls={S:'t-red',A:'t-amber',B:'t-blue',C:'t-green',D:'t-gray'};
+ const rows=list.map(u=>{const m=u.m;const tags=[];
+  if(m.t)tags.push(`<span class="tag ${gcls[m.t]||'t-gray'}">${m.t}级</span>`);
+  if(u.acts.includes('未回复'))tags.push('<span class="tag t-red">未回复</span>');
+  if(u.flags.includes('已拉群'))tags.push('<span class="tag t-green">群</span>');
+  if(u.flags.includes('已互关'))tags.push('<span class="tag t-blue">互</span>');
+  if(m.ret)tags.push('<span class="tag t-amber">回归</span>');
+  if(m.nf)tags.push('<span class="tag t-red">新客</span>');
+  if(m.cr&&!m.mine)tags.push('<span class="tag t-blue">别家</span>');
+  if(m.bg!=null&&m.bg<=7)tags.push(`<span class="tag t-red">🎂${m.bg===0?'今天':m.bg+'天'}</span>`);
+  if(u.status&&!u.acts.includes('未回复'))tags.push(`<span class="tag t-gray">${esc(u.status)}</span>`);
+  const avInner=(m.n||'?')[0]+(m.av?`<img src="${esc(m.av)}" style="position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.remove()">`:'');
+  return `<div class="urow-wrap"><div class="urow-acts"><button class="ua" data-un="${u.sec}"><span class="ua-c">备</span><span class="ua-l">备注</span></button></div>
+   <div class="urow" data-u="${u.sec}">
+   <div class="avatar" style="position:relative;background:${colorOf(m.n||u.sec)};width:36px;height:36px;font-size:14px">${avInner}</div>
+   <div class="u-main"><div class="u-line1"><span class="u-nick">${esc(m.n||('sec…'+u.sec.slice(-6)))}</span><span class="u-val">${m.tv?fmtY(m.tv)+' 本场':''}${m.sv?' '+fmtY(m.sv)+' 累计':''}</span></div>
+   <div class="u-tags">${tags.join('')}</div>
+   ${m.op?`<div class="u-note">运营备注：${esc(m.op)}</div>`:''}</div></div></div>`;}).join('');
  const prog=p&&p.base?Math.min(100,Math.round((p.base_progress||0)*100)):0;
  const ov=document.createElement('div');ov.className='nov';ov.style.alignItems='stretch';
  ov.innerHTML=`<div class="noc" style="height:100%;border-radius:0;padding:calc(14px + env(safe-area-inset-top)) 0 0;overflow-y:auto">
   <div style="display:flex;justify-content:space-between;align-items:center;padding:0 16px 12px">
    <span data-x="1" style="color:var(--brand);font-weight:700;font-size:15px;cursor:pointer">‹ 人员</span>
-   <span style="color:var(--ink3);font-size:12px">${esc(name)}</span></div>
+   <span style="color:var(--ink3);font-size:12px">右滑返回 · ${esc(name)}</span></div>
   <div style="padding:0 16px">
   ${p?`<div class="tier"><div class="t-head"><div class="t-ico" style="background:var(--brand-soft);color:var(--brand)">绩</div>
    <div><div class="t-name">本月业绩</div><div class="t-sub">${esc(p.status||'')} · 最近开播 ${esc(p.last_live||'—')}</div></div>
@@ -321,14 +376,69 @@ function openPerson(name){
    </div></div>
   ${p.brief?`<div class="sec-title"><h3>最新场次简报</h3></div><div class="tier" style="padding:14px 16px"><div style="font-size:12px;line-height:1.7;color:var(--ink2);white-space:pre-line">${esc(p.brief)}</div></div>`:''}`
   :'<div class="empty">业绩档案加载中或未找到</div>'}
-  <div class="sec-title"><h3>她的点亮</h3><span class="more">${Object.keys(flm).length} 人</span></div>
-  <div class="tier">${flagRows}</div>
-  <div class="sec-title"><h3>她的跟进状态</h3><span class="more">${status.length} 条</span></div>
-  <div class="tier">${stRows}</div>
-  <div class="sec-title"><h3>她的回传</h3><span class="more">最近 ${subs.length} 条</span></div>
-  <div class="tier">${subRows}</div>
+  <div class="sec-title"><h3>今日执行</h3><span class="more">回传 ${subsT.length} 条</span></div>
+  <div class="tier" style="padding:13px 16px"><div class="u-tags" style="display:flex;flex-wrap:wrap;gap:6px">${distHtml}</div>${nrHtml}</div>
+  <div class="sec-title"><h3>她的用户</h3><span class="more">${list.length} 人 · 点行看画像 · 左滑备注</span></div>
+  <div class="tier">${rows||'<div class="empty">还没有维护过的用户</div>'}</div>
   <div style="height:30px"></div></div></div>`;
- ov.addEventListener('click',e=>{if(e.target===ov||e.target.closest('[data-x]'))ov.remove();});
+ ov.addEventListener('click',e=>{
+  if(e.target===ov||e.target.closest('[data-x]')){ov.remove();return;}
+  const un=e.target.closest('[data-un]');
+  if(un){openOpNote(un.dataset.un);return;}
+  const ur=e.target.closest('.urow[data-u]');
+  if(ur&&!ur.closest('.urow-wrap').classList.contains('open'))openUserProf(ur.dataset.u);
+ });
+ document.getElementById('phone').appendChild(ov);}
+/* 用户画像（与主播版对齐 v3.12） */
+function openUserProf(sec){
+ const m=(D.umeta||{})[sec]||{};
+ const st=((D.status||[]).filter(f=>f.sec===sec)[0]||{}).status||'';
+ const fl=(D.flags||[]).filter(f=>f.sec===sec).map(f=>f.flag);
+ const gap=m.last?Math.round((new Date()-new Date(m.last))/86400000):'';
+ const gcls={S:'t-red',A:'t-amber',B:'t-blue',C:'t-green',D:'t-gray'};
+ const tags=[];
+ if(m.t)tags.push(`<span class="tag ${gcls[m.t]||'t-gray'}">${m.t}级</span>`);
+ if(fl.includes('已拉群'))tags.push('<span class="tag t-green">已拉群</span>');
+ if(fl.includes('已互关'))tags.push('<span class="tag t-blue">已互关</span>');
+ if(m.ret)tags.push('<span class="tag t-amber">回归用户</span>');
+ if(m.nf)tags.push('<span class="tag t-red">新客</span>');
+ if(m.cr)tags.push('<span class="tag t-blue">跨团</span>');
+ if(m.bg!=null&&m.bg<=7)tags.push(`<span class="tag t-red">🎂${m.bg===0?'今天生日！':m.bg===1?'明天生日':'生日还有'+m.bg+'天'}</span>`);
+ const info=[m.gr&&('荣耀'+m.gr),m.fl&&('灯牌'+m.fl),m.l,m.g&&(m.g===1?'男':'女'),m.a&&(m.a+'岁')].filter(x=>x).join(' · ');
+ const pv=(lab,val,color)=>val?`<div class="pv-info"><span class="pvi-label">${lab}</span><span ${color?`style="color:${color}"`:''}>${esc(String(val))}</span></div>`:'';
+ const avInner=(m.n||'?')[0]+(m.av?`<img src="${esc(m.av)}" style="position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.remove()">`:'');
+ const ov=document.createElement('div');ov.className='nov nov2';ov.style.alignItems='stretch';
+ ov.innerHTML=`<div class="noc" style="height:100%;border-radius:0;padding:calc(14px + env(safe-area-inset-top)) 0 0;overflow-y:auto">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:0 16px 12px">
+   <span data-x="1" style="color:var(--brand);font-weight:700;font-size:15px;cursor:pointer">‹ 她的用户</span>
+   <span style="color:var(--ink3);font-size:12px">右滑返回</span></div>
+  <div style="padding:0 16px">
+  <div class="profile" style="min-height:auto">
+   <div class="head"><div class="avatar" style="position:relative;background:${colorOf(m.n||sec)};width:48px;height:48px;font-size:19px">${avInner}</div>
+   <div class="h-main"><div class="nick">${esc(m.n||('sec…'+sec.slice(-6)))}</div><div class="tags">${tags.join('')}</div>
+   <div class="grade">${info}</div></div></div>
+   <div class="grid">
+    <div class="cell"><div class="num"><small>¥</small>${((m.sv||0)/10).toFixed((m.sv||0)>=1000?0:1)}</div><div class="lab">给我累计</div></div>
+    <div class="cell"><div class="num"><small>¥</small>${((m.tv||0)/10).toFixed((m.tv||0)>=1000?0:1)}</div><div class="lab">本场</div></div>
+    <div class="cell"><div class="num">${gap}<small>天</small></div><div class="lab">没来了</div></div>
+    <div class="cell"><div class="num">${(m.last||'—').slice(5)}</div><div class="lab">上次来</div></div>
+    <div class="cell"><div class="num">${m.days||0}<small>天</small></div><div class="lab">陪伴天数</div></div>
+    <div class="cell"><div class="num">${m.w?Math.round(m.w/60):0}<small>分</small></div><div class="lab">今日观看</div></div>
+   </div>
+   ${m.adv?`<div class="advice"><div class="at">维护提示</div><p>${esc(m.adv)}</p></div>`:''}
+   ${pv('生日',m.birth?String(m.birth).slice(5,10)+(m.bg!=null&&m.bg<=7?`（🎂${m.bg===0?'今天！':m.bg===1?'明天':'还有'+m.bg+'天'}）`:''):'')}
+   ${pv('等级变化',m.gd)}
+   ${pv('消费节奏',m.rh)}
+   ${st?pv('跟进状态',st):''}
+   ${m.op?pv('运营备注',m.op,'var(--amber)'):''}
+   <div style="padding:14px 16px"><button class="btn big" data-unote="${sec}">写运营备注</button></div>
+  </div>
+  <div style="height:30px"></div></div></div>`;
+ ov.addEventListener('click',e=>{
+  if(e.target===ov||e.target.closest('[data-x]')){ov.remove();return;}
+  const un=e.target.closest('[data-unote]');
+  if(un){openOpNote(un.dataset.unote);return;}
+ });
  document.getElementById('phone').appendChild(ov);}
 
 /* ===== 视图：审批 ===== */
@@ -366,7 +476,7 @@ function vFlow(){
  const subsHtml=subs.length?subs.map(s=>urow(s,`${(s.actions||[]).map(tagFor).join('')}<span class="tag t-gray">${esc(s.anchor)}</span>${s.kind!=='日常维护'?`<span class="tag t-blue">${esc(s.kind)}</span>`:''}`)).join('')
   :'<div class="empty">还没有回传流水</div>';
  return `<div class="wrap">
-  <div class="sec-title"><h3>回传流水</h3><span class="more">按团 / 主播过滤</span></div>
+  <div class="sec-title"><h3>回传明细</h3><span class="more">按团 / 主播过滤</span></div>
   <div class="chips">${tchipHtml}</div>
   <div class="chips">${chipHtml}</div>
   <div class="tier"><div class="t-head"><div class="t-ico" style="background:var(--blue-bg);color:var(--blue)">流</div>
@@ -419,6 +529,54 @@ function openOpNote(sec){
    toast('已保存，主播画像页可见');ov.remove();
   }catch(e){toast(e.message);btn.disabled=false;btn.textContent='保存';}};}
 
+/* v3.12 手势：覆盖层右滑跟手返回（人员详情/用户画像/备注弹窗通用）；用户行左滑出备注钮 */
+let _og=null;
+document.addEventListener('touchstart',e=>{
+ if(e.touches.length!==1)return;
+ if(e.target&&e.target.closest&&e.target.closest('.urow-wrap,input,textarea,select')){_og=null;return;}
+ const top=[...document.querySelectorAll('.nov')].filter(x=>x.isConnected).pop();
+ _og=top?{el:top,x:e.touches[0].clientX,y:e.touches[0].clientY,m:0}:null;
+},{passive:true});
+document.addEventListener('touchmove',e=>{
+ if(!_og)return;const t=e.touches[0];const dx=t.clientX-_og.x,dy=t.clientY-_og.y;
+ if(Math.abs(dy)>Math.abs(dx)*1.2){_og=null;return;}
+ if(dx>0){if(dx>8)e.preventDefault();_og.el.style.transition='none';_og.el.style.transform='translateX('+dx+'px)';_og.m=1;}
+},{passive:false});
+document.addEventListener('touchend',e=>{
+ if(!_og)return;const og=_og;_og=null;
+ if(!og.m)return;
+ const dx=e.changedTouches[0].clientX-og.x;
+ og.el.style.transition='transform .33s var(--spring-settle)';
+ if(dx>window.innerWidth*0.28){og.el.style.transform='translateX(110%)';setTimeout(()=>og.el.remove(),280);}
+ else og.el.style.transform='translateX(0)';
+ setTimeout(()=>{if(og.el.isConnected){og.el.style.transform='';og.el.style.transition='';}},400);
+},{passive:true});
+let _ors=null;const ORW=96;
+document.addEventListener('touchstart',e=>{
+ if(e.touches.length!==1)return;
+ const rw=e.target&&e.target.closest?e.target.closest('.urow[data-u]'):null;
+ const inActs=e.target&&e.target.closest?e.target.closest('.urow-acts'):null;
+ if(!inActs)document.querySelectorAll('.urow-wrap.open').forEach(w=>{if(!rw||w!==rw.parentElement)w.classList.remove('open');});
+ if(!rw){_ors=null;return;}
+ const t=e.touches[0];_ors={row:rw,wrap:rw.parentElement,x:t.clientX,y:t.clientY,hor:0};
+},{passive:true});
+document.addEventListener('touchmove',e=>{
+ if(!_ors||!e.touches.length)return;const t=e.touches[0];
+ const dx=t.clientX-_ors.x,dy=t.clientY-_ors.y;
+ if(!_ors.hor){if(Math.abs(dy)>Math.abs(dx)*1.2){_ors=null;return;}if(Math.abs(dx)<8)return;_ors.hor=1;}
+ e.preventDefault();
+ const base=_ors.wrap.classList.contains('open')?-ORW:0;
+ const nx=Math.max(-ORW,Math.min(0,base+dx));
+ _ors.row.style.transition='none';_ors.row.style.transform='translateX('+nx+'px)';
+},{passive:false});
+document.addEventListener('touchend',e=>{
+ if(!_ors)return;const rs=_ors;_ors=null;
+ if(!rs.hor){rs.row.style.transform='';rs.row.style.transition='';return;}
+ const m=(rs.row.style.transform||'').match(/-?[\d.]+/);const cur=m?parseFloat(m[0]):0;
+ rs.row.style.transform='';rs.row.style.transition='';
+ if(cur<-ORW/2)rs.wrap.classList.add('open');else rs.wrap.classList.remove('open');
+},{passive:true});
+
 const TABS=['proj','people','todo','flow','admin'];
 function switchTab(t){_tab=t;
  TABS.forEach(x=>{const v=document.getElementById('v-'+x);if(v)v.classList.toggle('show',x===t);});
@@ -434,7 +592,7 @@ function tabbar(todoN){return `<div class="tabbar">
  <button class="tb${_tab==='proj'?' on':''}" data-tab="proj">${TB_ICONS.proj}项目</button>
  <button class="tb${_tab==='people'?' on':''}" data-tab="people">${TB_ICONS.people}人员</button>
  <button class="tb${_tab==='todo'?' on':''}" data-tab="todo">${TB_ICONS.todo}审批${todoN?`<span class="bdg">${todoN}</span>`:''}</button>
- <button class="tb${_tab==='flow'?' on':''}" data-tab="flow">${TB_ICONS.flow}流水</button>
+ <button class="tb${_tab==='flow'?' on':''}" data-tab="flow">${TB_ICONS.flow}回传明细</button>
  <button class="tb${_tab==='admin'?' on':''}" data-tab="admin">${TB_ICONS.admin}管理</button></div>`;}
 
 function render(){
