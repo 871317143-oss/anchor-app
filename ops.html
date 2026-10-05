@@ -196,7 +196,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.19';
+const OPS_VERSION='v3.20';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -244,11 +244,11 @@ function radarCard(name){const r=_radar[name];if(!r)return '';
   <div style="padding:0 16px 14px">
    <div style="font-size:11px;color:var(--ink3);margin-bottom:8px">五边形越满越均衡；<b style="color:var(--ink2)">凹陷的那条边，就是她接下来 7 天最该补的事</b>。综合分只在团内比，别跨团比。</div>
    ${V.map((v,i)=>{const M=[
-    {w:'近30天她开了几天播',lo:'出勤亮红灯——先问人是不是要休、是不是想走，再谈别的',mid:'出勤有缺口——核对排期和请假，别让断播成习惯',hi:'出勤稳定'},
+    {w:'近30天开播天数（26天满分）',lo:'月开播不足20天，非常危险——先问人是不是要休、是不是想走',mid:'出勤有缺口（目标26天）——核对排期和请假，别让断播成习惯',hi:'出勤达标（26天满分）'},
     {w:'她的7场均线在团里的位置',lo:'吸金团内靠后——看是内容问题、时段问题还是用户结构问题',mid:'流水中游——有上行空间，重点接新客',hi:'团的吸金主力'},
-    {w:'近7场 vs 前7场',lo:'连续下滑——这周必须深聊一次找原因，别等自愈',mid:'走势平稳',hi:'在涨——别打扰她的节奏，给资源就行'},
+    {w:'近7场 vs 前7场（平滑曲线，暴涨暴跌才会顶格）',lo:'连续下滑——这周必须深聊一次找原因，别等自愈',mid:'走势平稳',hi:'在涨——别打扰她的节奏，给资源就行'},
     {w:'近14天她回传维护动作的频率',lo:'下播就不管用户——刷完没人接，先盯她每天回传重点用户',mid:'回传断断续续——要求 S/A 级用户必传',hi:'维护动作到位'},
-    {w:'之前给她刷过的人，最近还在刷的比例',lo:'用户来一次就走——她的维护打法要复盘，陪她过一遍用户画像',mid:'留存有提升空间——重点抓 S/A 级回访',hi:'用户黏性健康'}][i];
+    {w:'有效用户（消费≥¥9.9或观看≥20分钟）里，之前刷过、最近还在刷的比例',lo:'有效用户留不住——她的维护打法要复盘，陪她过一遍用户画像',mid:'留存有提升空间——重点抓 S/A 级回访',hi:'用户黏性健康'}][i];
     const band=v<40?0:v<70?1:2,tx=[M.lo,M.mid,M.hi][band],cl=['var(--red)','var(--amber)','var(--green)'][band];
     return `<div style="display:flex;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:12px;line-height:1.5">
      <span style="flex:none;width:64px;font-weight:700;color:${cl}">${AX[i]} ${v}</span>
