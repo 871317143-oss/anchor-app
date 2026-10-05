@@ -19,7 +19,7 @@
 html,body{height:100%}
 body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;color:var(--ink);overflow:hidden}
 #phone{position:relative;height:100%;max-width:430px;margin:0 auto;overflow:hidden;background:#16123a}
-#phone::before{content:'';position:absolute;inset:0;background:url('assets/bg-morandi.jpg?v=3') center 28%/cover}
+#phone::before{content:'';position:absolute;inset:0;background:url('assets/tree-scroll.jpg') center 100%/cover}
 #phone::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(26,22,66,.10) 0%,rgba(26,22,66,0) 32%,rgba(216,206,243,.28) 100%)}
 @media(min-width:560px){
  body{background:radial-gradient(120% 90% at 50% 0%,#332c66 0%,#16123a 62%);display:flex;align-items:center;justify-content:center}
@@ -149,29 +149,22 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .sk{padding:40px 20px;text-align:center;color:var(--ink3);font-size:13px}
 #toast{position:absolute;left:50%;bottom:110px;transform:translateX(-50%) translateY(16px);background:rgba(38,32,80,.92);color:#fff;font-size:13px;padding:11px 18px;border-radius:10px;max-width:82%;text-align:center;opacity:0;transition:all .25s;pointer-events:none;z-index:90}
 /* ---- 首幕电影层（上滑起飞+水波转场） ---- */
-#bg2{position:absolute;inset:0;z-index:0;background:url('assets/bg-touch.jpg?v=2') center 28%/cover;opacity:0}
+#bg2{position:absolute;inset:0;z-index:0;background:url('assets/tree-scroll.jpg') center 100%/cover;opacity:0}
 #gl{position:absolute;inset:0;z-index:1;display:none;width:100%;height:100%}
 #phone.gl-on #gl{display:block}
 #phone.gl-on::before{display:none}
 #phone.gl-on #bg2{display:none}
-#phone.gl-on #intro .ibg{display:none}
-#phone.gl-on:not(.landed) #hdr,#phone.gl-on:not(.landed) #board,#phone.gl-on:not(.landed) #floor,#phone.gl-on:not(.landed) #dots,#phone.gl-on:not(.landed) #aibar{visibility:hidden}
-#intro{position:absolute;inset:0;z-index:50;touch-action:none;will-change:transform;display:none}
-#intro .ibg{position:absolute;inset:0;background-position:center 28%;background-size:cover}
-#intro .ib1{background-image:url('assets/bg-morandi.jpg?v=3')}
-#intro .ib2{background-image:url('assets/bg-touch.jpg?v=2');opacity:0;clip-path:circle(0% at 50% 62%)}
-#intro .igrad{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(26,22,66,.16) 0%,rgba(26,22,66,0) 38%,rgba(26,22,66,.26) 100%)}
-#ihero{position:absolute;left:0;right:0;top:55%;display:flex;flex-direction:column;align-items:center;gap:13px;will-change:transform}
-#iav{width:112px;height:112px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,.8);box-shadow:0 10px 32px rgba(26,22,66,.55);background:var(--acc);display:flex;align-items:center;justify-content:center;color:#fff;font-size:38px;font-weight:700;position:relative;animation:ifloat 3.2s ease-in-out infinite}
-#iav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-@keyframes ifloat{50%{transform:translateY(-7px)}}
-#iname{font-size:22px;font-weight:600;color:var(--on-bg);text-shadow:0 2px 12px rgba(26,22,66,.65)}
-#ihint{margin-top:6px;font-size:12px;color:var(--on-bg2);display:flex;flex-direction:column;align-items:center;gap:5px;animation:ihint 1.9s ease-in-out infinite}
-#ihint svg{width:17px;height:17px;stroke:var(--on-bg2);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-@keyframes ihint{50%{transform:translateY(-6px);opacity:.6}}
+#phone.gl-on #intro .tposter{display:none}
+#intro{position:absolute;inset:0;z-index:50;display:none;pointer-events:none}
+#intro .tposter{position:absolute;inset:0;background:url('assets/tree-scroll.jpg') center 18%/cover}
+#intro .tgrad{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(210,226,228,.10) 0%,rgba(210,226,228,0) 40%,rgba(190,210,212,.22) 100%)}
+#tlogo{position:absolute;left:0;right:0;top:52%;display:flex;justify-content:center;pointer-events:none;will-change:transform,opacity}
+#tlogo img{width:172px;filter:drop-shadow(0 4px 18px rgba(40,60,60,.45));animation:tlin 1.4s cubic-bezier(.32,.72,.35,1) .2s both}
+@keyframes tlin{from{opacity:0;transform:scale(.92) translateY(14px)}to{opacity:1;transform:none}}
+#thint{position:absolute;left:0;right:0;top:calc(52% + 200px);text-align:center;font-size:12px;color:#3d5658;text-shadow:0 1px 8px rgba(255,255,255,.6);animation:ihint 1.9s ease-in-out infinite}
+#thint svg{width:16px;height:16px;stroke:#3d5658;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px}
+@keyframes ihint{50%{transform:translateY(5px);opacity:.55}}
 @keyframes rise{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
-#fly{position:absolute;z-index:51;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,.85);box-shadow:0 6px 20px rgba(26,22,66,.45);background:var(--acc);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
-#fly img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="phone">
@@ -203,16 +196,11 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
  </div>
  <div id="toast"></div>
  <div id="intro">
-  <div class="ibg ib1"></div>
-  <div class="ibg ib2"></div>
-  <div class="igrad"></div>
-  <div id="ihero">
-   <div id="iav"></div>
-   <div id="iname"></div>
-   <div id="ihint"><svg viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg>上滑，开始今天</div>
-  </div>
+  <div class="tposter"></div>
+  <div class="tgrad"></div>
+  <div id="tlogo"><img src="assets/logo-mark.png" alt="梦华录"></div>
+  <div id="thint"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>下滑，进入今日</div>
  </div>
- <svg width="0" height="0" style="position:absolute"><filter id="rip" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence id="ript" type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="2" seed="3" result="n"/><feDisplacementMap id="ripd" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
 </div>
 <script src="assets/gsap.min.js"></script>
 <script>
@@ -247,7 +235,7 @@ function render(){
  const a=DATA.anchor,c=DATA.counts||{},total=Object.keys(DATA.users||{}).length;
  const pending=(c.l3||0)+(c.l2||0)+(c.greet||0);
  $('#hdr').innerHTML=`
- <div class="st"><span>${esc(a.date||'')}</span><span style="display:flex;align-items:center"><span class="ver">v2.4 · GL</span><span id="bellBtn">${ICO.bell}</span></span></div>
+ <div class="st"><span>${esc(a.date||'')}</span><span style="display:flex;align-items:center"><span class="ver">v3.0 · 树境</span><span id="bellBtn">${ICO.bell}</span></span></div>
  <div class="hello"><span class="hi">Hello,</span><div class="av">${(a.name||'?')[0]}${a.av?`<img src="${a.av}" onerror="this.remove()">`:''}</div><span class="nm">${esc(a.name||'')}</span></div>
  <div class="sub">${pending?`今天还有 <b>${pending}</b> 件事没做`:'今天的事都清了，清爽'}</div>`;
  const card=(ic,t,b,s,cls,act)=>`<div class="bc glass ${cls||''}" data-act="${act}"><div class="t">${ic}${t}</div><div class="b">${b}</div><div class="s">${s||''}</div></div>`;
@@ -264,7 +252,7 @@ function render(){
  document.title='新框架·'+a.name;
  $('#bellBtn').onclick=()=>toast('通知中心在生产端铃铛里，回灌时整套搬入');
  $('#aiGreet').textContent=`${a.name||''}，今天我能帮你什么？`;
- bootChips();layout();fetchPerf();introBoot(a);
+ bootChips();layout();fetchPerf();tsBoot(a);
 }
 function fetchPerf(){
  fetch('https://fb.menghualu.com.co/api/anchor/perf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOK})})
@@ -315,136 +303,144 @@ addEventListener('touchcancel',()=>{if(_tg){const b=_tg;_tg=null;if(b.drag)setBo
 $('#handle').addEventListener('click',()=>{if(!_supp)setBoard(!_exp);});
 $('#dots').addEventListener('click',()=>setBoard(!_exp));
 addEventListener('resize',()=>{if(DATA)layout();});
-/* ===== WebGL 真水波（Three.js 只做背景层，DOM 守全部功能） ===== */
-let GL=null;
-const GL_VERT=`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}`;
-const GL_FRAG=`precision highp float;varying vec2 vUv;
-uniform sampler2D t1,t2;uniform vec2 uCenter;uniform float uProgress,uRipAmp,uIdle,uTime,uAsp,uMaxR;
-uniform vec4 uCov1,uCov2;
-vec2 cov(vec2 uv,vec4 c){return uv*c.xy+c.zw;}
-void main(){
- vec2 p=vUv-uCenter;p.x*=uAsp;float d=length(p);
- float wave=sin(d*38.0-uTime*7.0)*uRipAmp*0.02*exp(-d*3.2);
- float idle=(sin(vUv.x*5.5+uTime*0.55)+sin(vUv.y*4.5-uTime*0.42))*uIdle;
- vec2 off=(d>0.0001?normalize(p):vec2(0.))*(wave+idle);off.x/=uAsp;
- vec4 c1=texture2D(t1,cov(vUv+off,uCov1));
- vec4 c2=texture2D(t2,cov(vUv+off,uCov2));
- float r=uProgress*uMaxR;
- float mixv=uProgress>=0.999?1.0:1.0-smoothstep(r-0.07,r+0.02,d);
- gl_FragColor=mix(c1,c2,mixv);
-}`;
-function glCover(iw,ih,vw,vh){const ta=iw/ih,va=vw/vh;let sx,sy;if(ta>va){sx=va/ta;sy=1;}else{sx=1;sy=ta/va;}return [sx,sy,(1-sx)*0.5,(1-sy)*0.28];}
-async function initGL(){
- if(RM||GL===false||GL)return;
- if((navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=3){GL=false;return;}
+/* ===== 树境（2.5D 画卷分层+3D 花瓣+相机 scrub，DOM 守全部功能） ===== */
+let TS=null,_landed=false,_sg=null;
+function mkCanvasTex(T,draw,size){
+ const c=document.createElement('canvas');c.width=c.height=size;draw(c.getContext('2d'),size);
+ const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;return t;
+}
+const TS_P0={pos:[0,3.4,5.6],look:[0,5.0,-5]},TS_P1={pos:[0,0.6,3.4],look:[0,0.1,-5]};
+async function initTree(){
+ if(TS===false||TS)return;
+ if(RM||(navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=3){TS=false;return;}
  try{
-  const THREE=await import('./assets/three.module.js');
-  const cv=$('#gl'),ph=$('#phone');
-  const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:false,alpha:false,powerPreference:'low-power',stencil:false,depth:false});
+  const T=await import('./assets/three.module.min.js'),ph=$('#phone');
+  const renderer=new T.WebGLRenderer({canvas:$('#gl'),antialias:true,alpha:false,powerPreference:'low-power',stencil:false,depth:true});
   renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
-  const scene=new THREE.Scene(),cam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
-  const ld=new THREE.TextureLoader();
-  const load=u=>new Promise((res,rej)=>ld.load(u,t=>{t.colorSpace=THREE.SRGBColorSpace;t.minFilter=THREE.LinearFilter;t.generateMipmaps=false;res(t)},undefined,rej));
-  const [t1,t2]=await Promise.all([load('assets/bg-morandi.jpg?v=3'),load('assets/bg-touch.jpg?v=2')]);
-  const uni={t1:{value:t1},t2:{value:t2},uCenter:{value:new THREE.Vector2(.5,.38)},uProgress:{value:0},uRipAmp:{value:0},uIdle:{value:0},uTime:{value:0},uAsp:{value:1},uMaxR:{value:0.9},uCov1:{value:new THREE.Vector4(1,1,0,0)},uCov2:{value:new THREE.Vector4(1,1,0,0)}};
-  const mat=new THREE.ShaderMaterial({uniforms:uni,vertexShader:GL_VERT,fragmentShader:GL_FRAG,depthTest:false,depthWrite:false});
-  scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),mat));
-  GL={renderer,scene,cam,uni,rafOn:false,raf:0,frames:0,revealing:false};
-  const rs=()=>{const w=ph.clientWidth,h=ph.clientHeight;renderer.setSize(w,h,false);uni.uAsp.value=w/h;
-   uni.uCov1.value.set(...glCover(t1.image.width,t1.image.height,w,h));
-   uni.uCov2.value.set(...glCover(t2.image.width,t2.image.height,w,h));
-   if(!GL.rafOn)renderer.render(scene,cam);};
+  const scene=new T.Scene();scene.background=new T.Color(0xd8e6e8);scene.fog=new T.Fog(0xd8e6e8,8,24);
+  const cam=new T.PerspectiveCamera(58,1,.1,60);
+  scene.add(new T.HemisphereLight(0xecfbff,0x33443c,1.0));
+  const sun=new T.DirectionalLight(0xfff3e2,1.15);sun.position.set(4,7,5);scene.add(sun);
+  const ld=new T.TextureLoader();
+  const scroll=await new Promise((res,rej)=>ld.load('assets/tree-scroll.jpg',t=>{t.colorSpace=T.SRGBColorSpace;t.minFilter=T.LinearFilter;res(t)},undefined,rej));
+  const texC=scroll.clone();texC.repeat.set(1,.62);texC.offset.set(0,.38);texC.needsUpdate=true;
+  const canopy=new T.Mesh(new T.PlaneGeometry(11,11/0.5376),new T.MeshBasicMaterial({map:texC,fog:true}));
+  canopy.position.set(0,6.4,-7);scene.add(canopy);
+  const texW=scroll.clone();texW.repeat.set(1,.38);texW.offset.set(0,0);texW.needsUpdate=true;
+  const waterMat=new T.ShaderMaterial({fog:false,uniforms:{tW:{value:texW},uTime:{value:0}},
+   vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+   fragmentShader:`precision highp float;varying vec2 vUv;uniform sampler2D tW;uniform float uTime;
+    void main(){vec2 uv=vUv;
+     uv.x+=sin(uv.y*16.0+uTime*0.9)*0.004+sin((uv.x+uv.y)*11.0-uTime*0.6)*0.003;
+     uv.y+=sin(uv.x*20.0-uTime*0.8)*0.003;
+     vec4 c=texture2D(tW,uv);
+     float sh=smoothstep(1.0,0.3,vUv.y)*0.28;
+     gl_FragColor=vec4(c.rgb*(1.0-sh),1.0);}`});
+  const water=new T.Mesh(new T.PlaneGeometry(13,13/0.8773),waterMat);
+  water.rotation.x=-Math.PI/2;water.position.set(0,0,-2.2);scene.add(water);
+  const clusterT=mkCanvasTex(T,(x,s)=>{for(let i=0;i<14;i++){const a=Math.random()*6.28,r=Math.random()*s*0.3,cx=s/2+Math.cos(a)*r,cy=s/2+Math.sin(a)*r,rr=s*(0.10+Math.random()*0.14);const g=x.createRadialGradient(cx,cy,rr*0.2,cx,cy,rr);g.addColorStop(0,'rgba(255,255,255,.95)');g.addColorStop(.65,'rgba(246,240,244,.75)');g.addColorStop(1,'rgba(246,240,244,0)');x.fillStyle=g;x.beginPath();x.arc(cx,cy,rr,0,6.3);x.fill();}},128);
+  const clusters=[];
+  for(let i=0;i<9;i++){const sp=new T.Sprite(new T.SpriteMaterial({map:clusterT,transparent:true,depthWrite:false,opacity:.58}));
+   const sc=0.9+Math.random()*0.8;sp.scale.set(sc,sc,1);
+   sp.position.set((Math.random()-.5)*8.5,3.6+Math.random()*4.6,-3.2-Math.random()*2.6);
+   sp.userData={ph:Math.random()*6.3,ax:sp.position.x};scene.add(sp);clusters.push(sp);}
+  const petalT=mkCanvasTex(T,(x,s)=>{const g=x.createRadialGradient(s/2,s*0.42,s*0.06,s/2,s/2,s*0.46);g.addColorStop(0,'rgba(255,255,255,.98)');g.addColorStop(.7,'rgba(250,238,243,.92)');g.addColorStop(1,'rgba(250,238,243,0)');x.fillStyle=g;x.beginPath();x.ellipse(s/2,s/2,s*0.42,s*0.24,0.55,0,6.3);x.fill();},64);
+  const dummy=new T.Object3D();
+  const mkPetals=(n)=>{const m=new T.InstancedMesh(new T.PlaneGeometry(1,1),new T.MeshBasicMaterial({map:petalT,transparent:true,depthWrite:false,side:T.DoubleSide}),n);m.instanceMatrix.setUsage(T.DynamicDrawUsage);scene.add(m);return m;};
+  const fall=mkPetals(90),fallP=[];
+  for(let i=0;i<90;i++)fallP.push({x:(Math.random()-.5)*8,y:1+Math.random()*6.5,z:-4+Math.random()*5.5,f:.25+Math.random()*.4,sw:.25+Math.random()*.5,ph:Math.random()*6.3,rs:(Math.random()-.5)*2.4,s:.09+Math.random()*.12});
+  const flt=mkPetals(70),fltP=[];
+  for(let i=0;i<70;i++)fltP.push({x:(Math.random()-.5)*9,z:-4.5+Math.random()*6,rz:Math.random()*6.3,sp:(Math.random()-.5)*.5,ph:Math.random()*6.3,s:.10+Math.random()*.13});
+  TS={renderer,scene,cam,waterMat,clusters,fall,fallP,flt,fltP,dummy,p:0,rafOn:false,raf:0,last:0};
+  const rs=()=>{const w=ph.clientWidth,h=ph.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();if(!TS.rafOn)renderer.render(scene,cam);};
   rs();addEventListener('resize',rs);
   ph.classList.add('gl-on');
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)glLoopOff();else if(GL&&(GL.uni.uIdle.value>0||GL.revealing))glLoopOn();});
-  GL.uni.uIdle.value=0.0012;glLoopOn();
- }catch(e){GL=false;}
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)tsLoop(false);else if(TS)tsLoop(true);});
+  tsSetP(0);tsLoop(true);
+ }catch(e){TS=false;window.__tsErr=String(e&&e.stack||e);}
 }
-function glLoopOn(){if(!GL||GL.rafOn)return;GL.rafOn=true;
- const step=t=>{if(!GL.rafOn)return;GL.raf=requestAnimationFrame(step);GL.uni.uTime.value=t/1000;GL.renderer.render(GL.scene,GL.cam);GL.frames++;};
- GL.raf=requestAnimationFrame(step);}
-function glLoopOff(){if(!GL)return;GL.rafOn=false;if(GL.raf)cancelAnimationFrame(GL.raf);GL.raf=0;}
-function glReveal(cx,cy){
- if(!GL||!$('#phone').classList.contains('gl-on'))return false;
- const u=GL.uni;u.uProgress.value=0;u.uRipAmp.value=0;u.uCenter.value.set(cx/100,1-cy/100);
- {const a=u.uAsp.value,ux=cx/100,uy=1-cy/100;let m=0;
-  [[0,0],[1,0],[0,1],[1,1]].forEach(([X,Y])=>{const dx=(X-ux)*a,dy=Y-uy;m=Math.max(m,Math.sqrt(dx*dx+dy*dy));});
-  u.uMaxR.value=m*1.12;}
- GL.revealing=true;GL.frames=0;GL._t0=performance.now();glLoopOn();
- const done=()=>{GL.revealing=false;
-  const fps=GL.frames/((performance.now()-GL._t0)/1000);
-  const amp=fps>=40?0.0022:0;
-  if(window.gsap){gsap.to(u.uIdle,{value:amp,duration:1.2,onComplete:()=>{if(!amp)glLoopOff();}});}
-  else{u.uIdle.value=amp;if(!amp)glLoopOff();}
- };
- if(window.gsap){
-  gsap.timeline({onComplete:done})
-   .to(u.uProgress,{value:1,duration:1.15,ease:'power2.out'},0)
-   .to(u.uRipAmp,{value:1,duration:0.5,ease:'power2.in',yoyo:true,repeat:1},0);
- }else{
-  const t0=performance.now(),dur=1150;
-  const tw=()=>{const p=Math.min(1,(performance.now()-t0)/dur);u.uProgress.value=p;u.uRipAmp.value=Math.sin(p*Math.PI);if(p<1)requestAnimationFrame(tw);else done();};tw();
- }
- return true;
+function tsLoop(on){
+ if(!TS)return;
+ if(on&&!TS.rafOn){TS.rafOn=true;TS.last=performance.now();
+  const step=(t)=>{if(!TS.rafOn)return;TS.raf=requestAnimationFrame(step);
+   const dt=Math.min(.05,(t-TS.last)/1000);TS.last=t;const tt=t/1000;
+   TS.waterMat.uniforms.uTime.value=tt;
+   TS.clusters.forEach(sp=>{sp.position.x=sp.userData.ax+Math.sin(tt*.3+sp.userData.ph)*.14;sp.position.y+=Math.sin(tt*.5+sp.userData.ph)*.0012;});
+   TS.fallP.forEach((o,i)=>{o.y-=o.f*dt;o.x+=Math.sin(tt*1.1+o.ph)*o.sw*dt;
+    if(o.y<0.12){o.y=5.5+Math.random()*2.5;o.x=(Math.random()-.5)*8;o.z=-4+Math.random()*5.5;}
+    const sc=o.s*(o.y<0.5?Math.max(.2,o.y/0.5):1);
+    TS.dummy.position.set(o.x,o.y,o.z);TS.dummy.rotation.set(tt*o.rs,o.ph+tt*0.6,o.ph);TS.dummy.scale.set(sc,sc,sc);TS.dummy.updateMatrix();TS.fall.setMatrixAt(i,TS.dummy.matrix);});
+   TS.fall.instanceMatrix.needsUpdate=true;
+   TS.fltP.forEach((o,i)=>{o.rz+=o.sp*dt;
+    TS.dummy.position.set(o.x,0.03+Math.sin(tt*.9+o.ph)*.012,o.z);TS.dummy.rotation.set(-Math.PI/2,0,o.rz);TS.dummy.scale.set(o.s,o.s,o.s);TS.dummy.updateMatrix();TS.flt.setMatrixAt(i,TS.dummy.matrix);});
+   TS.flt.instanceMatrix.needsUpdate=true;
+   TS.renderer.render(TS.scene,TS.cam);};
+  TS.raf=requestAnimationFrame(step);}
+ else if(!on&&TS.rafOn){TS.rafOn=false;if(TS.raf)cancelAnimationFrame(TS.raf);TS.raf=0;}
 }
-/* ===== 首幕：上滑起飞+水波转场 ===== */
-let _landed=false,_ig=null;
-function introBoot(a){
+const _lerp=(a,b,t)=>a+(b-a)*t;
+function tsSetP(p){
+ p=Math.max(0,Math.min(1,p));if(!TS)return;TS.p=p;
+ const e=p*p*(3-2*p),c=TS.cam;
+ c.position.set(_lerp(TS_P0.pos[0],TS_P1.pos[0],e),_lerp(TS_P0.pos[1],TS_P1.pos[1],e),_lerp(TS_P0.pos[2],TS_P1.pos[2],e));
+ c.lookAt(_lerp(TS_P0.look[0],TS_P1.look[0],e),_lerp(TS_P0.look[1],TS_P1.look[1],e),_lerp(TS_P0.look[2],TS_P1.look[2],e));
+ const lo=Math.max(0,1-p/0.3);
+ const tl=$('#tlogo');if(tl){tl.style.opacity=lo;tl.style.transform=`translateY(${-36*(1-lo)}px)`;}
+ const th=$('#thint');if(th)th.style.opacity=Math.max(0,1-p/0.18);
+ const ai=Math.max(0,Math.min(1,(p-0.86)/0.12));
+ ['#aibar','#dots','#floor'].forEach(s=>{const el=$(s);if(el){el.style.opacity=ai>=1?'':ai;el.style.pointerEvents=ai>0.5?'':'none';}});
+ if(p>=0.97&&!_landed){_landed=true;finLand();}
+ if(p<0.9&&_exp)setBoard(false,true);
+ if(p>=0.9&&!_exp)setBoard(true,true);
+}
+function tsTweenTo(target){
+ if(!TS)return;const from=TS.p;
+ if(window.gsap){const o={p:from};gsap.to(o,{p:target,duration:.55,ease:'power3.out',onUpdate:()=>tsSetP(o.p)});}
+ else{const t0=performance.now(),dur=450;const tw=()=>{const q=Math.min(1,(performance.now()-t0)/dur);tsSetP(from+(target-from)*(q*q*(3-2*q)));if(q<1)requestAnimationFrame(tw);};tw();}
+}
+function tsBoot(a){
  const I=$('#intro');if(!I)return;
- $('#iav').innerHTML=`${(a.name||'?')[0]}${a.av?`<img src="${a.av}" onerror="this.remove()">`:''}`;
- $('#iname').textContent=a.name||'';
  I.style.display='block';
- initGL();
- I.addEventListener('click',()=>land());
- I.addEventListener('touchstart',e=>{if(e.touches.length!==1)return;_ig={y:e.touches[0].clientY,ly:e.touches[0].clientY,lt:performance.now(),v:0,d:false};},{passive:true});
- I.addEventListener('touchmove',e=>{
-  if(!_ig||_landed)return;const t=e.touches[0],dy=t.clientY-_ig.y,now=performance.now();
-  _ig.v=0.45*_ig.v+0.55*((t.clientY-_ig.ly)/Math.max(1,now-_ig.lt));_ig.ly=t.clientY;_ig.lt=now;
-  if(!_ig.d&&Math.abs(dy)>6)_ig.d=true;
-  if(_ig.d){e.preventDefault();const f=Math.min(0,dy);
-   $('#ihero').style.transform=`translateY(${f*0.7}px)`;I.style.transform=`translateY(${f*0.1}px)`;$('#ihint').style.opacity=Math.max(0,1+f/150);}
- },{passive:false});
- I.addEventListener('touchend',()=>{
-  if(!_ig||_landed)return;const g=_ig;_ig=null;const dy=g.ly-g.y;
-  if(dy<-innerHeight*0.12||g.v<-0.35){land();return;}
-  const h=$('#ihero');h.style.transition='transform .3s cubic-bezier(.32,.72,.35,1)';I.style.transition='transform .3s cubic-bezier(.32,.72,.35,1)';
-  h.style.transform='';I.style.transform='';$('#ihint').style.opacity='';
-  setTimeout(()=>{h.style.transition='';I.style.transition='';},320);
- });
+ ['#aibar','#dots','#floor'].forEach(s=>{$(s).style.opacity=0;$(s).style.pointerEvents='none';});
+ initTree().then(()=>{if(TS===false)tsFallbackBind();});
+ const ph=$('#phone');
+ ph.addEventListener('touchstart',e=>{
+  if(e.touches.length!==1||TS===false)return;
+  const y=e.touches[0].clientY-ph.getBoundingClientRect().top;
+  _sg={y:e.touches[0].clientY,ly:e.touches[0].clientY,lt:performance.now(),v:0,d:false,p0:TS?TS.p:0,topZone:y<110};
+ },{capture:true,passive:true});
+ ph.addEventListener('touchmove',e=>{
+  if(!_sg||!TS||TS===false)return;const t=e.touches[0],dy=t.clientY-_sg.y,now=performance.now();
+  _sg.v=0.45*_sg.v+0.55*((t.clientY-_sg.ly)/Math.max(1,now-_sg.lt));_sg.ly=t.clientY;_sg.lt=now;
+  if(!_sg.d){
+   const down=dy>8,up=dy<-8;
+   const scrollTop=$('#bscroll')?$('#bscroll').scrollTop:0;
+   if(TS.p<0.97&&down)_sg.d='scrub';
+   else if(TS.p>=0.97&&up&&scrollTop<=2)_sg.d='scrub';
+   else{_sg=null;return;}
+  }
+  e.preventDefault();e.stopPropagation();
+  tsSetP(_sg.p0+dy/(ph.clientHeight*0.9));
+ },{capture:true,passive:false});
+ ph.addEventListener('touchend',()=>{
+  if(!_sg)return;const g=_sg;_sg=null;if(g.d!=='scrub')return;
+  tsTweenTo((TS.p>0.5||(TS.p>0.35&&g.v>0.35))?1:0);
+ },{capture:true});
+ I.addEventListener('click',()=>{if(TS===false)tsLandFallback();});
 }
-function rippleFX(cx,cy){
- const b1=$('#intro .ib1'),b2=$('#intro .ib2');
- if(RM){b2.style.clipPath='none';b2.style.opacity='1';return;}
- b2.style.clipPath=`circle(0% at ${cx}% ${cy}%)`;
- requestAnimationFrame(()=>{b2.style.transition='clip-path .9s cubic-bezier(.32,.72,.35,1),opacity .5s';b2.style.opacity='1';b2.style.clipPath=`circle(150% at ${cx}% ${cy}%)`;});
- const disp=$('#ripd');
- if(disp){b1.style.filter=b2.style.filter='url(#rip)';
-  const t0=performance.now();
-  const step=()=>{const p=Math.min(1,(performance.now()-t0)/900);disp.setAttribute('scale',(Math.sin(p*Math.PI)*44).toFixed(1));
-   if(p<1)requestAnimationFrame(step);else{disp.setAttribute('scale','0');b1.style.filter=b2.style.filter='';}};
-  requestAnimationFrame(step);}
+function tsFallbackBind(){
+ $('#intro').style.pointerEvents='auto';
+ ['#aibar','#dots','#floor'].forEach(s=>{$(s).style.opacity='';$(s).style.pointerEvents='';});
 }
-function land(){
- if(_landed)return;_landed=true;
- const pr=$('#phone').getBoundingClientRect();
- const from=$('#iav').getBoundingClientRect(),to=$('.hello .av').getBoundingClientRect();
- const cx=((from.left+from.width/2-pr.left)/pr.width*100).toFixed(1),cy=((from.top+from.width/2-pr.top)/pr.height*100).toFixed(1);
- if(!glReveal(cx,cy))rippleFX(cx,cy);
- $('#ihero').style.transition='opacity .22s';$('#ihero').style.opacity='0';
- if(RM){finLand();return;}
- const fly=document.createElement('div');fly.id='fly';fly.innerHTML=$('#iav').innerHTML;
- fly.style.left=(from.left-pr.left)+'px';fly.style.top=(from.top-pr.top)+'px';fly.style.width=from.width+'px';fly.style.height=from.width+'px';fly.style.fontSize='38px';
- $('#phone').appendChild(fly);
- requestAnimationFrame(()=>{requestAnimationFrame(()=>{
-  fly.style.transition='left .58s cubic-bezier(.32,.72,.35,1),top .58s cubic-bezier(.32,.72,.35,1),width .58s cubic-bezier(.32,.72,.35,1),height .58s cubic-bezier(.32,.72,.35,1),font-size .58s';
-  fly.style.left=(to.left-pr.left)+'px';fly.style.top=(to.top-pr.top)+'px';fly.style.width=to.width+'px';fly.style.height=to.width+'px';fly.style.fontSize='13px';});});
- setTimeout(()=>fly.remove(),640);
- setTimeout(()=>{const I=$('#intro');if(!I)return;I.style.transition='opacity .3s';I.style.opacity='0';},560);
- setTimeout(finLand,940);
+function tsLandFallback(){
+ const I=$('#intro');if(I)I.style.display='none';
+ _landed=true;$('#phone').classList.add('landed');
+ $('#bg2').style.opacity='1';setBoard(true);
+ ['#aibar','#dots','#floor'].forEach((s,i)=>{$(s).style.animation=`rise .45s ${0.05+i*0.07}s cubic-bezier(.32,.72,.35,1) both`;$(s).style.opacity='';$(s).style.pointerEvents='';});
 }
 function finLand(){
  $('#phone').classList.add('landed');
- $('#bg2').style.opacity='1';const I=$('#intro');if(I)I.remove();
+ $('#bg2').style.opacity='1';
  ['#aibar','#dots'].forEach((s,i)=>{$(s).style.animation=`rise .45s ${0.05+i*0.07}s cubic-bezier(.32,.72,.35,1) both`;});
 }
 /* ===== 点卡 · Card-to-Modal ===== */
