@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#4c4d88">
 <title>新框架·实验田</title><style>
 /* finesse · register=h5 · morph=A.1-daily-desk · A=night-orchid-violet · B=liquid-glass-bento · C=dual-state-sheet · D=spring-follow · SOUL=6 SPECTACLE=4 DENSITY=5 */
@@ -18,7 +18,7 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;color:var(--ink);overflow:hidden}
-#phone{position:relative;height:100%;max-width:430px;margin:0 auto;overflow:hidden;background:#d4caf1}
+#phone{position:relative;height:100%;max-width:430px;margin:0 auto;overflow:hidden;background:#16123a}
 #phone::before{content:'';position:absolute;inset:0;background:url('assets/bg-morandi.jpg?v=2') center 28%/cover}
 #phone::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(26,22,66,.10) 0%,rgba(26,22,66,0) 32%,rgba(216,206,243,.28) 100%)}
 @media(min-width:560px){
@@ -146,9 +146,28 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .xask svg{width:15px;height:15px;stroke:var(--acc);fill:none;stroke-width:1.7;stroke-linecap:round}
 .sk{padding:40px 20px;text-align:center;color:var(--ink3);font-size:13px}
 #toast{position:absolute;left:50%;bottom:110px;transform:translateX(-50%) translateY(16px);background:rgba(38,32,80,.92);color:#fff;font-size:13px;padding:11px 18px;border-radius:10px;max-width:82%;text-align:center;opacity:0;transition:all .25s;pointer-events:none;z-index:90}
+/* ---- 首幕电影层（上滑起飞+水波转场） ---- */
+#bg2{position:absolute;inset:0;z-index:0;background:url('assets/bg-touch.jpg') center 28%/cover;opacity:0}
+#intro{position:absolute;inset:0;z-index:50;touch-action:none;will-change:transform;display:none}
+#intro .ibg{position:absolute;inset:0;background-position:center 28%;background-size:cover}
+#intro .ib1{background-image:url('assets/bg-morandi.jpg?v=2')}
+#intro .ib2{background-image:url('assets/bg-touch.jpg');opacity:0;clip-path:circle(0% at 50% 62%)}
+#intro .igrad{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(26,22,66,.16) 0%,rgba(26,22,66,0) 38%,rgba(26,22,66,.26) 100%)}
+#ihero{position:absolute;left:0;right:0;top:55%;display:flex;flex-direction:column;align-items:center;gap:13px;will-change:transform}
+#iav{width:112px;height:112px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,.8);box-shadow:0 10px 32px rgba(26,22,66,.55);background:var(--acc);display:flex;align-items:center;justify-content:center;color:#fff;font-size:38px;font-weight:700;position:relative;animation:ifloat 3.2s ease-in-out infinite}
+#iav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+@keyframes ifloat{50%{transform:translateY(-7px)}}
+#iname{font-size:22px;font-weight:600;color:var(--on-bg);text-shadow:0 2px 12px rgba(26,22,66,.65)}
+#ihint{margin-top:6px;font-size:12px;color:var(--on-bg2);display:flex;flex-direction:column;align-items:center;gap:5px;animation:ihint 1.9s ease-in-out infinite}
+#ihint svg{width:17px;height:17px;stroke:var(--on-bg2);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+@keyframes ihint{50%{transform:translateY(-6px);opacity:.6}}
+@keyframes rise{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+#fly{position:absolute;z-index:51;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,.85);box-shadow:0 6px 20px rgba(26,22,66,.45);background:var(--acc);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+#fly img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="phone">
+ <div id="bg2"></div>
  <div id="hdr"></div>
  <div id="board"><div id="handle"><i></i></div><div id="bscroll"></div></div>
  <div id="floor"></div>
@@ -174,6 +193,17 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
   <div id="aiwork"><div class="orb"></div><div class="wst" id="aiWst">小梦在翻你的数据…</div><div class="stop" id="aiStop"><i></i></div></div>
  </div>
  <div id="toast"></div>
+ <div id="intro">
+  <div class="ibg ib1"></div>
+  <div class="ibg ib2"></div>
+  <div class="igrad"></div>
+  <div id="ihero">
+   <div id="iav"></div>
+   <div id="iname"></div>
+   <div id="ihint"><svg viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg>上滑，开始今天</div>
+  </div>
+ </div>
+ <svg width="0" height="0" style="position:absolute"><filter id="rip" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence id="ript" type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="2" seed="3" result="n"/><feDisplacementMap id="ripd" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
 </div>
 <script>
 const $=s=>document.querySelector(s);
@@ -224,7 +254,7 @@ function render(){
  document.title='新框架·'+a.name;
  $('#bellBtn').onclick=()=>toast('通知中心在生产端铃铛里，回灌时整套搬入');
  $('#aiGreet').textContent=`${a.name||''}，今天我能帮你什么？`;
- bootChips();layout();fetchPerf();
+ bootChips();layout();fetchPerf();introBoot(a);
 }
 function fetchPerf(){
  fetch('https://fb.menghualu.com.co/api/anchor/perf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOK})})
@@ -275,6 +305,62 @@ addEventListener('touchcancel',()=>{if(_tg){const b=_tg;_tg=null;if(b.drag)setBo
 $('#handle').addEventListener('click',()=>{if(!_supp)setBoard(!_exp);});
 $('#dots').addEventListener('click',()=>setBoard(!_exp));
 addEventListener('resize',()=>{if(DATA)layout();});
+/* ===== 首幕：上滑起飞+水波转场 ===== */
+let _landed=false,_ig=null;
+function introBoot(a){
+ const I=$('#intro');if(!I)return;
+ $('#iav').innerHTML=`${(a.name||'?')[0]}${a.av?`<img src="${a.av}" onerror="this.remove()">`:''}`;
+ $('#iname').textContent=a.name||'';
+ I.style.display='block';
+ I.addEventListener('click',()=>land());
+ I.addEventListener('touchstart',e=>{if(e.touches.length!==1)return;_ig={y:e.touches[0].clientY,ly:e.touches[0].clientY,lt:performance.now(),v:0,d:false};},{passive:true});
+ I.addEventListener('touchmove',e=>{
+  if(!_ig||_landed)return;const t=e.touches[0],dy=t.clientY-_ig.y,now=performance.now();
+  _ig.v=0.45*_ig.v+0.55*((t.clientY-_ig.ly)/Math.max(1,now-_ig.lt));_ig.ly=t.clientY;_ig.lt=now;
+  if(!_ig.d&&Math.abs(dy)>6)_ig.d=true;
+  if(_ig.d){e.preventDefault();const f=Math.min(0,dy);
+   $('#ihero').style.transform=`translateY(${f*0.7}px)`;I.style.transform=`translateY(${f*0.1}px)`;$('#ihint').style.opacity=Math.max(0,1+f/150);}
+ },{passive:false});
+ I.addEventListener('touchend',()=>{
+  if(!_ig||_landed)return;const g=_ig;_ig=null;const dy=g.ly-g.y;
+  if(dy<-innerHeight*0.12||g.v<-0.35){land();return;}
+  const h=$('#ihero');h.style.transition='transform .3s cubic-bezier(.32,.72,.35,1)';I.style.transition='transform .3s cubic-bezier(.32,.72,.35,1)';
+  h.style.transform='';I.style.transform='';$('#ihint').style.opacity='';
+  setTimeout(()=>{h.style.transition='';I.style.transition='';},320);
+ });
+}
+function rippleFX(cx,cy){
+ const b1=$('#intro .ib1'),b2=$('#intro .ib2');
+ if(RM){b2.style.clipPath='none';b2.style.opacity='1';return;}
+ b2.style.clipPath=`circle(0% at ${cx}% ${cy}%)`;
+ requestAnimationFrame(()=>{b2.style.transition='clip-path .9s cubic-bezier(.32,.72,.35,1),opacity .5s';b2.style.opacity='1';b2.style.clipPath=`circle(150% at ${cx}% ${cy}%)`;});
+ const disp=$('#ripd');
+ if(disp){b1.style.filter=b2.style.filter='url(#rip)';
+  const t0=performance.now();
+  const step=()=>{const p=Math.min(1,(performance.now()-t0)/900);disp.setAttribute('scale',(Math.sin(p*Math.PI)*44).toFixed(1));
+   if(p<1)requestAnimationFrame(step);else{disp.setAttribute('scale','0');b1.style.filter=b2.style.filter='';}};
+  requestAnimationFrame(step);}
+}
+function land(){
+ if(_landed)return;_landed=true;
+ const pr=$('#phone').getBoundingClientRect();
+ const from=$('#iav').getBoundingClientRect(),to=$('.hello .av').getBoundingClientRect();
+ const cx=((from.left+from.width/2-pr.left)/pr.width*100).toFixed(1),cy=((from.top+from.width/2-pr.top)/pr.height*100).toFixed(1);
+ rippleFX(cx,cy);
+ $('#ihero').style.transition='opacity .22s';$('#ihero').style.opacity='0';
+ if(RM){finLand();return;}
+ const fly=document.createElement('div');fly.id='fly';fly.innerHTML=$('#iav').innerHTML;
+ fly.style.left=(from.left-pr.left)+'px';fly.style.top=(from.top-pr.top)+'px';fly.style.width=from.width+'px';fly.style.height=from.width+'px';fly.style.fontSize='38px';
+ $('#phone').appendChild(fly);
+ requestAnimationFrame(()=>{requestAnimationFrame(()=>{
+  fly.style.transition='left .58s cubic-bezier(.32,.72,.35,1),top .58s cubic-bezier(.32,.72,.35,1),width .58s cubic-bezier(.32,.72,.35,1),height .58s cubic-bezier(.32,.72,.35,1),font-size .58s';
+  fly.style.left=(to.left-pr.left)+'px';fly.style.top=(to.top-pr.top)+'px';fly.style.width=to.width+'px';fly.style.height=to.width+'px';fly.style.fontSize='13px';});});
+ setTimeout(()=>fly.remove(),640);
+ setTimeout(()=>{const I=$('#intro');if(!I)return;I.style.transition='opacity .3s';I.style.opacity='0';
+  ['#aibar','#dots'].forEach((s,i)=>{$(s).style.animation=`rise .45s ${0.05+i*0.07}s cubic-bezier(.32,.72,.35,1) both`;});},560);
+ setTimeout(finLand,940);
+}
+function finLand(){$('#bg2').style.opacity='1';const I=$('#intro');if(I)I.remove();}
 /* ===== 点卡 ===== */
 document.addEventListener('click',e=>{
  if(_supp)return;
