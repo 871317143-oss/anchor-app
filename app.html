@@ -329,7 +329,7 @@ const root=document.getElementById('root');
 let DATA=null;
 let _muMakeup=null;   // 工单⑲c：本人今明两天已发布妆发排班（Worker /api/anchor/makeup）
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v98';
+const APP_VERSION='v99';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;if(y>=100)return '¥'+Math.round(y).toLocaleString();return '¥'+(Math.round(y*10)/10);}   /* v84：≥100 加千分位（¥7,847），与业绩卡排版同标准 */

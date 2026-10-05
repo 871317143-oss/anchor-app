@@ -1,0 +1,152 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>新框架·实验田</title><style>
+:root{--ink:#22301f;--ink2:#4a5a42;--ink3:#7a8570;--lime:#5a7a35;--lime-hi:#8fb84a;--amber:#c07f08;
+--glass-bg:rgba(255,255,255,.5);--glass-edge:1px solid rgba(255,255,255,.65);--glass-hi:inset 0 1px 0 rgba(255,255,255,.85);--glass-shadow:0 8px 24px rgba(60,90,120,.16);
+--diffuse:radial-gradient(90% 120% at 0% 0%,rgba(244,183,196,.5),transparent 60%),radial-gradient(90% 110% at 100% 0%,rgba(201,236,90,.42),transparent 62%),radial-gradient(120% 120% at 50% 110%,rgba(168,196,228,.48),transparent 65%),rgba(255,255,255,.34)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;color:var(--ink);overflow:hidden;touch-action:pan-x pan-y}
+body::before{content:'';position:fixed;inset:0;background:url('assets/bg-morandi.jpg') center 30%/cover;filter:brightness(1.05) saturate(.96);z-index:0}
+body::after{content:'';position:fixed;inset:0;background:linear-gradient(180deg,rgba(240,244,246,.10) 0%,rgba(240,244,246,.20) 55%,rgba(226,234,238,.50) 100%);z-index:0}
+#app{position:relative;z-index:1;height:100vh;max-width:414px;margin:0 auto;overflow-y:auto;overscroll-behavior:contain}
+.glass{background:var(--glass-bg);-webkit-backdrop-filter:blur(24px) saturate(1.3);backdrop-filter:blur(24px) saturate(1.3);border:var(--glass-edge);box-shadow:var(--glass-hi),var(--glass-shadow);border-radius:24px}
+.diff{background:var(--diffuse)!important}
+.st{display:flex;justify-content:space-between;align-items:center;padding:calc(env(safe-area-inset-top) + 12px) 20px 0;font-size:11px;color:var(--ink2)}
+.st svg{width:16px;height:16px;stroke:var(--ink2);fill:none;stroke-width:1.6}
+.hello{display:flex;align-items:center;gap:10px;padding:14px 22px 2px;font-size:20px;font-weight:600;white-space:nowrap}
+.hello .hi{font-weight:400;color:var(--ink2)}
+.hello .nm{font-size:18px;font-weight:500}
+.hello .av{width:40px;height:40px;border-radius:50%;overflow:hidden;border:1.5px solid rgba(255,255,255,.85);box-shadow:0 2px 8px rgba(60,90,120,.2);background:#5a7a35;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;position:relative;flex:none}
+.hello .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.sub{padding:8px 22px 0;font-size:13px;color:var(--ink2)}
+.sub b{color:var(--lime);font-weight:700}
+.bgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px;padding:12px 16px 4px}
+.bc{height:108px;padding:14px 15px;font-size:12px;display:flex;flex-direction:column;cursor:pointer;transition:transform .14s cubic-bezier(.32,.72,.35,1)}
+.bc:active{transform:scale(.965)}
+.bc .t{font-size:10px;color:var(--ink2);font-weight:500;display:flex;align-items:center;gap:5px}
+.bc .t svg{width:12px;height:12px;stroke:var(--ink2);fill:none;stroke-width:1.6;opacity:.9}
+.bc .b{font-size:17px;font-weight:600;margin-top:auto}
+.bc .s{font-size:10px;color:var(--ink3);margin-top:4px}
+.bc.res{opacity:.55}
+.badge{float:right;font-size:8px;padding:1px 6px;border-radius:99px;background:rgba(214,138,20,.15);color:var(--amber);margin-left:auto}
+.dots{display:flex;justify-content:center;gap:6px;padding:14px 0 8px}
+.dots i{width:5px;height:5px;border-radius:50%;background:rgba(90,110,100,.35)}
+.dots i.on{background:var(--lime);width:14px;border-radius:99px}
+.aibar{display:flex;align-items:center;gap:8px;margin:6px 14px calc(12px + env(safe-area-inset-bottom));padding:12px 16px;border-radius:26px;font-size:13px;color:var(--ink3);cursor:pointer}
+.aibar .go{margin-left:auto;width:30px;height:30px;border-radius:50%;background:var(--lime-hi);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex:none}
+.xpage{position:fixed;inset:0;z-index:60;overflow-y:auto;overscroll-behavior:contain;
+ background:linear-gradient(168deg,rgba(240,244,246,.86),rgba(232,238,242,.92));
+ -webkit-backdrop-filter:blur(28px) saturate(1.25);backdrop-filter:blur(28px) saturate(1.25);
+ transform-origin:var(--ox,50%) var(--oy,60%);animation:xin .32s cubic-bezier(.32,.72,.35,1) both}
+@keyframes xin{from{transform:scale(.9) translateY(24px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.xpage.out{animation:xout .24s cubic-bezier(.5,0,.75,0) both}
+@keyframes xout{to{transform:scale(.94) translateY(18px);opacity:0}}
+.xback{position:sticky;top:0;z-index:2;display:flex;align-items:center;padding:calc(env(safe-area-inset-top) + 12px) 18px 8px;font-size:15px;font-weight:700;color:var(--lime);cursor:pointer;background:linear-gradient(180deg,rgba(240,244,246,.92),rgba(240,244,246,0))}
+.chips{display:flex;gap:7px;padding:6px 18px 10px;flex-wrap:wrap}
+.chip{font-size:12px;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.6);color:var(--ink2);cursor:pointer}
+.chip.on{background:var(--lime-hi);color:#fff;border-color:transparent}
+.urow{display:flex;align-items:center;gap:11px;margin:0 16px 9px;padding:12px 14px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.65);border-radius:16px;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.urow .av{width:38px;height:38px;border-radius:50%;background:#5a7a35;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;position:relative;overflow:hidden;flex:none}
+.urow .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.urow .n{font-size:14px;font-weight:600}
+.urow .tags{font-size:10px;color:var(--amber);margin-top:2px}
+.urow .v{margin-left:auto;font-size:13px;font-weight:700;color:var(--ink);text-align:right;flex:none}
+.urow .v small{display:block;font-weight:400;color:var(--ink3);font-size:10px}
+.empty{text-align:center;color:var(--ink3);font-size:13px;padding:40px 16px}
+.sk{padding:30px 20px;text-align:center;color:var(--ink3);font-size:13px}
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(16px);background:rgba(26,36,22,.92);color:#fff;font-size:13px;padding:11px 18px;border-radius:10px;max-width:82%;text-align:center;opacity:0;transition:all .25s;pointer-events:none;z-index:80}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<div id="app"><div class="sk">新框架加载中…</div></div>
+<div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s);
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity='1';clearTimeout(t._x);t._x=setTimeout(()=>t.style.opacity='0',2200);}
+const qs=new URLSearchParams(location.search),TOK=qs.get('t')||'';
+if(!TOK){$('#app').innerHTML='<div class="sk">缺访问码：链接后加 ?t=你的码</div>';}
+else loadData(TOK);
+let DATA=null,_xp=null,_xpHome=null,_xpView=null,_curTier='S';
+async function loadData(tok){
+ try{const r=await fetch(`data/${tok}.json`);if(!r.ok)throw 0;DATA=await r.json();render();}
+ catch(e){$('#app').innerHTML='<div class="sk">访问码无效或数据未生成</div>';}}
+const ICO={
+ trend:'<svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>',
+ user:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>',
+ check:'<svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>',
+ cal:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+ cam:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M3 17l5-4 4 3 4-3 5 4"/></svg>',
+ star:'<svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.3 5.9.8-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.1l5.9-.8z"/></svg>',
+ mail:'<svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>',
+ clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>',
+ bell:'<svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>'};
+function render(){
+ const a=DATA.anchor,c=DATA.counts||{},total=Object.keys(DATA.users||{}).length;
+ const pending=(c.l3||0)+(c.l2||0)+(c.greet||0);
+ const card=(ic,t,b,s,cls,act)=>`<div class="bc glass ${cls||''}" data-act="${act||'soon'}"><div class="t">${ic}${t}</div><div class="b">${b}</div><div class="s">${s}</div></div>`;
+ $('#app').innerHTML=`
+ <div class="st"><span>${esc(a.date||'')}</span>${ICO.bell}</div>
+ <div class="hello"><span class="hi">Hello,</span><div class="av">${(a.name||'?')[0]}${a.av?`<img src="${a.av}" onerror="this.remove()">`:''}</div><span class="nm">${esc(a.name||'')}</span></div>
+ <div class="sub">还有 <b>${pending}</b> 件事没做</div>
+ <div class="bgrid">
+  ${card(ICO.trend,'业绩','<span id="bPerfVal">…</span>','保底 <span id="bPerfProg">…</span>','diff','perf')}
+  ${card(ICO.user,'用户',`维护 ${pending} · 清单 ${total}`,`L3×${c.l3||0} 待办`,'','users')}
+  ${card(ICO.check,'行动',`${pending}`,`L3维护 · 问候 · 生日`,'','actions')}
+  ${card(ICO.cal,'每周时间表<span class="badge">预留</span>','本周开播 + 妆发排期','','res','soon')}
+  ${card(ICO.cam,'妆容<span class="badge">预留</span>','往期每日妆容回看','','res diff','soon')}
+  ${card(ICO.star,'荣誉<span class="badge">预留</span>','奖励 · 周赛 · 月赛','','res diff','soon')}
+  ${card(ICO.mail,'申请','化妆师意向 · 休息','投诉 · 建议直达','','apply')}
+  ${card(ICO.clock,'通关表','资料卡','群规 · 每日作业<span style="color:var(--amber)">预留</span>','res','soon')}
+ </div>
+ <div class="dots"><i class="on"></i><i></i></div>
+ <div class="aibar glass" data-act="ai">✨ 问小梦：帮我看看 TT 最近怎么了…<div class="go">↑</div></div>`;
+ fetch('https://fb.menghualu.com.co/api/anchor/perf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOK})})
+  .then(r=>r.json()).then(d=>{if(!d.ok||!d.perf)return;const p=d.perf;
+   const v=$('#bPerfVal'),g=$('#bPerfProg');
+   if(v)v.textContent='¥'+Math.round(p.month_income||0).toLocaleString();
+   if(g)g.textContent='保底 '+Math.round((p.base_progress||0)*100)+'% · 开播 '+(p.month_days||0)+' 天';}).catch(()=>{});
+ document.title='新框架·'+a.name;}
+document.addEventListener('click',e=>{
+ const c=e.target.closest('[data-act]');if(!c)return;const act=c.dataset.act;
+ if(act==='users')openXpage('users',e);
+ else if(act==='actions')openXpage('actions',e);
+ else if(act==='perf')openXpage('perf',e);
+ else if(act==='apply')toast('申请中心：休息/意向已在生产端上线，本页框架排期中');
+ else if(act==='ai')toast('小梦常驻栏：点开用户即唤起（下个迭代）');
+ else if(act==='soon')toast('该模块预留，点亮后第一时间告诉你');});
+function openXpage(kind,ev){
+ if(_xp)closeXpage();
+ const el=document.createElement('div');el.className='xpage';
+ const card=ev.target.closest('.bc');
+ if(card){const r=card.getBoundingClientRect();el.style.setProperty('--ox',((r.left+r.width/2)/innerWidth*100)+'%');el.style.setProperty('--oy',((r.top+r.height/2)/innerHeight*100)+'%');}
+ el.innerHTML='<div class="xback" data-xback>‹ 返回</div><div class="xbody"></div>';
+ document.body.appendChild(el);_xp=el;
+ el.querySelector('[data-xback]').onclick=()=>closeXpage();
+ const body=el.querySelector('.xbody');
+ if(kind==='users')body.innerHTML=userListHtml();
+ else if(kind==='actions')body.innerHTML=actionsHtml();
+ else if(kind==='perf'){body.innerHTML='<div class="empty">业绩全屏页（复用生产端业绩组件，下迭代接入）</div>';}
+ body.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{_curTier=ch.dataset.t;body.innerHTML=userListHtml();body.querySelectorAll('.chip').forEach(x=>x.onclick=()=>{_curTier=x.dataset.t;body.innerHTML=userListHtml();body.querySelectorAll('.chip').forEach(y=>y.classList.toggle('on',y.dataset.t===_curTier));});body.querySelectorAll('.chip').forEach(y=>y.classList.toggle('on',y.dataset.t===_curTier));});
+ body.querySelectorAll('.urow').forEach(r=>r.onclick=()=>toast('用户画像全屏页：下迭代把画像助手整套搬进来'));}
+function closeXpage(){if(!_xp)return;const el=_xp;_xp=null;el.classList.add('out');setTimeout(()=>el.remove(),240);}
+const TIERS=['S','A','B','C','D','未评级'];
+function tierOf(u){return (u.t||'未评级');}
+function userListHtml(){
+ const counts={};Object.values(DATA.users).forEach(u=>{const t=tierOf(u);counts[t]=(counts[t]||0)+1;});
+ const list=Object.entries(DATA.users).filter(([s,u])=>tierOf(u)===_curTier&&u.mine)
+  .sort((a,b)=>(b[1].sv||0)-(a[1].sv||0));
+ const rows=list.map(([s,u])=>{
+  const tags=[u.t?`${u.t}级`:'',u.bg!=null&&u.bg<=7?`🎂${u.bg}天`:'',u.days>=30?'高陪伴':''].filter(Boolean).join(' · ');
+  return `<div class="urow" data-sec="${s}"><div class="av">${(u.n||'?')[0]}${u.av?`<img src="${u.av}" onerror="this.remove()">`:''}</div>
+   <div><div class="n">${esc(u.n||'')}</div><div class="tags">${tags}</div></div>
+   <div class="v">¥${Math.round((u.sv||0)/10).toLocaleString()}<small>累计</small></div></div>`;}).join('');
+ return `<div class="chips">${TIERS.map(t=>`<span class="chip${t===_curTier?' on':''}" data-t="${t}">${t} ${counts[t]||0}</span>`).join('')}</div>
+ ${rows||'<div class="empty">该分级暂无用户</div>'}`;}
+function actionsHtml(){
+ const c=DATA.counts||{};
+ const greet=(DATA.greet||[]).slice(0,8).map(s=>{const u=DATA.users[s];return u?`<div class="urow"><div class="av">${(u.n||'?')[0]}${u.av?`<img src="${u.av}" onerror="this.remove()">`:''}</div><div><div class="n">${esc(u.n)}</div><div class="tags">${u.t||''}级 · 主动问候</div></div><div class="v">¥${Math.round((u.sv||0)/10).toLocaleString()}<small>给我</small></div></div>`:'';}).join('');
+ const l3=(DATA.l3||[]).slice(0,8).map(s=>{const u=DATA.users[s];return u?`<div class="urow"><div class="av">${(u.n||'?')[0]}${u.av?`<img src="${u.av}" onerror="this.remove()">`:''}</div><div><div class="n">${esc(u.n)}</div><div class="tags">L3 重点维护</div></div><div class="v">¥${Math.round((u.tv||0)/10).toLocaleString()}<small>本场</small></div></div>`:'';}).join('');
+ return `<div class="chips"><span class="chip on">L3 重点维护 ${(DATA.l3||[]).length}</span><span class="chip">主动问候 ${(DATA.greet||[]).length}</span></div>
+ ${l3||''}${greet||'<div class="empty">今天没有待办，清爽</div>'}`;}
+</script></body></html>
