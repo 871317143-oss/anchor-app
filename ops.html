@@ -196,7 +196,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.23';
+const OPS_VERSION='v3.24';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -237,7 +237,7 @@ function radarCard(name){const r=_radar[name];if(!r)return '';
  let dots='',labs='';
  [0,1,2,3,4].forEach(i=>{const [x,y]=pt(i,V[i]/100);dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="var(--brand)"/>`;
   const [lx,ly]=pt(i,1.24);labs+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" font-size="11" fill="var(--ink2)" text-anchor="middle" dominant-baseline="middle">${AX[i]} ${V[i]}</text>`;});
- return `<div class="tier" style="margin-top:12px"><div class="t-head"><div class="t-ico" style="background:var(--green-bg);color:var(--brand)">能</div>
+ return `<div class="tier" style="margin-top:12px"><div class="t-head"><div class="t-ico" style="background:var(--green-bg);color:var(--brand);position:relative;overflow:hidden">能${r.av?`<img src="${r.av}" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit">`:''}</div>
   <div><div class="t-name">能力雷达</div><div class="t-sub">7场均 ¥${fmtM(r.avg7)} · 30天 ${r.days30} 场 · 留存 ${esc(r.retention_n)} · 14天新客 ${r.newc_n||0} · 回传 ${esc(r.fb||'—')}</div>
   ${r.top1pct>=70?`<div style="margin-top:6px"><span class="tag t-red">⚠️ 头部依赖：${esc(r.top1nick||'')} 占 ${r.top1pct}%——单点支柱，断了就崩，本周必须扶二把手</span></div>`:''}</div>
   <div class="t-cnt">${r.overall}<small> 综合</small></div></div>
