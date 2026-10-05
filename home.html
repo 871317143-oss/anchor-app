@@ -235,7 +235,7 @@ function render(){
  const a=DATA.anchor,c=DATA.counts||{},total=Object.keys(DATA.users||{}).length;
  const pending=(c.l3||0)+(c.l2||0)+(c.greet||0);
  $('#hdr').innerHTML=`
- <div class="st"><span>${esc(a.date||'')}</span><span style="display:flex;align-items:center"><span class="ver">v3.2.1 · 树境3D</span><span id="bellBtn">${ICO.bell}</span></span></div>
+ <div class="st"><span>${esc(a.date||'')}</span><span style="display:flex;align-items:center"><span class="ver">v3.2.2 · 树境3D</span><span id="bellBtn">${ICO.bell}</span></span></div>
  <div class="hello"><span class="hi">Hello,</span><div class="av">${(a.name||'?')[0]}${a.av?`<img src="${a.av}" onerror="this.remove()">`:''}</div><span class="nm">${esc(a.name||'')}</span></div>
  <div class="sub">${pending?`今天还有 <b>${pending}</b> 件事没做`:'今天的事都清了，清爽'}</div>`;
  const card=(ic,t,b,s,cls,act)=>`<div class="bc glass ${cls||''}" data-act="${act}"><div class="t">${ic}${t}</div><div class="b">${b}</div><div class="s">${s||''}</div></div>`;
@@ -314,7 +314,8 @@ async function initTree(){
  if(TS===false||TS)return;
  if(RM||(navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=3){TS=false;return;}
  try{
-  const T=await import('./assets/three.module.min.js'),ph=$('#phone');
+  let T,ph=$('#phone');
+  try{T=await import('./assets/three.module.min.js');}catch(e){TS=false;window.__tsErr='import:'+String(e);return;}
   const renderer=new T.WebGLRenderer({canvas:$('#gl'),antialias:true,alpha:false,powerPreference:'low-power',stencil:false,depth:true});
   renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
   renderer.outputColorSpace=T.SRGBColorSpace;
@@ -474,7 +475,7 @@ function diagLine(){
  if(qs.get('diag')!=='1')return;
  let el=$('#diag');if(!el){el=document.createElement('div');el.id='diag';el.style.cssText='position:absolute;top:calc(env(safe-area-inset-top) + 36px);left:12px;z-index:99;font-size:10px;color:#fff;background:rgba(20,24,44,.6);padding:4px 9px;border-radius:8px;pointer-events:none';$('#phone').appendChild(el);}
  let gl2=false;try{const c=document.createElement('canvas');gl2=!!(c.getContext('webgl2')||c.getContext('webgl'));}catch(e){}
- el.textContent=`diag · RM:${RM?'开':'关'} · WebGL:${gl2?'可用':'失败'} · 场景:${TS===false?'兜底(静态)':(TS?'3D':'…')} · p:${TS?TS.p.toFixed(2):'-'}`;
+ el.textContent=`diag · RM:${RM?'开':'关'} · WebGL:${gl2?'可用':'失败'} · 场景:${TS===false?'兜底(静态)':(TS?'3D':'…')} · p:${TS?TS.p.toFixed(2):'-'}${window.__tsErr?' · err:'+String(window.__tsErr).slice(0,90):''}`;
 }
 function tsTweenTo(target){
  if(!TS)return;const from=TS.p;
