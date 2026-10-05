@@ -1,4 +1,4 @@
-const CACHE='anchor-v85';
+const CACHE='anchor-v86';
 // 2026-10-04 v58：①SHELL 加入 live.html/radar-probe.js（主持雷达 v0.1 上线）与 ops.html；
 // ②HTML 缓存键修 bug——此前任何 HTML 导航都覆写 'app.html' 键（多页面后离线兜底会串页），改为按 URL 各自缓存、app.html 作最终兜底。
 const SHELL=['app.html','ops.html','live.html','radar-probe.js','manifest.json','assets/icon-192.png','assets/icon-512.png'];
