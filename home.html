@@ -31,7 +31,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 /* ---- 头部 ---- */
 #hdr{position:absolute;top:0;left:0;right:0;z-index:3}
 .st{display:flex;justify-content:space-between;align-items:center;padding:calc(env(safe-area-inset-top) + 12px) 20px 0;font-size:11px;color:var(--on-bg2)}
-.st .ver{font-size:9px;opacity:.62;letter-spacing:.3px;margin-right:6px}
+.st .ver{font-size:9px;letter-spacing:.3px;margin-right:6px;color:#fff;background:rgba(30,34,60,.45);padding:2.5px 8px;border-radius:99px}
 .st svg{width:17px;height:17px;stroke:var(--on-bg2);fill:none;stroke-width:1.6;cursor:pointer}
 .hello{display:flex;align-items:center;gap:10px;padding:14px 22px 2px;font-size:20px;white-space:nowrap}
 .hello .hi{font-weight:400;color:var(--on-bg2)}
@@ -235,7 +235,7 @@ function render(){
  const a=DATA.anchor,c=DATA.counts||{},total=Object.keys(DATA.users||{}).length;
  const pending=(c.l3||0)+(c.l2||0)+(c.greet||0);
  $('#hdr').innerHTML=`
- <div class="st"><span>${esc(a.date||'')}</span><span style="display:flex;align-items:center"><span class="ver">v3.2 · 树境3D</span><span id="bellBtn">${ICO.bell}</span></span></div>
+ <div class="st"><span>${esc(a.date||'')}</span><span style="display:flex;align-items:center"><span class="ver">v3.2.1 · 树境3D</span><span id="bellBtn">${ICO.bell}</span></span></div>
  <div class="hello"><span class="hi">Hello,</span><div class="av">${(a.name||'?')[0]}${a.av?`<img src="${a.av}" onerror="this.remove()">`:''}</div><span class="nm">${esc(a.name||'')}</span></div>
  <div class="sub">${pending?`今天还有 <b>${pending}</b> 件事没做`:'今天的事都清了，清爽'}</div>`;
  const card=(ic,t,b,s,cls,act)=>`<div class="bc glass ${cls||''}" data-act="${act}"><div class="t">${ic}${t}</div><div class="b">${b}</div><div class="s">${s||''}</div></div>`;
@@ -466,8 +466,15 @@ function tsSetP(p){
  const ai=Math.max(0,Math.min(1,(p-0.86)/0.12));
  ['#aibar','#dots','#floor'].forEach(s=>{const el=$(s);if(el){el.style.opacity=ai>=1?'':ai;el.style.pointerEvents=ai>0.5?'':'none';}});
  if(p>=0.97&&!_landed){_landed=true;finLand();}
+ diagLine();
  if(p<0.9&&_exp)setBoard(false,true);
  if(p>=0.9&&!_exp)setBoard(true,true);
+}
+function diagLine(){
+ if(qs.get('diag')!=='1')return;
+ let el=$('#diag');if(!el){el=document.createElement('div');el.id='diag';el.style.cssText='position:absolute;top:calc(env(safe-area-inset-top) + 36px);left:12px;z-index:99;font-size:10px;color:#fff;background:rgba(20,24,44,.6);padding:4px 9px;border-radius:8px;pointer-events:none';$('#phone').appendChild(el);}
+ let gl2=false;try{const c=document.createElement('canvas');gl2=!!(c.getContext('webgl2')||c.getContext('webgl'));}catch(e){}
+ el.textContent=`diag · RM:${RM?'开':'关'} · WebGL:${gl2?'可用':'失败'} · 场景:${TS===false?'兜底(静态)':(TS?'3D':'…')} · p:${TS?TS.p.toFixed(2):'-'}`;
 }
 function tsTweenTo(target){
  if(!TS)return;const from=TS.p;
@@ -478,15 +485,17 @@ function tsBoot(a){
  const I=$('#intro');if(!I)return;
  I.style.display='block';
  ['#aibar','#dots','#floor'].forEach(s=>{$(s).style.opacity=0;$(s).style.pointerEvents='none';});
- initTree().then(()=>{if(TS===false)tsFallbackBind();});
+ initTree().then(()=>{if(TS===false)tsFallbackBind();diagLine();});
  const ph=$('#phone');
  ph.addEventListener('touchstart',e=>{
-  if(e.touches.length!==1||TS===false)return;
+  if(e.touches.length!==1)return;
   const y=e.touches[0].clientY-ph.getBoundingClientRect().top;
   _sg={y:e.touches[0].clientY,ly:e.touches[0].clientY,lt:performance.now(),v:0,d:false,p0:TS?TS.p:0,topZone:y<110};
  },{capture:true,passive:true});
  ph.addEventListener('touchmove',e=>{
-  if(!_sg||!TS||TS===false)return;const t=e.touches[0],dy=t.clientY-_sg.y,now=performance.now();
+  if(!_sg)return;
+  if(TS===false){if(e.touches[0].clientY-_sg.y>40){tsLandFallback();}_sg=null;return;}
+  if(!TS)return;const t=e.touches[0],dy=t.clientY-_sg.y,now=performance.now();
   _sg.v=0.45*_sg.v+0.55*((t.clientY-_sg.ly)/Math.max(1,now-_sg.lt));_sg.ly=t.clientY;_sg.lt=now;
   if(!_sg.d){
    const down=dy>8,up=dy<-8;
