@@ -198,7 +198,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.31';
+const OPS_VERSION='v3.32';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -237,7 +237,7 @@ async function loadWhale(){   // v3.31 大哥档案周检（gen_whale_check.py �
   await Promise.all(tids.map(async t=>{const r=await fetch(`data/whalecheck_${t}.json?cb=`+Date.now());if(r.ok){const d=await r.json();_whale[t]=d;}}));
   if(_tab==='admin')render();
  }catch(e){}}
-function whaleCard(){   // 工单⑯：头部大哥档案完整度（近30天≥¥5000；五字段=生日/爱好/关键事件/老家/职业）
+function whaleCard(){   // 工单⑯：头部大哥档案完整度（近30天≥¥5000；五字段=生日/爱好/关键事件/地域（老家或地址，⑱裁定）/职业）
  const tn={'menghualu_xunyin':'寻音','menghualu_xingzhou':'行舟','menghualu_shuiyue':'水月'};
  const tids=Object.keys(_whale||{});
  if(!tids.length)return '';
@@ -251,7 +251,7 @@ function whaleCard(){   // 工单⑯：头部大哥档案完整度（近30天≥
    g.users.forEach(u=>{
     const tags=u.ok?'<span class="tag t-green">✓ 全齐</span>':`${u.no_card?'<span class="tag t-red">未建档</span>':''}${u.missing.length?`<span class="tag t-amber">缺 ${u.missing.join('、')}</span>`:''}`;
     h+=`<div class="urow" style="cursor:default;padding-top:8px;padding-bottom:8px"><div class="u-main"><div class="u-line1"><span class="u-nick">${esc(u.nick)}</span><span class="u-val">¥${fmtM(u.v/10)}</span></div>${tags?`<div class="u-tags">${tags}</div>`:''}</div></div>`;});});});
- return h+'</div><div class="foot" style="margin-top:6px">口径：近30天对该主播消费 ≥¥5000 · 五字段=生日/爱好/关键事件/老家/职业（用户档案库）· 每日随管线更新</div>';}
+ return h+'</div><div class="foot" style="margin-top:6px">口径：近30天对该主播消费 ≥¥5000 · 五字段=生日/爱好/关键事件/地域（老家或地址）/职业（用户档案库）· 每日随管线更新</div>';}
 function radarCard(name){const r=_radar[name];if(!r)return '';
  const CX=100,CY=104,R=66,AX=['稳定','流水','趋势','留存','新客'],V=[r.stability,r.income,r.trend,r.retention,r.newcus];
  const pt=(i,p)=>{const a=(-90+i*72)*Math.PI/180;return [CX+R*p*Math.cos(a),CY+R*p*Math.sin(a)];};
