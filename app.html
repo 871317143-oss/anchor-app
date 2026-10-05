@@ -314,6 +314,15 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .urow.nr{background:linear-gradient(rgba(214,79,24,.07),rgba(214,79,24,.07)),var(--card);}   /* 未回复：灰中带红 */
 .pv-hint{margin-left:auto;font-size:12px;color:var(--on-bg2);font-weight:500;}
 .qk-t{font-size:12px;font-weight:700;color:var(--ink2);margin:16px 18px 7px;}
+/* v84 一键感谢：入口卡 + 弹层清单行（design-system §3/§8：4/8 网格、行 13×16、btn 12 圆角、card2+lime 提醒条） */
+.tk-entry{display:flex;align-items:center;gap:12px;cursor:pointer;padding:14px 16px;}
+.tk-row{display:flex;gap:10px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line);}
+.tk-row:last-child{border-bottom:none;}
+.tk-main{flex:1;min-width:0;}
+.tk-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+.tk-text{font-size:14px;line-height:1.6;color:var(--ink);margin-top:4px;word-break:break-all;}
+.tk-copy{flex:none;height:36px;padding:0 16px;font-size:13px;border-radius:12px;}
+.tk-warn{margin:0 0 12px;background:var(--card2);border-left:4px solid var(--lime);border-radius:12px;padding:10px 12px;font-size:12px;line-height:1.6;color:#4a6232;}
 </style>
 </head>
 <body>
@@ -325,7 +334,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v84';
+const APP_VERSION='v85';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;if(y>=100)return '¥'+Math.round(y).toLocaleString();return '¥'+(Math.round(y*10)/10);}   /* v84：≥100 加千分位（¥7,847），与业绩卡排版同标准 */
@@ -392,7 +401,7 @@ function viewToday(){const c=DATA.counts,ch=DATA.churn;
   <div class="sec-title"><h3>今日维护</h3><span class="more">按对我消费分层</span></div>
   ${tier('l3','L3','重点维护','消费 > 99 元 · 今天必聊',DATA.l3)}
   ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2)}
-  ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1)}${greetBlock()}${mysteryBlock()}${churn}</div></div>`;}
+  ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1)}${thanksEntryHtml()}${greetBlock()}${mysteryBlock()}${churn}</div></div>`;}
 const TIERS=['S','A','B','C','D',''];
 function tierCounts(){const c={};TIERS.forEach(t=>c[t]=0);
  for(const s in DATA.users){const u=DATA.users[s];if(!u.mine)continue;const t=u.t||'';c[t]=(c[t]||0)+1;}return c;}
@@ -697,6 +706,48 @@ function openSheet(title,inner){
  s.querySelector('#sheetCancel').onclick=closeSheet;
  s.addEventListener('click',e=>{if(e.target===s)closeSheet();});
  return s;}
+/* ===== v84 一键感谢（老板拍板：小消费者批量第一句感谢，替主播省时间/精力/思考） =====
+   范围：L1 全量 + L2 高陪伴（w>1200 与「高陪伴」标签同阈），只出主归属、非私密（priv 无法私信）；
+   AI 只拿 nick/gift/commented/isNew 四字段，不落库；弹幕原文不进 prompt（纪律见 build 4.9 注释） */
+const THANKS_URL='https://fb.menghualu.com.co/api/ai/thanks';
+function thanksCandidates(){
+ const out=[];
+ (DATA.l1||[]).forEach(s=>{const u=DATA.users[s];if(u&&u.mine&&!u.priv)out.push(s);});
+ (DATA.l2||[]).forEach(s=>{const u=DATA.users[s];if(u&&u.mine&&!u.priv&&u.w>1200)out.push(s);});
+ return out;}
+function thanksEntryHtml(){
+ const n=thanksCandidates().length;if(!n)return '';
+ return `<div class="tier tk-entry" data-act="thanks">
+  <div class="t-ico" style="background:var(--brand-soft)">✍️</div>
+  <div style="flex:1;min-width:0"><div class="t-name">一键感谢</div>
+  <div class="t-sub">小额心意/陪伴粉 ${n} 人 · AI 写好第一句，复制发出即可</div></div>
+  <div style="color:var(--ink3);font-size:18px">›</div></div>`;}
+function openThanksSheet(){
+ const secs=thanksCandidates();if(!secs.length){toast('今天没有需要感谢的小额心意');return;}
+ const s=openSheet('一键感谢 · 第一句',
+  `<div class="tk-warn">💡 小额心意，一句谢谢就够——复制发出即可，不用深聊，别挨个想词。</div>
+   <div id="tkList"><div class="sk sk-card"></div><div class="sk sk-card"></div><div class="sk sk-card"></div></div>`);
+ const foot=s.querySelector('.sheet-foot');
+ foot.innerHTML='<button class="btn btn-primary" id="tkDone" style="flex:1">完成</button>';
+ foot.querySelector('#tkDone').onclick=closeSheet;
+ track('ai_open');
+ const users=secs.map(sec=>{const u=DATA.users[sec];
+  return {nick:u.n,gift:u.g0||'',commented:!!u.cm,isNew:!!u.nf};});
+ fetch(THANKS_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({token:storedToken(),users})})
+ .then(r=>r.json()).then(d=>{
+  const box=document.getElementById('tkList');if(!box)return;
+  if(d.error){box.innerHTML=`<div class="empty">${escapeHtml(d.error)}</div>`;return;}
+  const texts=d.texts||[];
+  box.innerHTML=secs.map((sec,i)=>{const u=DATA.users[sec];const t=texts[i]||'';
+   return `<div class="tk-row"><div class="tk-main">
+    <div class="tk-top"><span class="u-nick">${escapeHtml(u.n)}</span><span class="u-val">${yuan(u.tv)}</span></div>
+    <div class="tk-text">${t?escapeHtml(t):'（这条没生成，跳过 TA 就好）'}</div></div>
+    <button class="btn btn-primary tk-copy" data-i="${i}"${t?'':' disabled style="opacity:.4"'}>复制</button></div>`;}).join('');
+  box.querySelectorAll('.tk-copy').forEach(b=>b.onclick=()=>{
+   copyText(texts[+b.dataset.i]);b.textContent='已复制 ✓';setTimeout(()=>{b.textContent='复制';},1500);});
+ }).catch(()=>{const box=document.getElementById('tkList');
+  if(box)box.innerHTML='<div class="empty">网络异常，关掉重开试试</div>';});}
 function openFeedbackSheet(sec){
  const u=DATA.users[sec];const localNote=localStorage.getItem('note_'+sec)||'';
  const pv=(k)=>{const v=u[k];return v?escapeHtml(v):'';};
@@ -861,6 +912,7 @@ document.addEventListener('click',e=>{
  if(act==='notif'){openNotif();return;}
  if(act==='expand'){const tEl=ac.closest('.tier');const closed=tEl.classList.toggle('closed');
   ac.textContent=closed?ac.textContent.replace('收起','查看全部').replace('▴','▾'):ac.textContent.replace('查看全部','收起').replace('▾','▴');return;}
+ if(act==='thanks'){openThanksSheet();return;}
  const pv=document.getElementById('pv');if(!pv)return;const k=pv.dataset.sec;
  if(act==='dm'){const u=DATA.users[k];
   if(!u||!u.mine){toast('主归属在别家，不可跳转 TA 主页');return;}
