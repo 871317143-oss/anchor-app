@@ -190,6 +190,30 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .pbar{flex:1;height:14px;border-radius:999px;background:var(--gray-bg);overflow:hidden;}
 .pbar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--brand-soft),var(--lime));}
 .pbar-val{flex:none;font-size:12px;font-weight:700;color:var(--ink);min-width:56px;text-align:right;}
+/* 排班 tab（工单⑲b）：组长审核页。格底色一律 var() 语义 token（设计规范无橙/粉专色：妆=red-bg 粉、发=amber-bg 黄、改=blue-bg、妆发=green-bg、梳理假发=red 实底朱红≈橙、卫生=gray-bg） */
+.sch-sum{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line);}
+.sch-sum .cell{padding:11px 4px;text-align:center;border-right:1px solid var(--line);}
+.sch-sum .cell:last-child{border-right:none;}
+.mu-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.mu-table{border-collapse:separate;border-spacing:3px;min-width:100%;}
+.mu-table th{font-size:10px;color:var(--ink3);font-weight:600;padding:4px 2px;white-space:nowrap;}
+.mu-table th.ar{position:sticky;left:0;background:var(--card);z-index:1;text-align:left;padding-left:2px;}
+.mu-table td.ar{position:sticky;left:0;background:var(--card);z-index:1;font-size:12px;font-weight:700;white-space:nowrap;padding-right:6px;}
+.mu-table td.ar .cnt{font-size:10px;color:var(--ink3);font-weight:500;margin-left:3px;}
+.mu-cell{min-width:46px;height:40px;border-radius:8px;background:var(--gray-bg);text-align:center;font-size:10px;line-height:1.25;padding:3px 2px;cursor:pointer;vertical-align:middle;word-break:break-all;}
+.mu-cell.filled{color:var(--ink);}
+.mu-cell.t-z{background:var(--red-bg);}
+.mu-cell.t-f{background:var(--amber-bg);}
+.mu-cell.t-g{background:var(--blue-bg);}
+.mu-cell.t-zf{background:var(--green-bg);}
+.mu-cell.t-jf{background:var(--red);color:#fff;}   /* 梳理假发：朱红实底（规范最近橙） */
+.mu-cell.t-ws{background:var(--gray-bg);color:var(--ink2);}
+.mu-cell .lk{font-size:9px;}
+.mu-cell.chg{box-shadow:0 0 0 2px var(--lime);}   /* 改动格黄框 */
+tr.mu-chg td.ar{background:var(--brand-soft);}    /* 改动行标黄 */
+.mu-bar{position:sticky;bottom:12px;display:flex;gap:9px;margin-top:14px;z-index:5;}
+.mu-bar .btn{flex:1;padding:13px;font-size:14px;font-weight:700;border-radius:14px;box-shadow:0 4px 14px rgba(20,30,18,.18);}
+.mu-ro{font-size:11px;color:var(--amber);background:var(--amber-bg);border-radius:9px;padding:8px 11px;line-height:1.5;margin-top:10px;}
 </style>
 </head>
 <body>
@@ -198,7 +222,8 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.32';
+const SCHEDULE_URL='https://fb.menghualu.com.co/api/ops/schedule';
+const OPS_VERSION='v3.33';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -619,7 +644,7 @@ function vAdmin(){
   ${whaleCard()}
   <div class="sec-title"><h3>规划预留</h3><span class="more">陆续上线</span></div>
   <div class="tier">
-   <div class="mrow dim"><div class="mi">期</div>排期表 · 化妆表录入<span class="ms">筹备中</span></div>
+   <div class="mrow" data-tabgo="sched"><div class="mi">班</div>化妆排班 · 组长审核<span class="ms">已上线 · 见「排班」tab</span></div>
    <div class="mrow dim"><div class="mi">诉</div>主播申诉处理<span class="ms">筹备中</span></div>
    <div class="mrow dim"><div class="mi">讯</div>主播信息维护<span class="ms">筹备中</span></div></div>
   <div class="tier"><div class="mrow" id="logoutBtn" style="cursor:pointer"><div class="mi" style="background:var(--red-bg);color:var(--red)">出</div>切换账号<span class="ms">退出当前运营码</span></div></div>
@@ -768,7 +793,109 @@ document.addEventListener('touchend',e=>{
  if(cur<-ORW/2)rs.wrap.classList.add('open');else rs.wrap.classList.remove('open');
 },{passive:true});
 
-const TABS=['proj','people','todo','flow','admin'];
+/* ===== 排班（工单⑲b）：化妆排班组长审核页。读=共享数据任何运营码可看；写=总码（排班组长码未立） ===== */
+const MU_TYPE_CLS={'妆':'t-z','发':'t-f','改':'t-g','妆发':'t-zf','梳理假发':'t-jf','卫生':'t-ws'};
+const MU_TYPE_ORDER=['妆','发','改','妆发','梳理假发','卫生'];
+const MU_SLOTS_LAB=['06','07','08','09','10','11','12','13','14','15','16','17','18'];
+let _mu=null,_muDate='',_muPending={},_muDrag=null;
+const bjDate=(off)=>new Date(Date.now()+8*3600e3+off*86400e3).toISOString().slice(0,10);
+async function loadMu(force){
+ if(_mu&&!force)return;
+ try{const r=await fetch(SCHEDULE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken()})});
+  const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||'加载失败');
+  _mu=d;
+  if(!_muDate||!d.rows.some(x=>x.date===_muDate))_muDate=(d.rows.find(x=>x.status==='草稿')||{}).date||d.to;
+  if(_tab==='sched')render();
+ }catch(e){if(_tab==='sched'){root.querySelector('#v-sched .empty')&&(root.querySelector('#v-sched').innerHTML=`<div class="wrap"><div class="empty">排班加载失败：${esc(e.message)}<br>点「排班」tab 重试</div></div>`);}}}
+function muRowsOf(date){return (_mu&&_mu.rows||[]).filter(x=>x.date===date);}
+function muStats(rows){
+ const jobs=rows.filter(x=>x.anchor);   // 化妆件（主播格）；假发/卫生为轮值不占件数
+ const per={};rows.forEach(x=>{per[x.artist]=(per[x.artist]||0)+1;});
+ const cnts=Object.values(per);
+ const perJob={};jobs.forEach(x=>{perJob[x.artist]=(perJob[x.artist]||0)+1;});
+ const jc=Object.values(perJob);
+ const bal=jc.length?Math.max(...jc)-Math.min(...jc):0;
+ const seenA={},seenB={};let conflict=0;
+ rows.forEach(x=>{if(x.anchor){const k=x.anchor+'|'+x.slot;seenA[k]=(seenA[k]||0)+1;} const k2=x.artist+'|'+x.slot;seenB[k2]=(seenB[k2]||0)+1;});
+ Object.values(seenA).forEach(n=>{if(n>1)conflict+=n-1;});
+ Object.values(seenB).forEach(n=>{if(n>1)conflict+=n-1;});
+ return{artists:Object.keys(per).length,pieces:jobs.length,bal,conflict,changed:Object.keys(_muPending).length};}
+function vSched(){
+ if(!_mu)return '<div class="wrap"><div class="sec-title"><h3>排班</h3></div><div class="empty">正在加载今明两天排班…</div></div>';
+ const writable=_mu.writable,dates=[...new Set([_mu.from,_mu.to])];
+ const rows=muRowsOf(_muDate),st=muStats(rows);
+ const stLab={'草稿':'草稿 · 待发布','已发布':'已发布 · 两端可见','已完成':'已完成'};
+ const lab=d=>{const dt=new Date(d+'T12:00:00');return (d===bjDate(0)?'今天 ':d===bjDate(1)?'明天 ':'')+(dt.getMonth()+1)+'/'+dt.getDate();};
+ let h=`<div class="wrap"><div class="sec-title"><h3>化妆排班</h3><span class="more">${esc(stLab[((rows.find(x=>x.status==='草稿')||{}).status)||rows[0]&&rows[0].status]||'今明两天')}</span></div>`;
+ h+=`<div class="chips">${dates.map(d=>`<span class="chip${d===_muDate?' on':''}" data-md="${d}">${lab(d)}</span>`).join('')}<span class="chip" data-mur="1">⟳ 刷新</span></div>`;
+ if(!rows.length)h+=`<div class="empty">该日还没有排班行<br>点空格可新建（草稿）</div>`;
+ h+=`<div class="tier"><div class="sch-sum">
+  <div class="cell"><div class="pnum">${st.artists}</div><div class="plab">出勤师数</div></div>
+  <div class="cell"><div class="pnum">${st.pieces}</div><div class="plab">总件数</div></div>
+  <div class="cell"><div class="pnum">${st.bal}</div><div class="plab">均衡差</div></div>
+  <div class="cell"><div class="pnum" style="color:${st.conflict?'var(--red)':'var(--green)'}">${st.conflict}</div><div class="plab">冲突数</div></div>
+  <div class="cell"><div class="pnum" style="color:${st.changed?'var(--amber)':'var(--ink)'}">${st.changed}</div><div class="plab">改动格数</div></div>
+ </div></div>`;
+ // 网格：行=化妆师，列=时段
+ const artists=[...new Set(rows.map(x=>x.artist))];
+ const grid={};rows.forEach(x=>{grid[x.artist+'|'+x.slot]=x;});
+ const chgArtists=new Set(Object.values(_muPending).map(p=>p.artist));
+ h+=`<div class="tier" style="padding:10px 8px 12px"><div class="mu-wrap"><table class="mu-table"><tr><th class="ar">师\\时段</th>${MU_SLOTS_LAB.map(s=>`<th>${s}</th>`).join('')}</tr>`;
+ artists.forEach(a=>{const aChg=chgArtists.has(a);
+  h+=`<tr${aChg?' class="mu-chg"':''}><td class="ar">${esc(a)}<span class="cnt">${rows.filter(x=>x.artist===a&&x.anchor).length}件</span></td>`;
+  MU_SLOTS_LAB.forEach(s=>{const slot=s+':00-'+(String(+s+1).padStart(2,'0'))+':00';
+   const x=grid[a+'|'+slot],pend=_muPending[x&&x.page_id];
+   if(x){const cls=MU_TYPE_CLS[x.type]||'t-ws';
+    h+=`<td class="mu-cell filled ${cls}${pend?' chg':''}" data-pid="${x.page_id}" draggable="${writable?'true':'false'}">${esc(x.anchor||x.type)}${x.locked?'<div class="lk">🔒</div>':''}</td>`;}
+   else h+=`<td class="mu-cell" data-new="${a}|${slot}"${writable?'':''}></td>`;});
+  h+='</tr>';});
+ h+='</table></div><div class="foot" style="padding:8px 6px 0">粉底=妆 · 黄底=发 · 绿底=改 · 浅绿=妆发一体 · 红底=梳理假发 · 灰底=卫生 · 黄框=本次改动 · 点格改师/换锁 · 拖格可换位</div></div>';
+ if(!writable)h+=`<div class="mu-ro">🔒 当前为${esc(_mu.scope||'分团')}只读视角——排班全公司共享可看；改格/发布请用「排班组长」码（暂用 OPS|运营 总码）。</div>`;
+ h+=`<div class="mu-bar"><button class="btn" data-mu="resched" ${writable?'':'disabled style="opacity:.5"'}>🔀 重排（保留🔒）</button><button class="btn big" data-mu="publish" ${writable&&rows.some(x=>x.status==='草稿')?'':'disabled style="opacity:.5"'}>发布排班</button></div>`;
+ return h+'</div>';}
+async function muAct(body,btn){
+ if(btn){btn.disabled=true;}
+ try{const r=await fetch(SCHEDULE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken(),...body})});
+  const d=await r.json();if(!r.ok||!d.ok)throw new Error(String(d.error||'失败').replace(/^Error: /,''));
+  return d;
+ }catch(e){toast(e.message);throw e;}
+ /* 按钮恢复由调用方负责 */}
+function openMuCell(row){
+ const artists=['小月','小颖','潘潘','阿日','岩岩','娜娜酱','刘媚','张倩','李庆','萍萍','常蕾','徐徐'];
+ const ov=document.createElement('div');ov.className='nov';
+ ov.innerHTML=`<div class="noc"><div class="not">${esc(row.anchor||row.type)} · ${esc(row.slot)} · ${esc(row.type)}</div>
+  <div class="chips" style="max-height:180px;overflow-y:auto">${artists.map(a=>`<span class="chip${a===row.artist?' on':''}" data-ma="${a}">${a}</span>`).join('')}</div>
+  <div style="display:flex;gap:9px;margin-top:6px">
+   <button class="btn no" id="muLock" style="flex:1">${row.locked?'🔓 解锁':'🔒 锁定'}</button>
+   <button class="btn no" id="muX" style="flex:1">取消</button>
+   <button class="btn big" id="muOk" style="flex:2">保存</button></div></div>`;
+ ov.addEventListener('click',async e=>{
+  if(e.target===ov||e.target.id==='muX'){ov.remove();return;}
+  const c=e.target.closest('[data-ma]');
+  if(c){ov._artist=c.dataset.ma;ov.querySelectorAll('[data-ma]').forEach(x=>x.classList.toggle('on',x===c));return;}
+  if(e.target.id==='muLock'){try{await muAct({action:'lock',page_id:row.page_id,locked:!row.locked});toast(row.locked?'已解锁':'已锁定');_muPending[row.page_id]={artist:row.artist};ov.remove();loadMu(true);}catch(_){}return;}
+  if(e.target.id==='muOk'){const artist=ov._artist||row.artist;if(artist===row.artist){ov.remove();return;}
+   try{await muAct({action:'cell',page_id:row.page_id,artist});toast('已改化妆师：'+artist);_muPending[row.page_id]={artist};ov.remove();loadMu(true);}catch(_){}}});
+ document.getElementById('phone').appendChild(ov);}
+function openMuCreate(artist,slot){
+ const anchors=(D.anchors||[]).map(a=>a.name);
+ const ov=document.createElement('div');ov.className='nov';
+ ov.innerHTML=`<div class="noc"><div class="not">新建草稿 · ${esc(artist)} ${esc(slot)}</div>
+  <div style="font-size:12px;color:var(--ink3);margin-bottom:6px">主播</div>
+  <div class="chips" style="max-height:130px;overflow-y:auto">${anchors.map(a=>`<span class="chip" data-na="${esc(a)}">${esc(a)}</span>`).join('')}</div>
+  <div style="font-size:12px;color:var(--ink3);margin:8px 0 6px">类型</div>
+  <div class="chips">${MU_TYPE_ORDER.map(t=>`<span class="chip${t==='妆'?' on':''}" data-nt="${t}">${t}</span>`).join('')}</div>
+  <div style="display:flex;gap:9px;margin-top:10px"><button class="btn no" id="muX" style="flex:1">取消</button><button class="btn big" id="muOk" style="flex:2">建草稿行</button></div></div>`;
+ ov._anchor='',ov._type='妆';
+ ov.addEventListener('click',async e=>{
+  if(e.target===ov||e.target.id==='muX'){ov.remove();return;}
+  const na=e.target.closest('[data-na]');if(na){ov._anchor=na.dataset.na;ov.querySelectorAll('[data-na]').forEach(x=>x.classList.toggle('on',x===na));return;}
+  const nt=e.target.closest('[data-nt]');if(nt){ov._type=nt.dataset.nt;ov.querySelectorAll('[data-nt]').forEach(x=>x.classList.toggle('on',x===nt));return;}
+  if(e.target.id==='muOk'){if(!ov._anchor){toast('先选主播');return;}
+   try{await muAct({action:'create',date:_muDate,slot,artist,type:ov._type,anchor:ov._anchor});toast('已建草稿行');ov.remove();loadMu(true);}catch(_){}}});
+ document.getElementById('phone').appendChild(ov);}
+
+const TABS=['proj','people','todo','flow','sched','admin'];
 const BELLF=`<button class="bellf" id="bellf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span class="bdg" id="notifBdg" style="display:none"></span></button>`;
 function switchTab(t){_tab=t;
  TABS.forEach(x=>{const v=document.getElementById('v-'+x);if(v)v.classList.toggle('show',x===t);});
@@ -779,12 +906,14 @@ const TB_ICONS={
  todo:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h9"/></svg>',
  flow:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
  rel:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>',
- admin:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.2a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.9-2.9l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.2a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1a1.7 1.7 0 001.9.3h0a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.2a1.7 1.7 0 001 1.5h0a1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.9 2.9l-.1.1a1.7 1.7 0 00-.3 1.9v0a1.7 1.7 0 001.5 1h.2a2 2 0 110 4h-.2a1.7 1.7 0 00-1.5 1z"/></svg>'};
+ admin:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.2a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.9-2.9l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.2a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1a1.7 1.7 0 001.9.3h0a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.2a1.7 1.7 0 001 1.5h0a1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.9 2.9l-.1.1a1.7 1.7 0 00-.3 1.9v0a1.7 1.7 0 001.5 1h.2a2 2 0 110 4h-.2a1.7 1.7 0 00-1.5 1z"/></svg>',
+ sched:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="M8 15l2.5 2.5L15 13"/></svg>'};
 function tabbar(todoN){return `<div class="tabbar">
  <button class="tb${_tab==='proj'?' on':''}" data-tab="proj">${TB_ICONS.proj}项目</button>
  <button class="tb${_tab==='people'?' on':''}" data-tab="people">${TB_ICONS.people}人员</button>
  <button class="tb${_tab==='todo'?' on':''}" data-tab="todo">${TB_ICONS.todo}审批${todoN?`<span class="bdg">${todoN}</span>`:''}</button>
  <button class="tb${_tab==='flow'?' on':''}" data-tab="flow">${TB_ICONS.flow}回传明细</button>
+ <button class="tb${_tab==='sched'?' on':''}" data-tab="sched">${TB_ICONS.sched}排班</button>
  <button class="tb${_tab==='admin'?' on':''}" data-tab="admin">${TB_ICONS.admin}管理</button></div>`;}
 
 function render(){
@@ -800,6 +929,7 @@ function render(){
  <div class="view" id="v-todo">${vTodo()}</div>
  <div class="view" id="v-flow">${vFlow()}</div>
  <div class="view" id="v-people">${vPeople()}</div>
+ <div class="view" id="v-sched">${vSched()}</div>
  <div class="view" id="v-admin">${vAdmin()}</div>${tabbar(todoN)}`;
  switchTab(_tab);
  document.getElementById('rf').onclick=()=>load(storedToken());
@@ -807,7 +937,38 @@ function render(){
  document.querySelectorAll('[data-af]').forEach(c=>c.onclick=()=>{_af=c.dataset.af;render();});
  document.querySelectorAll('[data-tf]').forEach(c=>c.onclick=()=>{_tf=c.dataset.tf;_af='';render();});
  document.querySelectorAll('[data-oa]').forEach(b=>b.onclick=()=>offair(b.dataset.oa,({'menghualu_xunyin':'寻音','menghualu_xingzhou':'行舟','menghualu_shuiyue':'水月'})[b.dataset.oa]||b.dataset.oa));
- document.querySelectorAll('.tabbar .tb').forEach(b=>b.onclick=()=>{switchTab(b.dataset.tab);try{window.scrollTo(0,0);}catch(e){}});
+ document.querySelectorAll('.tabbar .tb').forEach(b=>b.onclick=()=>{switchTab(b.dataset.tab);if(b.dataset.tab==='sched'&&!_mu)loadMu();try{window.scrollTo(0,0);}catch(e){}});
+ /* 排班 tab 交互（工单⑲b） */
+ document.querySelectorAll('[data-md]').forEach(c=>c.onclick=()=>{_muDate=c.dataset.md;render();});
+ const mur=document.querySelector('[data-mur]');if(mur)mur.onclick=()=>{_muPending={};loadMu(true);};
+ document.querySelectorAll('.mu-cell.filled').forEach(td=>{
+  td.addEventListener('click',()=>{if(!_mu||!_mu.writable)return;const row=(_mu.rows||[]).find(x=>x.page_id===td.dataset.pid);if(row)openMuCell(row);});
+  td.addEventListener('dragstart',e=>{if(!_mu||!_mu.writable)return;_muDrag=td.dataset.pid;try{e.dataTransfer.setData('text/plain',td.dataset.pid);}catch(_){}});
+  td.addEventListener('dragover',e=>{if(_muDrag)e.preventDefault();});
+  td.addEventListener('drop',e=>{e.preventDefault();const from=_muDrag;_muDrag=null;if(!from||from===td.dataset.pid)return;
+   const target=(_mu.rows||[]).find(x=>x.page_id===td.dataset.pid);if(!target)return;
+   const src=(_mu.rows||[]).find(x=>x.page_id===from);if(!src)return;
+   muAct({action:'move',page_id:from,artist:target.artist,slot:target.slot},td).then(()=>{   // 落点占用→两格互换化妆师+时段
+    if(target.page_id!==from&&target.anchor)return muAct({action:'move',page_id:target.page_id,artist:src.artist,slot:src.slot}).then(()=>{toast('已互换');_muPending[from]={artist:target.artist};_muPending[target.page_id]={artist:src.artist};loadMu(true);});
+    toast('已移动');_muPending[from]={artist:target.artist};loadMu(true);
+   }).catch(()=>{});});});
+ document.querySelectorAll('.mu-cell[data-new]').forEach(td=>{td.addEventListener('dragover',e=>{if(_muDrag)e.preventDefault();});
+  td.addEventListener('drop',e=>{e.preventDefault();const from=_muDrag;_muDrag=null;if(!from)return;const p=td.dataset.new.split('|');
+   muAct({action:'move',page_id:from,artist:p[0],slot:p[1]},td).then(()=>{toast('已移动到空格');_muPending[from]={artist:p[0]};loadMu(true);}).catch(()=>{});});
+  td.addEventListener('click',()=>{if(!_mu||!_mu.writable)return;const p=td.dataset.new.split('|');openMuCreate(p[0],p[1]);});});
+ document.querySelectorAll('[data-mu]').forEach(b=>b.onclick=async()=>{
+  const act=b.dataset.mu;
+  if(act==='publish'){
+   if(!confirm(`确认发布 ${_muDate} 的全部草稿？\n发布后主播端「你的妆发」立即可见`))return;
+   b.disabled=true;b.textContent='发布中…';
+   try{let total=0,left=1,g=0;
+    while(left>0&&g<6){g++;const d=await muAct({action:'publish',date:_muDate},b);total+=d.published||0;left=d.remaining||0;b.textContent=`发布中… ${total} 行`;}
+    toast(left===0?`已发布 ${total} 行`:`已发 ${total} 行，还剩 ${left} 行未发（再点一次）`);
+    _muPending={};loadMu(true);}catch(_){b.disabled=false;b.textContent='发布排班';}}
+  if(act==='resched'){
+   if(!confirm(`申请重排 ${_muDate}？\n🔒 锁定格保留，其余草稿由引擎重算（在工作电脑执行 python3 auto_schedule.py ${_muDate} reschedule）`))return;
+   b.disabled=true;
+   try{await muAct({action:'reschedule',date:_muDate},b);toast('重排申请已登记（保留🔒），引擎重算后点「⟳ 刷新」');b.disabled=false;}catch(_){b.disabled=false;}}});
  document.querySelectorAll('.urow[data-sec]').forEach(r=>r.onclick=()=>{const sec=r.dataset.sec;if(sec)openOpNote(sec);});
  document.querySelectorAll('[data-person]').forEach(r=>r.onclick=()=>openPerson(r.dataset.person));
  document.querySelectorAll('[data-rv]').forEach(b=>b.onclick=()=>{
@@ -815,7 +976,8 @@ function render(){
   if(type==='grade'){const g=(D.grades||[]).filter(g=>inT(g.anchor))[+idx];review(type,subId,action,{sec:g.sec,grade:g.grade,anchor:g.anchor},b);}
   else{const g=(D.appeals||[]).filter(g=>inT(g.anchor))[+idx];const sel=document.getElementById('ovr'+idx).value.split('|');
    review(type,subId,action,{sec:g.sec,gid:sel[0],tid:sel[1],anchor:g.anchor},b);}
- });}
+ });
+ document.querySelectorAll('[data-tabgo]').forEach(r=>r.onclick=()=>{switchTab(r.dataset.tabgo);if(r.dataset.tabgo==='sched'&&!_mu)loadMu();});}
 const t0=new URLSearchParams(location.search).get('t');
 if(t0){localStorage.setItem('ops_token',t0.trim().toLowerCase());history.replaceState(null,'',location.pathname);}
 if(storedToken())load(storedToken());else showLogin('');
