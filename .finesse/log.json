@@ -5,6 +5,23 @@
     "register": "h5",
     "morph": "A.1-daily-desk",
     "axes": {
+      "A": "night-orchid-violet",
+      "B": "liquid-glass-bento",
+      "C": "dual-state-sheet",
+      "D": "spring-follow-gesture",
+      "E": "violet-acc-gold-micro"
+    },
+    "soul": 7,
+    "spectacle": 4,
+    "density": 5,
+    "note": "老板亲选夜兰壁纸（深蓝靛顶→浅紫底），全 token 换紫系：acc #5f58b8 / ink #262450 / 金色只做预留徽章。深色底上白玻璃要 .56 白底才稳对比；diff 卡白底需与普通卡同白。下轮可动 C（容器形态）或 B（卡片语言）。"
+  },
+  {
+    "ts": "2026-10-06",
+    "page": "home.html",
+    "register": "h5",
+    "morph": "A.1-daily-desk",
+    "axes": {
       "A": "lotus-morandi",
       "B": "liquid-glass-bento",
       "C": "dual-state-sheet",
@@ -14,6 +31,6 @@
     "soul": 6,
     "spectacle": 4,
     "density": 5,
-    "note": "UI视觉盒子 iOS26 概念片同款交互模型：收起/展开双态+悬浮AI胶囊+卡心弹开详情+小梦问答行动卡。下轮迭代避开同一张脸：可动 E（accent 轮换）与 C（容器形态）。"
+    "note": "初版（已被夜兰皮替换）：荷塘莫兰迪+柠绿 accent。"
   }
 ]
