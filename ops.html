@@ -24,6 +24,7 @@
   --green:#5a8a2e;--green-bg:#e2f0c6;--amber:#a5760f;--amber-bg:#f3e5b8;
   --gray:#75816b;--gray-bg:#e6ecd4;
   --spring-settle:cubic-bezier(.32,.72,.35,1);
+  --spring-bounce:cubic-bezier(.3,.9,.35,1.12);
 }
 @supports (animation-timing-function:linear(0,1)){
  :root{--spring-settle:linear(0.0,0.0058,0.0217,0.0459,0.0768,0.1129,0.153,0.1958,0.2406,0.2864,0.3326,0.3786,0.424,0.4682,0.5111,0.5523,0.5917,0.6291,0.6644,0.6977,0.7288,0.7578,0.7847,0.8095,0.8323,0.8533,0.8724,0.8897,0.9054,0.9196,0.9323,0.9437,0.9538,0.9627,0.9706,0.9775,0.9835,0.9887,0.9931,0.9969,1.0001);}
@@ -196,7 +197,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.25';
+const OPS_VERSION='v3.26';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
