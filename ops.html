@@ -196,7 +196,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.20';
+const OPS_VERSION='v3.21';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -229,7 +229,7 @@ async function loadRadar(){   // v3.18 主播能力雷达（gen_anchor_radar.py 
   await Promise.all(tids.map(async t=>{const r=await fetch(`data/radar_${t}.json?cb=`+Date.now());if(r.ok){const d=await r.json();Object.assign(_radar,d.anchors||{});}}));
  }catch(e){}}
 function radarCard(name){const r=_radar[name];if(!r)return '';
- const CX=100,CY=104,R=66,AX=['稳定','流水','趋势','维护','留存'],V=[r.stability,r.income,r.trend,r.maintain,r.retention];
+ const CX=100,CY=104,R=66,AX=['稳定','流水','趋势','留存','配合'],V=[r.stability,r.income,r.trend,r.retention,r.coop];
  const pt=(i,p)=>{const a=(-90+i*72)*Math.PI/180;return [CX+R*p*Math.cos(a),CY+R*p*Math.sin(a)];};
  let g='';
  [0.25,0.5,0.75,1].forEach(p=>{g+=`<polygon points="${[0,1,2,3,4].map(i=>pt(i,p).map(n=>n.toFixed(1)).join(','))}" fill="none" stroke="var(--line)" stroke-width="1"/>`;});
@@ -247,8 +247,8 @@ function radarCard(name){const r=_radar[name];if(!r)return '';
     {w:'近30天开播天数（26天满分）',lo:'月开播不足20天，非常危险——先问人是不是要休、是不是想走',mid:'出勤有缺口（目标26天）——核对排期和请假，别让断播成习惯',hi:'出勤达标（26天满分）'},
     {w:'她的7场均线在团里的位置',lo:'吸金团内靠后——看是内容问题、时段问题还是用户结构问题',mid:'流水中游——有上行空间，重点接新客',hi:'团的吸金主力'},
     {w:'近7场 vs 前7场（平滑曲线，暴涨暴跌才会顶格）',lo:'连续下滑——这周必须深聊一次找原因，别等自愈',mid:'走势平稳',hi:'在涨——别打扰她的节奏，给资源就行'},
-    {w:'近14天她回传维护动作的频率',lo:'下播就不管用户——刷完没人接，先盯她每天回传重点用户',mid:'回传断断续续——要求 S/A 级用户必传',hi:'维护动作到位'},
-    {w:'有效用户（消费≥¥9.9或观看≥20分钟）里，之前刷过、最近还在刷的比例',lo:'有效用户留不住——她的维护打法要复盘，陪她过一遍用户画像',mid:'留存有提升空间——重点抓 S/A 级回访',hi:'用户黏性健康'}][i];
+    {w:'维护成果：有效用户（消费≥¥9.9或观看≥20分钟）里，之前刷过、最近还在刷的比例',lo:'用户留不住，维护打法要复盘——陪她过一遍用户画像',mid:'留存有提升空间——重点抓 S/A 级回访',hi:'维护成果好，用户黏性健康'},
+    {w:'配合度：近14天她在软件里回传的频率（有的主播线下维护但不用软件）',lo:'软件基本不用，她是数据黑盒——先要求重点用户每天回传；若她坚持线下维护，至少要她把生日/禁忌/关键事件补进软件',mid:'回传断断续续——要求 S/A 级用户必传',hi:'软件配合到位'}][i];
     const band=v<40?0:v<70?1:2,tx=[M.lo,M.mid,M.hi][band],cl=['var(--red)','var(--amber)','var(--green)'][band];
     return `<div style="display:flex;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:12px;line-height:1.5">
      <span style="flex:none;width:64px;font-weight:700;color:${cl}">${AX[i]} ${v}</span>
