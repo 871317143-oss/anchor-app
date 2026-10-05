@@ -325,10 +325,10 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v83';
+const APP_VERSION='v84';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
-function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
+function yuan(v){v=v||0;const y=v/10;if(y>=100)return '¥'+Math.round(y).toLocaleString();return '¥'+(Math.round(y*10)/10);}   /* v84：≥100 加千分位（¥7,847），与业绩卡排版同标准 */
 function daysBetween(d1,d2){return Math.round((new Date(d2)-new Date(d1))/86400000);}
 function tag(cls,txt){return `<span class="tag t-${cls}"><span class="dot"></span>${txt}</span>`;}
 function churnLab(ch){return ch==='A'?'高价值流失':ch==='B'?'老客流失':'长尾流失';}
@@ -369,11 +369,7 @@ function greetBlock(){const g=DATA.greet;if(!g||!g.length)return '';
  return `<div class="tier closed"><div class="t-head"><div class="t-ico" style="background:var(--amber-bg);color:var(--amber)">★</div>
   <div><div class="t-name">主动问候</div><div class="t-sub">S/A/B 级本场没刷 · 也要维系</div></div>
   <div class="t-cnt">${g.length}<small> 人</small></div></div><div class="trows">${rows}</div>${foot}</div>`;}
-const RETURNICO=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e8930c" stroke-width="2" style="flex:none"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>`;
-function returnedBanner(){const r=DATA.returned;if(!r||!r.length)return '';
- const names=r.slice(0,5).map(s=>DATA.users[s].n).join('、');
- return `<div class="cross" style="border-left:4px solid var(--amber)">${RETURNICO}
-  <div class="c-txt"><b>${r.length} 位「已流失」老客今天回来给你刷礼物了</b>（${names}${r.length>5?' 等':''}），已标记<b>回归</b>，重点走心接待、给足独宠感。</div></div>`;}
+/* v84：returnedBanner/bdayBanner 死代码删除（v62 起生日/回归由通知中心接管，两函数从未被调用）；RETURNICO 随之退役 */
 function mysteryBlock(){const m=DATA.mystery;if(!m||!m.length)return '';
  const rows=m.map(x=>`<div class="urow" style="cursor:default"><div class="avatar" style="background:#7d8568">?</div>
   <div class="u-main"><div class="u-line1"><span class="u-nick">🎭 ${escapeHtml(x.n)}</span><span class="u-val">${yuan(x.v)}</span></div>
@@ -383,10 +379,6 @@ function mysteryBlock(){const m=DATA.mystery;if(!m||!m.length)return '';
  return `<div class="tier closed"><div class="t-head"><div class="t-ico" style="background:var(--gray-bg);color:var(--ink2)">🎭</div>
   <div><div class="t-name">神秘人</div><div class="t-sub">匿名送礼 · 按行为指纹认老朋友</div></div>
   <div class="t-cnt">${m.length}<small> 个</small></div></div><div class="trows">${rows}</div>${foot}</div>`;}
-function bdayBanner(){const b=DATA.bday||[];if(!b.length)return '';
- const names=b.slice(0,4).map(x=>DATA.users[x[0]].n+(x[1]===0?'（今天！）':x[1]===1?'（明天）':`（${x[1]}天后）`)).join('、');
- return `<div class="cross" style="border-left:4px solid var(--red)">🎂
-  <div class="c-txt"><b>未来一周生日 ${b.length} 人</b>：${names}${b.length>4?' 等':''}——提前备好心意，当天给足排面。</div></div>`;}
 function viewToday(){const c=DATA.counts,ch=DATA.churn;
  const cross=DATA.crossToday.length?`<div class="cross">${GLOBE}
   <div class="c-txt">今天有 <b>${DATA.crossToday.length} 位跨团用户</b>给你送礼，也在其他团消费，注意客情；<b>不显示对方归属</b>。</div></div>`:'';
@@ -396,6 +388,7 @@ function viewToday(){const c=DATA.counts,ch=DATA.churn;
   ${ch.b.slice(0,2).map(s=>churnCard(s,'cb','老客流失')).join('')}
   ${ch.c.slice(0,1).map(s=>churnCard(s,'cc2','长尾')).join('')}</div>`;
  return `<div class="view show" id="v-today">${topbar()}<div class="wrap">
+  ${cross}
   <div class="sec-title"><h3>今日维护</h3><span class="more">按对我消费分层</span></div>
   ${tier('l3','L3','重点维护','消费 > 99 元 · 今天必聊',DATA.l3)}
   ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2)}
@@ -512,7 +505,7 @@ function _lrGet(){try{return JSON.parse(localStorage.getItem(_lrKey())||'{}');}c
 function _lrSet(k){const a=_lrGet();a[k]=1;localStorage.setItem(_lrKey(),JSON.stringify(a));}
 function localNotifs(){
  const out=[],d=DATA.anchor.date;
- if((DATA.crossToday||[]).length)out.push({key:'cross_'+d,level:'banner',kind:'cross',title:'跨团用户提醒',body:`今天有 ${DATA.crossToday.length} 位跨团用户给你送礼，也在其他团消费，注意客情；不显示对方归属。`,ref:'',time:d});
+ /* v84：跨团提醒只留今日页内嵌条（老板口径 10-05），横幅通道不再推 */
  if((DATA.returned||[]).length)out.push({key:'ret_'+d,level:'banner',kind:'returned',title:'老客回归',body:`${DATA.returned.length} 位「已流失」老客今天回来给你刷礼物了（${DATA.returned.slice(0,3).map(s=>DATA.users[s].n).join('、')}），已标记回归，重点走心接待、给足独宠感。`,ref:DATA.returned[0],time:d});
  (DATA.bday||[]).forEach(x=>{const u=DATA.users[x[0]];if(!u)return;
   out.push({key:'bday_'+d+'_'+x[0],level:'alert',kind:'bday',title:x[1]===0?'今天生日！':(x[1]===1?'明天生日':'生日还有 '+x[1]+' 天'),body:`${u.n}${u.birth?'（'+String(u.birth).slice(5,10)+'）':''}——提前备好心意，当天给足排面。`,ref:x[0],time:d});});
