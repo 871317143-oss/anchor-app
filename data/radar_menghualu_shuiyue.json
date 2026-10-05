@@ -2,53 +2,11 @@
  "date": "2026-10-05",
  "tid": "menghualu_shuiyue",
  "anchors": {
-  "小桉": {
-   "name": "小桉",
-   "gid": "4421564609858297",
-   "stability": 39,
-   "trend": 100,
-   "coop": 30,
-   "retention": 58,
-   "avg7": 3072,
-   "days30": 11,
-   "fb": "3天/37条",
-   "retention_n": "33/57",
-   "income": 62,
-   "overall": 58
-  },
-  "扶瑶": {
-   "name": "扶瑶",
-   "gid": "1804763392122300",
-   "stability": 39,
-   "trend": 99,
-   "coop": 10,
-   "retention": 56,
-   "avg7": 3262,
-   "days30": 11,
-   "fb": "1天/10条",
-   "retention_n": "37/66",
-   "income": 69,
-   "overall": 55
-  },
-  "七七": {
-   "name": "七七",
-   "gid": "1731082283386656",
-   "stability": 39,
-   "trend": 87,
-   "coop": 0,
-   "retention": 58,
-   "avg7": 6029,
-   "days30": 12,
-   "fb": "0天/0条",
-   "retention_n": "71/123",
-   "income": 88,
-   "overall": 54
-  },
   "涵涵": {
    "name": "涵涵",
    "gid": "1903978291142828",
    "stability": 39,
-   "trend": 51,
+   "trend": 42,
    "coop": 17,
    "retention": 51,
    "avg7": 4583,
@@ -56,13 +14,55 @@
    "fb": "2天/8条",
    "retention_n": "44/87",
    "income": 75,
-   "overall": 47
+   "overall": 45
+  },
+  "小桉": {
+   "name": "小桉",
+   "gid": "4421564609858297",
+   "stability": 39,
+   "trend": 36,
+   "coop": 30,
+   "retention": 58,
+   "avg7": 3072,
+   "days30": 11,
+   "fb": "3天/37条",
+   "retention_n": "33/57",
+   "income": 62,
+   "overall": 45
+  },
+  "七七": {
+   "name": "七七",
+   "gid": "1731082283386656",
+   "stability": 39,
+   "trend": 35,
+   "coop": 0,
+   "retention": 58,
+   "avg7": 6029,
+   "days30": 12,
+   "fb": "0天/0条",
+   "retention_n": "71/123",
+   "income": 88,
+   "overall": 44
+  },
+  "扶瑶": {
+   "name": "扶瑶",
+   "gid": "1804763392122300",
+   "stability": 39,
+   "trend": 34,
+   "coop": 10,
+   "retention": 56,
+   "avg7": 3262,
+   "days30": 11,
+   "fb": "1天/10条",
+   "retention_n": "37/66",
+   "income": 69,
+   "overall": 42
   },
   "奶黄包": {
    "name": "奶黄包",
    "gid": "100660419582",
    "stability": 39,
-   "trend": 31,
+   "trend": 35,
    "coop": 18,
    "retention": 59,
    "avg7": 1451,
@@ -70,13 +70,13 @@
    "fb": "2天/7条",
    "retention_n": "43/73",
    "income": 38,
-   "overall": 37
+   "overall": 38
   },
   "千羽": {
    "name": "千羽",
    "gid": "7508666053519639612",
    "stability": 39,
-   "trend": 10,
+   "trend": 62,
    "coop": 8,
    "retention": 43,
    "avg7": 1431,
@@ -84,13 +84,13 @@
    "fb": "1天/11条",
    "retention_n": "20/47",
    "income": 25,
-   "overall": 25
+   "overall": 35
   },
   "幕晞": {
    "name": "幕晞",
    "gid": "3921275302191236",
    "stability": 4,
-   "trend": 75,
+   "trend": 50,
    "coop": 0,
    "retention": 0,
    "avg7": 847,
@@ -98,13 +98,13 @@
    "fb": "0天/0条",
    "retention_n": "0/19",
    "income": 12,
-   "overall": 18
+   "overall": 13
   },
   "涟漪": {
    "name": "涟漪",
    "gid": "4311632584639132",
    "stability": 0,
-   "trend": 0,
+   "trend": 50,
    "coop": 0,
    "retention": 0,
    "avg7": 0,
@@ -112,7 +112,7 @@
    "fb": "0天/0条",
    "retention_n": "0/0",
    "income": 6,
-   "overall": 1
+   "overall": 11
   }
  }
 }

@@ -6,7 +6,7 @@
    "name": "九月",
    "gid": "2280806304725415",
    "stability": 39,
-   "trend": 100,
+   "trend": 71,
    "coop": 23,
    "retention": 39,
    "avg7": 9243,
@@ -14,13 +14,13 @@
    "fb": "3天/15条",
    "retention_n": "29/75",
    "income": 89,
-   "overall": 58
+   "overall": 52
   },
   "盈盈": {
    "name": "盈盈",
    "gid": "1524351324153977",
    "stability": 39,
-   "trend": 100,
+   "trend": 75,
    "coop": 15,
    "retention": 37,
    "avg7": 3642,
@@ -28,13 +28,13 @@
    "fb": "2天/16条",
    "retention_n": "34/93",
    "income": 78,
-   "overall": 54
+   "overall": 49
   },
   "丸子": {
    "name": "丸子",
    "gid": "7499419290455819321",
    "stability": 39,
-   "trend": 100,
+   "trend": 76,
    "coop": 23,
    "retention": 40,
    "avg7": 3482,
@@ -42,13 +42,13 @@
    "fb": "3天/27条",
    "retention_n": "43/108",
    "income": 67,
-   "overall": 54
+   "overall": 49
   },
   "云兮": {
    "name": "云兮",
    "gid": "7495434273957102651",
    "stability": 39,
-   "trend": 100,
+   "trend": 77,
    "coop": 8,
    "retention": 41,
    "avg7": 3374,
@@ -56,41 +56,13 @@
    "fb": "1天/3条",
    "retention_n": "43/105",
    "income": 67,
-   "overall": 51
-  },
-  "柚子": {
-   "name": "柚子",
-   "gid": "7581808305803772987",
-   "stability": 39,
-   "trend": 100,
-   "coop": 8,
-   "retention": 43,
-   "avg7": 3125,
-   "days30": 15,
-   "fb": "1天/2条",
-   "retention_n": "29/68",
-   "income": 56,
-   "overall": 49
-  },
-  "南婉": {
-   "name": "南婉",
-   "gid": "62798138044",
-   "stability": 39,
-   "trend": 100,
-   "coop": 8,
-   "retention": 43,
-   "avg7": 1940,
-   "days30": 15,
-   "fb": "1天/6条",
-   "retention_n": "23/54",
-   "income": 44,
-   "overall": 47
+   "overall": 46
   },
   "青霓": {
    "name": "青霓",
    "gid": "7532450680075273275",
    "stability": 39,
-   "trend": 99,
+   "trend": 72,
    "coop": 23,
    "retention": 42,
    "avg7": 1794,
@@ -98,13 +70,41 @@
    "fb": "3天/29条",
    "retention_n": "39/92",
    "income": 22,
-   "overall": 45
+   "overall": 40
+  },
+  "柚子": {
+   "name": "柚子",
+   "gid": "7581808305803772987",
+   "stability": 39,
+   "trend": 42,
+   "coop": 8,
+   "retention": 43,
+   "avg7": 3125,
+   "days30": 15,
+   "fb": "1天/2条",
+   "retention_n": "29/68",
+   "income": 56,
+   "overall": 38
+  },
+  "南婉": {
+   "name": "南婉",
+   "gid": "62798138044",
+   "stability": 39,
+   "trend": 52,
+   "coop": 8,
+   "retention": 43,
+   "avg7": 1940,
+   "days30": 15,
+   "fb": "1天/6条",
+   "retention_n": "23/54",
+   "income": 44,
+   "overall": 37
   },
   "璐璐": {
    "name": "璐璐",
    "gid": "7491689462259582012",
    "stability": 39,
-   "trend": 96,
+   "trend": 57,
    "coop": 8,
    "retention": 42,
    "avg7": 1228,
@@ -112,13 +112,13 @@
    "fb": "1天/3条",
    "retention_n": "20/48",
    "income": 11,
-   "overall": 39
+   "overall": 31
   },
   "诺妍": {
    "name": "诺妍",
    "gid": "7522457855833031737",
    "stability": 15,
-   "trend": 75,
+   "trend": 50,
    "coop": 0,
    "retention": 0,
    "avg7": 759,
@@ -126,7 +126,7 @@
    "fb": "0天/0条",
    "retention_n": "0/29",
    "income": 0,
-   "overall": 18
+   "overall": 13
   }
  }
 }
