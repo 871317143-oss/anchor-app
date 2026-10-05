@@ -31,6 +31,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 /* ---- 头部 ---- */
 #hdr{position:absolute;top:0;left:0;right:0;z-index:3}
 .st{display:flex;justify-content:space-between;align-items:center;padding:calc(env(safe-area-inset-top) + 12px) 20px 0;font-size:11px;color:var(--on-bg2)}
+.st .ver{font-size:9px;opacity:.62;letter-spacing:.3px;margin-right:6px}
 .st svg{width:17px;height:17px;stroke:var(--on-bg2);fill:none;stroke-width:1.6;cursor:pointer}
 .hello{display:flex;align-items:center;gap:10px;padding:14px 22px 2px;font-size:20px;white-space:nowrap}
 .hello .hi{font-weight:400;color:var(--on-bg2)}
@@ -245,7 +246,7 @@ function render(){
  const a=DATA.anchor,c=DATA.counts||{},total=Object.keys(DATA.users||{}).length;
  const pending=(c.l3||0)+(c.l2||0)+(c.greet||0);
  $('#hdr').innerHTML=`
- <div class="st"><span>${esc(a.date||'')}</span><span id="bellBtn">${ICO.bell}</span></div>
+ <div class="st"><span>${esc(a.date||'')}</span><span style="display:flex;align-items:center"><span class="ver">v2.3 · GL</span><span id="bellBtn">${ICO.bell}</span></span></div>
  <div class="hello"><span class="hi">Hello,</span><div class="av">${(a.name||'?')[0]}${a.av?`<img src="${a.av}" onerror="this.remove()">`:''}</div><span class="nm">${esc(a.name||'')}</span></div>
  <div class="sub">${pending?`今天还有 <b>${pending}</b> 件事没做`:'今天的事都清了，清爽'}</div>`;
  const card=(ic,t,b,s,cls,act)=>`<div class="bc glass ${cls||''}" data-act="${act}"><div class="t">${ic}${t}</div><div class="b">${b}</div><div class="s">${s||''}</div></div>`;
