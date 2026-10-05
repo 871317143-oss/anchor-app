@@ -223,7 +223,8 @@ tr.mu-chg td.ar{background:var(--brand-soft);}    /* 改动行标黄 */
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
 const SCHEDULE_URL='https://fb.menghualu.com.co/api/ops/schedule';
-const OPS_VERSION='v3.33';
+const REST_URL='https://fb.menghualu.com.co/api/ops/rest';
+const OPS_VERSION='v3.34';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -315,7 +316,7 @@ async function load(tok){
   clearTimeout(to);
   const d=await r.json();
   if(!r.ok||!d.ok)throw new Error(d.error||'访问码无效');
-  D=d;render();loadPerfs();loadRadar();loadWhale();loadOffairStatus();loadD1Notifs();
+  D=d;render();loadPerfs();loadRadar();loadWhale();loadOffairStatus();loadD1Notifs();loadRests();
  }catch(e){
   if(String(e).includes('AbortError')){root.innerHTML='<div class="empty">网络超时，点这里重试</div>';root.onclick=()=>{root.onclick=null;load(tok);};return;}
   localStorage.removeItem('ops_token');showLogin(e.message||'加载失败');}
@@ -345,6 +346,24 @@ async function offair(tid,name){
   render();
  }catch(e){toast(e.message);}}
 let _offairRows=[];
+let _rests=null;   // 工单⑲e：近30天休息申请（按状态分组）
+async function loadRests(){
+ try{const r=await fetch(REST_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken()})});
+  const d=await r.json();if(d.ok){_rests=d.groups||{};if(_tab==='todo')render();}}catch(e){}}
+async function restReview(pageId,decision,btn){
+ const card=btn?btn.closest('.todo'):null;
+ const acts=card?card.querySelectorAll('.acts button'):[];
+ acts.forEach(b=>b.disabled=true);
+ try{const r=await fetch(REST_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken(),action:'review',page_id:pageId,decision})});
+  const d=await r.json();
+  if(!r.ok||!d.ok)throw new Error(String(d.error||'失败').replace(/^Error: /,''));
+  toast(decision==='approve'?'已批准：当天不排她的妆发':'已拒绝：照常排班');
+  await loadRests();
+  const n=(_rests['待审批']||[]).length;
+  const bdg=document.querySelector('.tabbar .bdg');
+  const todoN=(D.grades||[]).filter(g=>inT(g.anchor)).length+(D.appeals||[]).filter(g=>inT(g.anchor)).length+n;
+  if(bdg){if(todoN>0)bdg.textContent=todoN;else bdg.remove();}
+ }catch(e){toast(e.message);acts.forEach(b=>b.disabled=false);}}
 async function loadOffairStatus(){
  try{const r=await fetch('https://fb.menghualu.com.co/api/ops/offair-status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken()})});
   const d=await r.json();if(d.ok){_offairRows=d.rows||[];if(_tab==='admin')render();}}catch(e){}}
@@ -582,8 +601,17 @@ function openUserProf(sec){
 /* ===== 视图：审批 ===== */
 function vTodo(){
  const gs=(D.grades||[]).filter(g=>inT(g.anchor)),ap=(D.appeals||[]).filter(g=>inT(g.anchor));
+ const rs=(_rests&&_rests['待审批']||[]).filter(r=>!_tf||teamOf(r.name)===_tf);
+ const doneN=(_rests?((_rests['已批准']||[]).length+(_rests['已拒绝']||[]).length):0);
  let h='<div class="wrap">';
- if(!gs.length&&!ap.length)h+=`<div class="sec-title"><h3>审批</h3><span class="more">主播的等级建议与归属异议</span></div><div class="empty">没有待处理事项 🎉<br>主播提交的等级建议、归属异议会出现在这里</div>`;
+ if(rs.length){
+  h+=`<div class="sec-title"><h3>休息申请待审批</h3><span class="more">${rs.length} 条 · 批准当天不排她的妆发</span></div>`;
+  h+=rs.map(r=>`<div class="todo"><div class="who">${esc(r.name)}　<span class="tag ${r.type==='休息卡抵扣'?'t-green':'t-amber'}">${esc(r.type)}</span></div>
+   <div class="meta">${esc(r.date)} · 申请人 ${esc(r.name)}</div>
+   ${r.reason?`<div class="txt">${esc(r.reason)}</div>`:''}
+   <div class="acts"><button class="btn ok" data-rvrest="${r.page_id}|approve">通过 · 当天不排她</button>
+   <button class="btn no" data-rvrest="${r.page_id}|reject">驳回 · 照常排班</button></div></div>`).join('');}
+ if(!gs.length&&!ap.length&&!rs.length)h+=`<div class="sec-title"><h3>审批</h3><span class="more">主播的等级建议与归属异议</span></div><div class="empty">没有待处理事项 🎉<br>主播提交的等级建议、归属异议、休息申请会出现在这里</div>`;
  if(gs.length){
   h+=`<div class="sec-title"><h3>等级建议待审批</h3><span class="more">${gs.length} 条</span></div>`;
   h+=gs.map((g,i)=>`<div class="todo"><div class="who">${esc(nameOf(g))}　<span class="tag t-amber">建议 ${g.grade}</span></div>
@@ -921,7 +949,7 @@ function render(){
  if(!document.getElementById('bellf')){ph.insertAdjacentHTML('beforeend',BELLF);document.getElementById('bellf').onclick=()=>openNotif();}
  Object.keys(name2team).forEach(k=>delete name2team[k]);(D.anchors||[]).forEach(a=>name2team[a.name]=a.team);
  _rowMeta={};(D.subs||[]).concat(D.flags||[],D.status||[],D.appeals||[],D.grades||[]).forEach(x=>{if(x.sec)_rowMeta[x.sec]={nick:nameOf(x),op:x.op||''};});
- const todoN=(D.grades||[]).filter(g=>inT(g.anchor)).length+(D.appeals||[]).filter(g=>inT(g.anchor)).length;
+ const todoN=(D.grades||[]).filter(g=>inT(g.anchor)).length+(D.appeals||[]).filter(g=>inT(g.anchor)).length+(_rests?(_rests['待审批']||[]).length:0);
  root.innerHTML=`<div class="topbar"><div class="avatar" style="background:transparent"><img src="assets/logo-white.png" alt="梦华录" style="width:34px;height:auto;display:block"></div><div><div class="name">运营工作台</div>
   <div class="meta">${esc(D.scope||'运营')} · ${(()=>{const ti=Object.values(D.teams||{}).reduce((s,t)=>s+(t.today.income||0),0),yi=Object.values(D.teams||{}).reduce((s,t)=>s+(t.yesterday.income||0),0);return ti>0?`<b style="color:var(--lime)">今日 ¥${fmtM(ti)}</b>`:(yi>0?`昨日 ¥${fmtM(yi)}`:'今日未开');})()} · 实时数据</div></div>
   <button class="rf" id="rf">刷新</button></div>
@@ -977,7 +1005,8 @@ function render(){
   else{const g=(D.appeals||[]).filter(g=>inT(g.anchor))[+idx];const sel=document.getElementById('ovr'+idx).value.split('|');
    review(type,subId,action,{sec:g.sec,gid:sel[0],tid:sel[1],anchor:g.anchor},b);}
  });
- document.querySelectorAll('[data-tabgo]').forEach(r=>r.onclick=()=>{switchTab(r.dataset.tabgo);if(r.dataset.tabgo==='sched'&&!_mu)loadMu();});}
+ document.querySelectorAll('[data-tabgo]').forEach(r=>r.onclick=()=>{switchTab(r.dataset.tabgo);if(r.dataset.tabgo==='sched'&&!_mu)loadMu();});
+ document.querySelectorAll('[data-rvrest]').forEach(b=>b.onclick=()=>{const [pid,dec]=b.dataset.rvrest.split('|');restReview(pid,dec,b);});}
 const t0=new URLSearchParams(location.search).get('t');
 if(t0){localStorage.setItem('ops_token',t0.trim().toLowerCase());history.replaceState(null,'',location.pathname);}
 if(storedToken())load(storedToken());else showLogin('');
