@@ -327,8 +327,9 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const root=document.getElementById('root');
 let DATA=null;
+let _muMakeup=null;   // 工单⑲c：本人今明两天已发布妆发排班（Worker /api/anchor/makeup）
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v91';
+const APP_VERSION='v92';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;if(y>=100)return '¥'+Math.round(y).toLocaleString();return '¥'+(Math.round(y*10)/10);}   /* v84：≥100 加千分位（¥7,847），与业绩卡排版同标准 */
@@ -384,6 +385,41 @@ function mysteryBlock(){const m=DATA.mystery;if(!m||!m.length)return '';
  return `<div class="tier closed"><div class="t-head"><div class="t-ico" style="background:var(--gray-bg);color:var(--ink2)">🎭</div>
   <div><div class="t-name">神秘人</div><div class="t-sub">匿名送礼 · 按行为指纹认老朋友</div></div>
   <div class="t-cnt">${m.length}<small> 个</small></div></div><div class="trows">${rows}</div>${foot}</div>`;}
+/* ===== 你的妆发（工单⑲c）：今明两天已发布妆发排班卡 + 开场前提醒横幅 ===== */
+const MUAPI_URL='https://fb.menghualu.com.co/api/anchor/makeup';
+function bjToday(){return new Date(Date.now()+8*3600e3).toISOString().slice(0,10);}
+async function loadMakeup(){
+ try{const r=await fetch(MUAPI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken()})});
+  const d=await r.json();if(!r.ok||!d.ok)return;
+  _muMakeup=d.rows||[];
+  if(document.getElementById('v-today'))render();
+  muReminder();
+ }catch(e){}}
+function muReminder(){   // 进 App：今天有已发布妆发格且距开始 30-75 分钟 → 顶部横幅（v64 pushBanner，按日防重）
+ if(!_muMakeup||!_muMakeup.length)return;
+ const day=bjToday();
+ if(localStorage.getItem('mu_banner_'+day))return;
+ const now=new Date();
+ const hit=_muMakeup.filter(x=>x.date===day).map(x=>{
+   const t=new Date(x.date+'T'+x.slot.slice(0,5)+':00+08:00');
+   return {x,mins:Math.round((t-now)/60000)};}).filter(o=>o.mins>=30&&o.mins<=75);
+ if(!hit.length)return;
+ const first=hit.sort((a,b)=>a.mins-b.mins)[0];
+ pushBanner({kind:'data_updated',level:'banner',title:'你的妆发 '+first.x.slot.slice(0,5)+' 开始',
+  body:first.x.artist+' 给你做'+first.x.type+' · '+first.x.venue+' · 还有 '+Math.round(first.mins)+' 分钟',time:'现在'});
+ localStorage.setItem('mu_banner_'+day,'1');}
+function makeupCard(){
+ if(!_muMakeup||!_muMakeup.length)return '';   // 无排班不显卡
+ const day=bjToday();
+ const row=x=>{const cls={'妆':'t-red','发':'t-amber','改':'t-blue','妆发':'t-green'}[x.type]||'t-gray';
+  return `<div class="urow" style="cursor:default;padding-top:9px;padding-bottom:9px"><div class="u-main">
+   <div class="u-line1"><span class="u-nick">${escapeHtml(x.slot.slice(0,5))}–${escapeHtml(x.slot.slice(6,11))} · ${escapeHtml(x.artist)}</span><span class="u-t">${x.date===day?'今天':'明天'}</span></div>
+   <div class="u-tags"><span class="tag ${cls}">${escapeHtml(x.type)}</span><span class="tag t-gray">${escapeHtml(x.venue||'')}</span></div></div></div>`;};
+ const t=_muMakeup.filter(x=>x.date===day),m=_muMakeup.filter(x=>x.date!==day);
+ return `<div class="tier" style="margin-bottom:14px"><div class="t-head"><div class="t-ico" style="background:var(--red-bg);color:var(--red)">妆</div>
+  <div><div class="t-name">你的妆发</div><div class="t-sub">${t.length?('今天 '+t.length+' 件'):'今天无排班'}${_muMakeup.length?(' · 共 '+_muMakeup.length+' 件 · 已发布'):''}</div></div>
+  <div class="t-cnt">${_muMakeup.length}<small> 件</small></div></div>
+  ${t.map(row).join('')}${m.map(row).join('')}</div>`;}
 function viewToday(){const c=DATA.counts,ch=DATA.churn;
  const cross=DATA.crossToday.length?`<div class="cross">${GLOBE}
   <div class="c-txt">今天有 <b>${DATA.crossToday.length} 位跨团用户</b>给你送礼，也在其他团消费，注意客情；<b>不显示对方归属</b>。</div></div>`:'';
@@ -394,6 +430,7 @@ function viewToday(){const c=DATA.counts,ch=DATA.churn;
   ${ch.c.slice(0,1).map(s=>churnCard(s,'cc2','长尾')).join('')}</div>`;
  return `<div class="view show" id="v-today">${topbar()}<div class="wrap">
   ${cross}
+  ${makeupCard()}
   <div class="sec-title"><h3>今日维护</h3><span class="more">按对我消费分层</span></div>
   ${tier('l3','L3','重点维护','消费 > 99 元 · 今天必聊',DATA.l3)}
   ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2)}
@@ -541,7 +578,7 @@ async function autoRefreshData(force){
   const r=await fetch(`data/${storedToken()}.json`,{cache:'no-store'});
   if(!r.ok)return;const d=await r.json();const nl=r.headers.get('Last-Modified')||'';
   if(!d||!d.anchor||(d.anchor.date===DATA.anchor.date&&nl===_dataMod))return;
-  _dataMod=nl;DATA=d;document.title='画像·'+d.anchor.name;render();loadLiveFollow();
+  _dataMod=nl;DATA=d;document.title='画像·'+d.anchor.name;render();loadLiveFollow();loadMakeup();
   pushBanner({kind:'data_updated',level:'banner',title:'数据已更新',body:'已刷新到 '+d.anchor.date+' 最新场次，今日维护名单看这里',time:'现在'});
  }catch(e){}
 }
@@ -1056,7 +1093,7 @@ function track(ev,meta){try{const b=JSON.stringify({token:storedToken(),ev:ev,me
  fetch('https://fb.menghualu.com.co/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:b}).catch(()=>{});}catch(e){}}
 function loadData(tok){
  fetch(`data/${tok}.json`).then(r=>{if(!r.ok)throw 0;_dataMod=r.headers.get('Last-Modified')||'';return r.json();}).then(d=>{DATA=d;
-  document.title='画像·'+d.anchor.name;root.insertAdjacentHTML('afterend',TABBAR+BELLF);render();loadLiveFollow();loadD1Notifs();track('open');})
+  document.title='画像·'+d.anchor.name;root.insertAdjacentHTML('afterend',TABBAR+BELLF);render();loadLiveFollow();loadD1Notifs();loadMakeup();track('open');})
  .catch(()=>{localStorage.removeItem('anchor_token');
    showLogin('访问码无效或已失效，请重新输入或找运营补发');});
  setupSW();}
