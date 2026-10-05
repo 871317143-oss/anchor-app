@@ -198,7 +198,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.27';
+const OPS_VERSION='v3.28';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -229,6 +229,7 @@ let _radar={};
 async function loadRadar(){   // v3.18 主播能力雷达（gen_anchor_radar.py 每日随管线生成）
  try{const tids=Object.keys(D.teams||{});_radar={};
   await Promise.all(tids.map(async t=>{const r=await fetch(`data/radar_${t}.json?cb=`+Date.now());if(r.ok){const d=await r.json();Object.assign(_radar,d.anchors||{});}}));
+  if(_tab==='people')render();   // v3.28 雷达异步到后补渲染，人员列表头像即时出现
  }catch(e){}}
 function radarCard(name){const r=_radar[name];if(!r)return '';
  const CX=100,CY=104,R=66,AX=['稳定','流水','趋势','留存','新客'],V=[r.stability,r.income,r.trend,r.retention,r.newcus];
@@ -385,8 +386,9 @@ function vPeople(){
    const st=p?p.status:'';
    const stTag=st==='上播中'?`<span class="tag t-green">${st}</span>`:st?`<span class="tag t-gray">${st}</span>`:'';
    const perfTag=p?'':(_perfs?'<span class="tag t-gray">档案未找到</span>':'<span class="tag t-gray">业绩加载中…</span>');
+   const av=(_radar[a.name]||{}).av;   // v3.28 人员列表行头像：复用雷达 av（onerror 回退首字母，与雷达卡头同款）
    h+=`<div class="urow" data-person="${esc(a.name)}" style="${i?'border-top:1px solid var(--line)':''}">
-    <div class="avatar" style="background:${colorOf(a.name)};width:38px;height:38px;font-size:15px">${a.name[0]}</div>
+    <div class="avatar" style="position:relative;background:${colorOf(a.name)};width:38px;height:38px;font-size:15px">${a.name[0]}${av?`<img src="${esc(av)}" style="position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.remove()">`:''}</div>
     <div class="u-main"><div class="u-line1"><span class="u-nick">${esc(a.name)}</span><span class="u-val">${p?('¥'+fmtM(p.month_income)):' '}</span></div>
     <div class="u-tags">${stTag}${p&&p.warn?`<span class="tag ${p.warn.includes('🟢')?'t-green':p.warn.includes('🟡')?'t-amber':'t-red'}">${esc(p.warn)}</span>`:''}${perfTag}</div></div></div>`;});
   h+='</div>';});
