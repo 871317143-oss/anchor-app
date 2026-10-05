@@ -317,6 +317,41 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .urow.nr{background:linear-gradient(rgba(214,79,24,.07),rgba(214,79,24,.07)),var(--card);}   /* 未回复：灰中带红 */
 .pv-hint{margin-left:auto;font-size:12px;color:var(--on-bg2);font-weight:500;}
 .qk-t{font-size:12px;font-weight:700;color:var(--ink2);margin:16px 18px 7px;}
+
+/* ===== v96 液态玻璃·莫兰迪试点（design-system §8 v9 终稿参数，作用域 #v-me） ===== */
+body::before{content:'';position:fixed;inset:0;background:url('assets/bg-morandi.jpg') center 30%/cover;filter:brightness(1.05) saturate(.96);z-index:0}
+body::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(240,244,246,.10) 0%,rgba(240,244,246,.20) 55%,rgba(226,234,238,.50) 100%);z-index:0;pointer-events:none}
+.phone{background:none!important}
+.phone>*{position:relative;z-index:1}
+#v-me{--ink:#22301f;--ink2:#4a5a42;--ink3:#7a8570;--lime:#5a7a35;--lime-hi:#8fb84a;
+ --glass-bg:rgba(255,255,255,.5);--glass-edge:1px solid rgba(255,255,255,.65);--glass-hi:inset 0 1px 0 rgba(255,255,255,.85);--glass-shadow:0 8px 24px rgba(60,90,120,.16);
+ --diffuse:radial-gradient(90% 120% at 0% 0%,rgba(244,183,196,.5),transparent 60%),radial-gradient(90% 110% at 100% 0%,rgba(201,236,90,.42),transparent 62%),radial-gradient(120% 120% at 50% 110%,rgba(168,196,228,.48),transparent 65%),rgba(255,255,255,.34)}
+#v-me .g9{background:var(--glass-bg);-webkit-backdrop-filter:blur(24px) saturate(1.3);backdrop-filter:blur(24px) saturate(1.3);border:var(--glass-edge);box-shadow:var(--glass-hi),var(--glass-shadow);border-radius:24px}
+#v-me .diff{background:var(--diffuse)}
+#v-me .bgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px;padding:8px 16px 4px}
+#v-me .bc{height:108px;padding:14px 15px;font-size:12px;display:flex;flex-direction:column;color:var(--ink)}
+#v-me .bc .t{font-size:10px;color:var(--ink2);font-weight:500;display:flex;align-items:center;gap:5px}
+#v-me .bc .t svg{width:12px;height:12px;stroke:var(--ink2);fill:none;stroke-width:1.6;opacity:.9}
+#v-me .bc .b{font-size:17px;font-weight:600;margin-top:auto;color:var(--ink)}
+#v-me .bc .s{font-size:10px;color:var(--ink3);margin-top:4px}
+#v-me .bc.res{opacity:.55}
+#v-me .badge9{float:right;font-size:8px;padding:1px 6px;border-radius:99px;background:rgba(214,138,20,.15);color:#c07f08;margin-left:auto}
+#v-me .hello{display:flex;align-items:center;gap:10px;padding:14px 22px 2px;font-size:20px;font-weight:600;color:var(--ink);white-space:nowrap}
+#v-me .hello .hi{font-weight:400;color:var(--ink2)}
+#v-me .hello .nm{font-size:18px;font-weight:500}
+#v-me .hello .av9{width:40px;height:40px;border-radius:50%;overflow:hidden;border:1.5px solid rgba(255,255,255,.85);box-shadow:0 2px 8px rgba(60,90,120,.2);background:#5a7a35;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;position:relative}
+#v-me .hello .av9 img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#v-me .sub9{padding:8px 22px 0;font-size:13px;color:var(--ink2)}
+#v-me .sub9 b{color:var(--lime);font-weight:700}
+#v-me .dots9{display:flex;justify-content:center;gap:6px;padding:12px 0 6px}
+#v-me .dots9 i{width:5px;height:5px;border-radius:50%;background:rgba(90,110,100,.35)}
+#v-me .dots9 i.on{background:var(--lime);width:14px;border-radius:99px}
+#v-me .aibar{display:flex;align-items:center;gap:8px;margin:6px 14px 10px;padding:12px 16px;border-radius:26px;font-size:13px;color:var(--ink3);cursor:pointer}
+#v-me .aibar .go{margin-left:auto;width:30px;height:30px;border-radius:50%;background:var(--lime-hi);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+#v-me .topbar,#v-me .sec-title,#v-me .foot{position:relative;z-index:1}
+#v-me .topbar .name,#v-me .topbar .meta{color:var(--ink)!important}
+#v-me .topbar .meta{opacity:.7}
+
 </style>
 </head>
 <body>
@@ -329,7 +364,7 @@ const root=document.getElementById('root');
 let DATA=null;
 let _muMakeup=null;   // 工单⑲c：本人今明两天已发布妆发排班（Worker /api/anchor/makeup）
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v95';
+const APP_VERSION='v96';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;if(y>=100)return '¥'+Math.round(y).toLocaleString();return '¥'+(Math.round(y*10)/10);}   /* v84：≥100 加千分位（¥7,847），与业绩卡排版同标准 */
@@ -451,24 +486,38 @@ function renderList(t){
   ${total>200?`<div class="empty">共 ${total} 人，仅显示前 200（按累计排序）</div>`:''}`;}
 function renderSearch(q){renderList(_curTier);}  // 兼容旧引用
 function viewMe(){const a=DATA.anchor,c=DATA.counts,total=Object.keys(DATA.users).length;
- return `<div class="view" id="v-me">${topbar()}<div class="wrap"><div class="me-brand"><img src="assets/logo-full.png" alt="梦华录"></div>
-  <div class="me-card">
-  <div class="me-row"><span>我的客群（给我刷过）</span><b>${total} 人</b></div>
-  <div class="me-row"><span>今日重点 L3</span><b>${c.l3} 人</b></div>
-  <div class="me-row"><span>今日拉群 L2</span><b>${c.l2} 人</b></div>
-  <div class="me-row"><span>今日感谢 L1</span><b>${c.l1} 人</b></div>
-  <div class="me-row"><span>主动问候 SAB</span><b>${c.greet} 人</b></div>
-  <div class="me-row"><span>需唤醒 A/B/C</span><b>${c.chA}/${c.chB}/${c.chC}</b></div>
-  <div class="me-row"><span>今日跨团用户</span><b>${c.crossToday} 人</b></div>
-  <div class="me-row"><span>今日回归老客</span><b>${c.ret} 人</b></div></div>
-  <div class="me-card" style="margin-top:12px">
-  <div class="me-row" data-act="rest" style="cursor:pointer"><span>🛌 申请休息</span><b>›</b></div>
-  <div class="me-row" data-act="pref" style="cursor:pointer"><span>💇 我的意向老师</span><b>›</b></div></div>
-  <div style="padding:16px 2px 0"><button class="btn btn-ghost" data-act="logout" style="width:100%">退出登录 / 换账号</button></div>
-  <div class="empty" style="padding:24px 10px 10px">版本 ${APP_VERSION}　数据每场下播后自动更新<br>口径只与你自己相关</div></div></div>`;}
-/* 工单⑲d：休息申请 + 意向老师（老板 10-05 规则：休息都要运营点头，无卡必填原因；意向>师承） */
-const MU_TEACHERS=['小月','小颖','潘潘','阿日','岩岩','娜娜酱','刘媚','张倩','李庆','萍萍','常蕾','徐徐'];
-const REST_TYPES=['休息卡抵扣','事假（无卡）','病假（无卡）','其他（无卡）'];
+ const nm=a.nick||a.name||'';const av=a.av||'';
+ const pending=(c.l3||0)+(c.l2||0)+(c.greet||0);
+ const card=(ic,t,b,s,cls,act)=>`<div class="bc g9 ${cls||''}"${act?` data-act="${act}" style="cursor:pointer"`:''}>
+   <div class="t">${ic}${t}</div><div class="b">${b}</div><div class="s">${s}</div></div>`;
+ const ICO={
+  trend:`<svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>`,
+  user:`<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>`,
+  check:`<svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>`,
+  cal:`<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>`,
+  cam:`<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M3 17l5-4 4 3 4-3 5 4"/></svg>`,
+  star:`<svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.3 5.9.8-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.1l5.9-.8z"/></svg>`,
+  mail:`<svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>`,
+  clock:`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>`};
+ return `<div class="view" id="v-me">${topbar()}
+ <div class="hello"><span class="hi">Hello,</span><div class="av9">${(nm||'?')[0]}${av?`<img src="${av}" onerror="this.remove()">`:''}</div><span class="nm">${escapeHtml(nm)}</span></div>
+ <div class="sub9">还有 <b>${pending}</b> 件事没做</div>
+ <div class="bgrid">
+  ${card(ICO.trend,'业绩','<span id="bPerfVal">…</span>','保底 <span id="bPerfProg">…</span>','diff')}
+  ${card(ICO.user,'用户',`维护 ${pending} · 清单 ${total}`,`L3×${c.l3||0} 待办`,'','tab-users')}
+  ${card(ICO.check,'行动',`${fbDoneCount()}/${pending+c.l1||0}`,'L3维护 · 问候 · 生日','','tab-today')}
+  ${card(ICO.cal,'每周时间表<span class="badge9">预留</span>','本周开播 + 妆发排期','','res')}
+  ${card(ICO.cam,'妆容<span class="badge9">预留</span>','往期每日妆容回看','','res diff')}
+  ${card(ICO.star,'荣誉<span class="badge9">预留</span>','奖励 · 周赛 · 月赛','','res diff')}
+  ${card(ICO.mail,'申请','化妆师意向 · 休息','投诉 · 建议直达','','apply')}
+  ${card(ICO.clock,'通关表','资料卡','群规 · 每日作业<span style="color:#c07f08">预留</span>','res')}
+ </div>
+ <div class="dots9"><i class="on"></i><i></i></div>
+ <div class="aibar g9" data-act="ai">✨ 问小梦：帮我看看 TT 最近怎么了…<div class="go">↑</div></div>
+ <div class="foot">版本 ${APP_VERSION} · 液态玻璃试点版 · 数据每场下播后自动更新</div>
+ </div>`;}
+function fbDoneCount(){try{return Object.keys(_fbCloud||{}).length}catch(e){return 0}}
+
 function openRestSheet(){
  const tmr=new Date(Date.now()+8*3600e3+86400e3).toISOString().slice(0,10);
  const today=new Date(Date.now()+8*3600e3).toISOString().slice(0,10);
@@ -715,7 +764,14 @@ function switchTab(t,dir){TABS.forEach(x=>{const v=document.getElementById('v-'+
  document.querySelectorAll('.tabbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
  if(dir){const v=document.getElementById('v-'+t);if(v){v.classList.remove('sl','sr');void v.offsetWidth;v.classList.add(dir==='l'?'sl':'sr');}}
  if(t==='search'){renderList(_curTier);}
- if(t==='perf'){loadPerf();}}
+ if(t==='perf'){loadPerf();}
+ if(t==='me')loadPerfBento();}
+function loadPerfBento(){
+ fetch(PERF_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken()})})
+ .then(r=>r.json()).then(d=>{if(!d.ok||!d.perf)return;const p=d.perf;
+  const v=document.getElementById('bPerfVal'),g=document.getElementById('bPerfProg');
+  if(v)v.textContent='¥'+Math.round(p.month_income||0).toLocaleString();
+  if(g)g.textContent='保底 '+Math.round((p.base_progress||0)*100)+'% · 开播 '+(p.month_days||0)+' 天';}).catch(()=>{});}
 function render(){root.innerHTML=viewToday()+viewPerf()+viewSearch()+viewMe();switchTab('today');updateNotifBadge();}
 function openProfile(sec){closeProfile();root.insertAdjacentHTML('beforeend',viewProfile(sec));track('profile_open',sec.slice(-4));
  const _pv=document.getElementById('pv');
@@ -942,6 +998,10 @@ document.addEventListener('click',e=>{
  const tb=e.target.closest('.tabbar .tb');
  if(ac){const act=ac.dataset.act;
  if(act==='logout'){localStorage.removeItem('anchor_token');location.reload();return;}
+ if(act==='tab-users'){switchTab('search');return;}
+ if(act==='tab-today'){switchTab('today');return;}
+ if(act==='apply'){document.querySelector('[data-act=\'rest\']')?document.querySelector('[data-act=\'rest\']').click():toast('下滑到「申请休息」入口');return;}
+ if(act==='ai'){toast('点开任意用户画像，小梦就在那里等你');return;}
  if(act==='notif'){openNotif();return;}
  if(act==='rest'){openRestSheet();return;}
  if(act==='pref'){openPrefSheet();return;}
