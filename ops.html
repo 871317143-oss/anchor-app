@@ -198,7 +198,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.28';
+const OPS_VERSION='v3.29';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -383,14 +383,21 @@ function vPeople(){
   h+=`<div class="sec-title" style="margin:14px 2px 10px"><h3 style="font-size:15px;color:var(--on-bg2)">${esc(tn.replace('梦华录',''))}</h3><span class="more">${groups[tn].length} 人</span></div><div class="tier">`;
   groups[tn].forEach((a,i)=>{
    const p=_perfs&&_perfs[a.name];
-   const st=p?p.status:'';
-   const stTag=st==='上播中'?`<span class="tag t-green">${st}</span>`:st?`<span class="tag t-gray">${st}</span>`:'';
-   const perfTag=p?'':(_perfs?'<span class="tag t-gray">档案未找到</span>':'<span class="tag t-gray">业绩加载中…</span>');
-   const av=(_radar[a.name]||{}).av;   // v3.28 人员列表行头像：复用雷达 av（onerror 回退首字母，与雷达卡头同款）
+   const rv=_radar[a.name]||{};
+   const av=rv.av;   // v3.28 人员列表行头像：复用雷达 av（onerror 回退首字母，与雷达卡头同款）
+   // v3.29 老板口径：撤「上播中/正常」常亮标（异常才亮）；行右流水改雷达综合分（红黄绿分档，与解读层同色）；名字下改保底进度条+流水小字
+   const ov=rv.overall,ovCl=ov==null?'var(--ink3)':ov<40?'var(--red)':ov<70?'var(--amber)':'var(--green)';
+   const abTags=[];
+   if(p&&p.status&&p.status!=='上播中')abTags.push(`<span class="tag t-gray">${esc(p.status)}</span>`);
+   if(p&&p.warn&&!p.warn.includes('🟢'))abTags.push(`<span class="tag ${p.warn.includes('🟡')?'t-amber':'t-red'}">${esc(p.warn)}</span>`);
+   if(rv.top1pct>=70)abTags.push(`<span class="tag t-red">头部依赖 ${rv.top1pct}%</span>`);
+   if(!p)abTags.push(_perfs?'<span class="tag t-gray">档案未找到</span>':'<span class="tag t-gray">业绩加载中…</span>');
+   const prog=p&&p.base?Math.min(100,Math.round((p.base_progress||0)*100)):null;
+   const sub=p?`<div style="display:flex;align-items:center;gap:8px;margin-top:7px">${prog!=null?`<div style="flex:1;height:5px;border-radius:999px;background:var(--gray-bg);overflow:hidden"><div style="width:${Math.max(3,prog)}%;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--brand-soft),var(--lime))"></div></div>`:''}<span style="flex:none;font-size:11px;color:var(--ink3)">¥${fmtM(p.month_income)}${prog!=null?` · 保底${prog}%`:''}</span></div>`:'';
    h+=`<div class="urow" data-person="${esc(a.name)}" style="${i?'border-top:1px solid var(--line)':''}">
     <div class="avatar" style="position:relative;background:${colorOf(a.name)};width:38px;height:38px;font-size:15px">${a.name[0]}${av?`<img src="${esc(av)}" style="position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.remove()">`:''}</div>
-    <div class="u-main"><div class="u-line1"><span class="u-nick">${esc(a.name)}</span><span class="u-val">${p?('¥'+fmtM(p.month_income)):' '}</span></div>
-    <div class="u-tags">${stTag}${p&&p.warn?`<span class="tag ${p.warn.includes('🟢')?'t-green':p.warn.includes('🟡')?'t-amber':'t-red'}">${esc(p.warn)}</span>`:''}${perfTag}</div></div></div>`;});
+    <div class="u-main"><div class="u-line1"><span class="u-nick">${esc(a.name)}</span><span class="u-val" style="color:${ovCl};font-size:16px;font-weight:800">${ov!=null?ov:'—'}<small style="font-size:10px;font-weight:500;color:var(--ink3)"> 综合</small></span></div>
+    ${sub}${abTags.length?`<div class="u-tags">${abTags.join('')}</div>`:''}</div></div>`;});
   h+='</div>';});
  return h+'</div>';}
 function openPerson(name){
