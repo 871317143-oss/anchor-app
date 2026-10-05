@@ -196,7 +196,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.24';
+const OPS_VERSION='v3.25';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
@@ -269,7 +269,22 @@ async function load(tok){
   D=d;render();loadPerfs();loadRadar();loadOffairStatus();loadD1Notifs();
  }catch(e){
   if(String(e).includes('AbortError')){root.innerHTML='<div class="empty">网络超时，点这里重试</div>';root.onclick=()=>{root.onclick=null;load(tok);};return;}
-  localStorage.removeItem('ops_token');showLogin(e.message||'加载失败');}}
+  localStorage.removeItem('ops_token');showLogin(e.message||'加载失败');}
+ setupSW();}
+/* v3.25 壳自更新（此前 ops.html 零 SW 代码——只用运营版的人壳永远不更新，卡在旧版本） */
+function setupSW(){
+ if(!('serviceWorker' in navigator))return;
+ let refreshing=false;
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{if(refreshing)return;refreshing=true;location.reload();});
+ navigator.serviceWorker.register('sw.js').then(reg=>{
+  const check=()=>{try{reg.update();}catch(e){}
+   fetch('ops.html?cv='+Date.now(),{cache:'no-store'}).then(r=>r.text()).then(t=>{
+    const m=t.match(/OPS_VERSION='(v[\d.]+)'/);
+    if(m&&m[1]!==OPS_VERSION){let b=document.getElementById('updBar');if(!b){b=document.createElement('div');b.id='updBar';
+     b.style.cssText='position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 10px);z-index:90;background:var(--brand);color:#fff;padding:11px 14px;border-radius:12px;font-size:14px;font-weight:600;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.22);cursor:pointer';
+     b.textContent='发现新版本，点击更新';b.onclick=()=>location.reload();document.getElementById('phone').appendChild(b);}}}).catch(()=>{});};
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)check();});
+  setInterval(check,20*60*1000);}).catch(()=>{});}
 async function offair(tid,name){
  if(!confirm(`确认标记「${name}」已下播？AI 将自动采集并跑一条龙`))return;
  try{
