@@ -2,20 +2,6 @@
  "date": "2026-10-05",
  "tid": "menghualu_xingzhou",
  "anchors": {
-  "九月": {
-   "name": "九月",
-   "gid": "2280806304725415",
-   "stability": 39,
-   "trend": 71,
-   "coop": 23,
-   "retention": 39,
-   "avg7": 9243,
-   "days30": 15,
-   "fb": "3天/15条",
-   "retention_n": "29/75",
-   "income": 89,
-   "overall": 52
-  },
   "盈盈": {
    "name": "盈盈",
    "gid": "1524351324153977",
@@ -23,12 +9,16 @@
    "trend": 75,
    "coop": 15,
    "retention": 37,
+   "newc_n": 112,
+   "top1nick": "月明空照影💤",
+   "top1pct": 20,
    "avg7": 3642,
    "days30": 15,
    "fb": "2天/16条",
    "retention_n": "34/93",
    "income": 78,
-   "overall": 49
+   "newcus": 94,
+   "overall": 65
   },
   "丸子": {
    "name": "丸子",
@@ -37,12 +27,16 @@
    "trend": 76,
    "coop": 23,
    "retention": 40,
+   "newc_n": 95,
+   "top1nick": "洛辰   🐰",
+   "top1pct": 7,
    "avg7": 3482,
    "days30": 15,
    "fb": "3天/27条",
    "retention_n": "43/108",
    "income": 67,
-   "overall": 49
+   "newcus": 83,
+   "overall": 61
   },
   "云兮": {
    "name": "云兮",
@@ -51,12 +45,34 @@
    "trend": 77,
    "coop": 8,
    "retention": 41,
+   "newc_n": 93,
+   "top1nick": "永遠的歐皇黑色幽默",
+   "top1pct": 37,
    "avg7": 3374,
    "days30": 15,
    "fb": "1天/3条",
    "retention_n": "43/105",
    "income": 67,
-   "overall": 46
+   "newcus": 72,
+   "overall": 59
+  },
+  "九月": {
+   "name": "九月",
+   "gid": "2280806304725415",
+   "stability": 39,
+   "trend": 71,
+   "coop": 23,
+   "retention": 39,
+   "newc_n": 65,
+   "top1nick": "旮旯卐卍",
+   "top1pct": 40,
+   "avg7": 9243,
+   "days30": 15,
+   "fb": "3天/15条",
+   "retention_n": "29/75",
+   "income": 89,
+   "newcus": 50,
+   "overall": 58
   },
   "青霓": {
    "name": "青霓",
@@ -65,12 +81,16 @@
    "trend": 72,
    "coop": 23,
    "retention": 42,
+   "newc_n": 72,
+   "top1nick": "Neo",
+   "top1pct": 22,
    "avg7": 1794,
    "days30": 15,
    "fb": "3天/29条",
    "retention_n": "39/92",
    "income": 22,
-   "overall": 40
+   "newcus": 61,
+   "overall": 47
   },
   "柚子": {
    "name": "柚子",
@@ -79,12 +99,16 @@
    "trend": 42,
    "coop": 8,
    "retention": 43,
+   "newc_n": 55,
+   "top1nick": "🧊冷🧊",
+   "top1pct": 22,
    "avg7": 3125,
    "days30": 15,
    "fb": "1天/2条",
    "retention_n": "29/68",
    "income": 56,
-   "overall": 38
+   "newcus": 39,
+   "overall": 44
   },
   "南婉": {
    "name": "南婉",
@@ -93,12 +117,16 @@
    "trend": 52,
    "coop": 8,
    "retention": 43,
+   "newc_n": 43,
+   "top1nick": "🌙永☁️力✨",
+   "top1pct": 48,
    "avg7": 1940,
    "days30": 15,
    "fb": "1天/6条",
    "retention_n": "23/54",
    "income": 44,
-   "overall": 37
+   "newcus": 17,
+   "overall": 39
   },
   "璐璐": {
    "name": "璐璐",
@@ -107,12 +135,16 @@
    "trend": 57,
    "coop": 8,
    "retention": 42,
+   "newc_n": 52,
+   "top1nick": "恹尘",
+   "top1pct": 18,
    "avg7": 1228,
    "days30": 15,
    "fb": "1天/3条",
    "retention_n": "20/48",
    "income": 11,
-   "overall": 31
+   "newcus": 28,
+   "overall": 35
   },
   "诺妍": {
    "name": "诺妍",
@@ -121,12 +153,16 @@
    "trend": 50,
    "coop": 0,
    "retention": 0,
+   "newc_n": 10,
+   "top1nick": "CCCCCCCC",
+   "top1pct": 65,
    "avg7": 759,
    "days30": 4,
    "fb": "0天/0条",
    "retention_n": "0/29",
    "income": 0,
-   "overall": 13
+   "newcus": 6,
+   "overall": 14
   }
  }
 }
