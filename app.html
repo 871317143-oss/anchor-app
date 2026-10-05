@@ -352,6 +352,26 @@ body::after{content:'';position:absolute;inset:0;background:linear-gradient(180d
 #v-me .topbar .name,#v-me .topbar .meta{color:var(--ink)!important}
 #v-me .topbar .meta{opacity:.7}
 
+
+/* ===== v97 无导航单页 + 卡片全屏扩展（emilkowalski/apple-design 动效口径：enter=ease-out spring、半透明阴影） ===== */
+#v-me{padding-bottom:0}
+.tabbar{display:none!important}
+#phone{padding-bottom:0!important}
+.xpage{position:fixed;inset:0;z-index:60;overflow-y:auto;overscroll-behavior:contain;
+ background:linear-gradient(168deg,rgba(240,244,246,.86),rgba(232,238,242,.92));
+ -webkit-backdrop-filter:blur(28px) saturate(1.25);backdrop-filter:blur(28px) saturate(1.25);
+ transform-origin:var(--ox,50%) var(--oy,60%);animation:xpageIn .32s cubic-bezier(.32,.72,.35,1) both}
+@keyframes xpageIn{from{transform:scale(.9) translateY(24px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.xpage.out{animation:xpageOut .24s cubic-bezier(.5,0,.75,0) both}
+@keyframes xpageOut{to{transform:scale(.94) translateY(18px);opacity:0}}
+.xpage .xback{position:sticky;top:0;z-index:2;display:flex;align-items:center;padding:calc(env(safe-area-inset-top) + 12px) 18px 8px;
+ font-size:15px;font-weight:700;color:#5a7a35;cursor:pointer;background:linear-gradient(180deg,rgba(240,244,246,.92),rgba(240,244,246,0))}
+.xpage .xpage-body .view{display:block!important;background:none}
+.xpage .xpage-body .topbar{display:none}
+/* 首页卡片可点态 */
+#v-me .bc{transition:transform .14s cubic-bezier(.32,.72,.35,1)}
+#v-me .bc:active{transform:scale(.965)}
+
 </style>
 </head>
 <body>
@@ -364,7 +384,7 @@ const root=document.getElementById('root');
 let DATA=null;
 let _muMakeup=null;   // 工单⑲c：本人今明两天已发布妆发排班（Worker /api/anchor/makeup）
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v96';
+const APP_VERSION='v97';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;if(y>=100)return '¥'+Math.round(y).toLocaleString();return '¥'+(Math.round(y*10)/10);}   /* v84：≥100 加千分位（¥7,847），与业绩卡排版同标准 */
@@ -488,7 +508,7 @@ function renderSearch(q){renderList(_curTier);}  // 兼容旧引用
 function viewMe(){const a=DATA.anchor,c=DATA.counts,total=Object.keys(DATA.users).length;
  const nm=a.nick||a.name||'';const av=a.av||'';
  const pending=(c.l3||0)+(c.l2||0)+(c.greet||0);
- const card=(ic,t,b,s,cls,act)=>`<div class="bc g9 ${cls||''}"${act?` data-act="${act}" style="cursor:pointer"`:''}>
+ const card=(ic,t,b,s,cls,act)=>`<div class="bc g9 ${cls||''}"${act?` data-act="${act}"`:''}>
    <div class="t">${ic}${t}</div><div class="b">${b}</div><div class="s">${s}</div></div>`;
  const ICO={
   trend:`<svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>`,
@@ -503,12 +523,12 @@ function viewMe(){const a=DATA.anchor,c=DATA.counts,total=Object.keys(DATA.users
  <div class="hello"><span class="hi">Hello,</span><div class="av9">${(nm||'?')[0]}${av?`<img src="${av}" onerror="this.remove()">`:''}</div><span class="nm">${escapeHtml(nm)}</span></div>
  <div class="sub9">还有 <b>${pending}</b> 件事没做</div>
  <div class="bgrid">
-  ${card(ICO.trend,'业绩','<span id="bPerfVal">…</span>','保底 <span id="bPerfProg">…</span>','diff')}
+  ${card(ICO.trend,'业绩','<span id="bPerfVal">…</span>','保底 <span id="bPerfProg">…</span>','diff','tab-perf')}
   ${card(ICO.user,'用户',`维护 ${pending} · 清单 ${total}`,`L3×${c.l3||0} 待办`,'','tab-users')}
   ${card(ICO.check,'行动',`${fbDoneCount()}/${pending+c.l1||0}`,'L3维护 · 问候 · 生日','','tab-today')}
-  ${card(ICO.cal,'每周时间表<span class="badge9">预留</span>','本周开播 + 妆发排期','','res')}
-  ${card(ICO.cam,'妆容<span class="badge9">预留</span>','往期每日妆容回看','','res diff')}
-  ${card(ICO.star,'荣誉<span class="badge9">预留</span>','奖励 · 周赛 · 月赛','','res diff')}
+  ${card(ICO.cal,'每周时间表<span class="badge9">预留</span>','本周开播 + 妆发排期','','res','soon')}
+  ${card(ICO.cam,'妆容<span class="badge9">预留</span>','往期每日妆容回看','','res diff','soon')}
+  ${card(ICO.star,'荣誉<span class="badge9">预留</span>','奖励 · 周赛 · 月赛','','res diff','soon')}
   ${card(ICO.mail,'申请','化妆师意向 · 休息','投诉 · 建议直达','','apply')}
   ${card(ICO.clock,'通关表','资料卡','群规 · 每日作业<span style="color:#c07f08">预留</span>','res')}
  </div>
@@ -517,6 +537,26 @@ function viewMe(){const a=DATA.anchor,c=DATA.counts,total=Object.keys(DATA.users
  <div class="foot">版本 ${APP_VERSION} · 液态玻璃试点版 · 数据每场下播后自动更新</div>
  </div>`;}
 function fbDoneCount(){try{return Object.keys(_fbCloud||{}).length}catch(e){return 0}}
+let _xp=null,_xpHome=null,_xpView=null;
+function openXpage(tab,ev){
+ const src=document.getElementById('v-'+tab);if(!src)return;
+ if(_xp)closeXpage();
+ const el=document.createElement('div');el.className='xpage';el.id='xpage';
+ const card=ev&&ev.target&&ev.target.closest?ev.target.closest('.bc'):null;
+ if(card){const r=card.getBoundingClientRect();el.style.setProperty('--ox',((r.left+r.width/2)/innerWidth*100)+'%');el.style.setProperty('--oy',((r.top+r.height/2)/innerHeight*100)+'%');}
+ el.innerHTML='<div class="xback" data-xback>‹ 返回</div><div class="xpage-body"></div>';
+ _xpHome=document.createComment('xpage-home');src.parentNode.insertBefore(_xpHome,src);
+ el.querySelector('.xpage-body').appendChild(src);
+ document.getElementById('phone').appendChild(el);
+ _xp=el;_xpView=src;
+ src.classList.add('show');
+ if(tab==='perf')loadPerf();
+ if(tab==='search'&&typeof renderList==='function')try{renderList(_curTier||'S');}catch(e){}
+ el.querySelector('[data-xback]').onclick=()=>closeXpage();}
+function closeXpage(){if(!_xp)return;const el=_xp;_xp=null;
+ if(_xpView&&_xpHome&&_xpHome.parentNode){_xpView.classList.remove('show');_xpHome.parentNode.insertBefore(_xpView,_xpHome);_xpHome.remove();}
+ _xpView=null;_xpHome=null;
+ el.classList.add('out');setTimeout(()=>el.remove(),240);}
 
 function openRestSheet(){
  const tmr=new Date(Date.now()+8*3600e3+86400e3).toISOString().slice(0,10);
@@ -772,7 +812,7 @@ function loadPerfBento(){
   const v=document.getElementById('bPerfVal'),g=document.getElementById('bPerfProg');
   if(v)v.textContent='¥'+Math.round(p.month_income||0).toLocaleString();
   if(g)g.textContent='保底 '+Math.round((p.base_progress||0)*100)+'% · 开播 '+(p.month_days||0)+' 天';}).catch(()=>{});}
-function render(){root.innerHTML=viewToday()+viewPerf()+viewSearch()+viewMe();switchTab('today');updateNotifBadge();}
+function render(){root.innerHTML=viewToday()+viewPerf()+viewSearch()+viewMe();switchTab('me');updateNotifBadge();}
 function openProfile(sec){closeProfile();root.insertAdjacentHTML('beforeend',viewProfile(sec));track('profile_open',sec.slice(-4));
  const _pv=document.getElementById('pv');
  if(_pv){const _ss=window.matchMedia('(display-mode: standalone)')&&window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;if(!_ss)_pv.classList.add('in-browser');}
@@ -998,10 +1038,12 @@ document.addEventListener('click',e=>{
  const tb=e.target.closest('.tabbar .tb');
  if(ac){const act=ac.dataset.act;
  if(act==='logout'){localStorage.removeItem('anchor_token');location.reload();return;}
- if(act==='tab-users'){switchTab('search');return;}
- if(act==='tab-today'){switchTab('today');return;}
+ if(act==='tab-users'){openXpage('search',e);return;}
+ if(act==='tab-today'){openXpage('today',e);return;}
+ if(act==='tab-perf'){openXpage('perf',e);return;}
  if(act==='apply'){document.querySelector('[data-act=\'rest\']')?document.querySelector('[data-act=\'rest\']').click():toast('下滑到「申请休息」入口');return;}
  if(act==='ai'){toast('点开任意用户画像，小梦就在那里等你');return;}
+ if(act==='soon'){toast('该功能筹备中，点亮后第一时间告诉你');return;}
  if(act==='notif'){openNotif();return;}
  if(act==='rest'){openRestSheet();return;}
  if(act==='pref'){openPrefSheet();return;}
@@ -1195,7 +1237,7 @@ function track(ev,meta){try{const b=JSON.stringify({token:storedToken(),ev:ev,me
  fetch('https://fb.menghualu.com.co/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:b}).catch(()=>{});}catch(e){}}
 function loadData(tok){
  fetch(`data/${tok}.json`).then(r=>{if(!r.ok)throw 0;_dataMod=r.headers.get('Last-Modified')||'';return r.json();}).then(d=>{DATA=d;
-  document.title='画像·'+d.anchor.name;root.insertAdjacentHTML('afterend',TABBAR+BELLF);render();loadLiveFollow();loadD1Notifs();loadMakeup();track('open');})
+  document.title='画像·'+d.anchor.name;root.insertAdjacentHTML('afterend',BELLF);render();loadLiveFollow();loadD1Notifs();loadMakeup();track('open');})
  .catch(()=>{localStorage.removeItem('anchor_token');
    showLogin('访问码无效或已失效，请重新输入或找运营补发');});
  setupSW();}
