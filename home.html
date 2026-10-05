@@ -19,7 +19,7 @@
 html,body{height:100%}
 body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;color:var(--ink);overflow:hidden}
 #phone{position:relative;height:100%;max-width:430px;margin:0 auto;overflow:hidden;background:#16123a}
-#phone::before{content:'';position:absolute;inset:0;background:url('assets/bg-morandi.jpg?v=2') center 28%/cover}
+#phone::before{content:'';position:absolute;inset:0;background:url('assets/bg-morandi.jpg?v=3') center 28%/cover}
 #phone::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(26,22,66,.10) 0%,rgba(26,22,66,0) 32%,rgba(216,206,243,.28) 100%)}
 @media(min-width:560px){
  body{background:radial-gradient(120% 90% at 50% 0%,#332c66 0%,#16123a 62%);display:flex;align-items:center;justify-content:center}
@@ -147,11 +147,17 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .sk{padding:40px 20px;text-align:center;color:var(--ink3);font-size:13px}
 #toast{position:absolute;left:50%;bottom:110px;transform:translateX(-50%) translateY(16px);background:rgba(38,32,80,.92);color:#fff;font-size:13px;padding:11px 18px;border-radius:10px;max-width:82%;text-align:center;opacity:0;transition:all .25s;pointer-events:none;z-index:90}
 /* ---- 首幕电影层（上滑起飞+水波转场） ---- */
-#bg2{position:absolute;inset:0;z-index:0;background:url('assets/bg-touch.jpg') center 28%/cover;opacity:0}
+#bg2{position:absolute;inset:0;z-index:0;background:url('assets/bg-touch.jpg?v=2') center 28%/cover;opacity:0}
+#gl{position:absolute;inset:0;z-index:1;display:none;width:100%;height:100%}
+#phone.gl-on #gl{display:block}
+#phone.gl-on::before{display:none}
+#phone.gl-on #bg2{display:none}
+#phone.gl-on #intro .ibg{display:none}
+#phone.gl-on:not(.landed) #hdr,#phone.gl-on:not(.landed) #board,#phone.gl-on:not(.landed) #floor,#phone.gl-on:not(.landed) #dots,#phone.gl-on:not(.landed) #aibar{visibility:hidden}
 #intro{position:absolute;inset:0;z-index:50;touch-action:none;will-change:transform;display:none}
 #intro .ibg{position:absolute;inset:0;background-position:center 28%;background-size:cover}
-#intro .ib1{background-image:url('assets/bg-morandi.jpg?v=2')}
-#intro .ib2{background-image:url('assets/bg-touch.jpg');opacity:0;clip-path:circle(0% at 50% 62%)}
+#intro .ib1{background-image:url('assets/bg-morandi.jpg?v=3')}
+#intro .ib2{background-image:url('assets/bg-touch.jpg?v=2');opacity:0;clip-path:circle(0% at 50% 62%)}
 #intro .igrad{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(26,22,66,.16) 0%,rgba(26,22,66,0) 38%,rgba(26,22,66,.26) 100%)}
 #ihero{position:absolute;left:0;right:0;top:55%;display:flex;flex-direction:column;align-items:center;gap:13px;will-change:transform}
 #iav{width:112px;height:112px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,.8);box-shadow:0 10px 32px rgba(26,22,66,.55);background:var(--acc);display:flex;align-items:center;justify-content:center;color:#fff;font-size:38px;font-weight:700;position:relative;animation:ifloat 3.2s ease-in-out infinite}
@@ -168,6 +174,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 </style></head><body>
 <div id="phone">
  <div id="bg2"></div>
+ <canvas id="gl"></canvas>
  <div id="hdr"></div>
  <div id="board"><div id="handle"><i></i></div><div id="bscroll"></div></div>
  <div id="floor"></div>
@@ -205,6 +212,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
  </div>
  <svg width="0" height="0" style="position:absolute"><filter id="rip" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence id="ript" type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="2" seed="3" result="n"/><feDisplacementMap id="ripd" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
 </div>
+<script src="assets/gsap.min.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -305,6 +313,78 @@ addEventListener('touchcancel',()=>{if(_tg){const b=_tg;_tg=null;if(b.drag)setBo
 $('#handle').addEventListener('click',()=>{if(!_supp)setBoard(!_exp);});
 $('#dots').addEventListener('click',()=>setBoard(!_exp));
 addEventListener('resize',()=>{if(DATA)layout();});
+/* ===== WebGL 真水波（Three.js 只做背景层，DOM 守全部功能） ===== */
+let GL=null;
+const GL_VERT=`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}`;
+const GL_FRAG=`precision highp float;varying vec2 vUv;
+uniform sampler2D t1,t2;uniform vec2 uCenter;uniform float uProgress,uRipAmp,uIdle,uTime,uAsp,uMaxR;
+uniform vec4 uCov1,uCov2;
+vec2 cov(vec2 uv,vec4 c){return uv*c.xy+c.zw;}
+void main(){
+ vec2 p=vUv-uCenter;p.x*=uAsp;float d=length(p);
+ float wave=sin(d*38.0-uTime*7.0)*uRipAmp*0.02*exp(-d*3.2);
+ float idle=(sin(vUv.x*5.5+uTime*0.55)+sin(vUv.y*4.5-uTime*0.42))*uIdle;
+ vec2 off=(d>0.0001?normalize(p):vec2(0.))*(wave+idle);off.x/=uAsp;
+ vec4 c1=texture2D(t1,cov(vUv+off,uCov1));
+ vec4 c2=texture2D(t2,cov(vUv+off,uCov2));
+ float r=uProgress*uMaxR;
+ float mixv=uProgress>=0.999?1.0:1.0-smoothstep(r-0.07,r+0.02,d);
+ gl_FragColor=mix(c1,c2,mixv);
+}`;
+function glCover(iw,ih,vw,vh){const ta=iw/ih,va=vw/vh;let sx,sy;if(ta>va){sx=va/ta;sy=1;}else{sx=1;sy=ta/va;}return [sx,sy,(1-sx)*0.5,(1-sy)*0.28];}
+async function initGL(){
+ if(RM||GL===false||GL)return;
+ if((navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=3){GL=false;return;}
+ try{
+  const THREE=await import('./assets/three.module.js');
+  const cv=$('#gl'),ph=$('#phone');
+  const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:false,alpha:false,powerPreference:'low-power',stencil:false,depth:false});
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+  const scene=new THREE.Scene(),cam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+  const ld=new THREE.TextureLoader();
+  const load=u=>new Promise((res,rej)=>ld.load(u,t=>{t.colorSpace=THREE.SRGBColorSpace;t.minFilter=THREE.LinearFilter;t.generateMipmaps=false;res(t)},undefined,rej));
+  const [t1,t2]=await Promise.all([load('assets/bg-morandi.jpg?v=3'),load('assets/bg-touch.jpg?v=2')]);
+  const uni={t1:{value:t1},t2:{value:t2},uCenter:{value:new THREE.Vector2(.5,.38)},uProgress:{value:0},uRipAmp:{value:0},uIdle:{value:0},uTime:{value:0},uAsp:{value:1},uMaxR:{value:0.9},uCov1:{value:new THREE.Vector4(1,1,0,0)},uCov2:{value:new THREE.Vector4(1,1,0,0)}};
+  const mat=new THREE.ShaderMaterial({uniforms:uni,vertexShader:GL_VERT,fragmentShader:GL_FRAG,depthTest:false,depthWrite:false});
+  scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),mat));
+  GL={renderer,scene,cam,uni,rafOn:false,raf:0,frames:0,revealing:false};
+  const rs=()=>{const w=ph.clientWidth,h=ph.clientHeight;renderer.setSize(w,h,false);uni.uAsp.value=w/h;
+   uni.uCov1.value.set(...glCover(t1.image.width,t1.image.height,w,h));
+   uni.uCov2.value.set(...glCover(t2.image.width,t2.image.height,w,h));
+   if(!GL.rafOn)renderer.render(scene,cam);};
+  rs();addEventListener('resize',rs);
+  ph.classList.add('gl-on');
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)glLoopOff();else if(GL&&(GL.uni.uIdle.value>0||GL.revealing))glLoopOn();});
+  GL.uni.uIdle.value=0.0012;glLoopOn();
+ }catch(e){GL=false;}
+}
+function glLoopOn(){if(!GL||GL.rafOn)return;GL.rafOn=true;
+ const step=t=>{if(!GL.rafOn)return;GL.raf=requestAnimationFrame(step);GL.uni.uTime.value=t/1000;GL.renderer.render(GL.scene,GL.cam);GL.frames++;};
+ GL.raf=requestAnimationFrame(step);}
+function glLoopOff(){if(!GL)return;GL.rafOn=false;if(GL.raf)cancelAnimationFrame(GL.raf);GL.raf=0;}
+function glReveal(cx,cy){
+ if(!GL||!$('#phone').classList.contains('gl-on'))return false;
+ const u=GL.uni;u.uProgress.value=0;u.uRipAmp.value=0;u.uCenter.value.set(cx/100,1-cy/100);
+ {const a=u.uAsp.value,ux=cx/100,uy=1-cy/100;let m=0;
+  [[0,0],[1,0],[0,1],[1,1]].forEach(([X,Y])=>{const dx=(X-ux)*a,dy=Y-uy;m=Math.max(m,Math.sqrt(dx*dx+dy*dy));});
+  u.uMaxR.value=m*1.12;}
+ GL.revealing=true;GL.frames=0;GL._t0=performance.now();glLoopOn();
+ const done=()=>{GL.revealing=false;
+  const fps=GL.frames/((performance.now()-GL._t0)/1000);
+  const amp=fps>=40?0.0022:0;
+  if(window.gsap){gsap.to(u.uIdle,{value:amp,duration:1.2,onComplete:()=>{if(!amp)glLoopOff();}});}
+  else{u.uIdle.value=amp;if(!amp)glLoopOff();}
+ };
+ if(window.gsap){
+  gsap.timeline({onComplete:done})
+   .to(u.uProgress,{value:1,duration:1.15,ease:'power2.out'},0)
+   .to(u.uRipAmp,{value:1,duration:0.5,ease:'power2.in',yoyo:true,repeat:1},0);
+ }else{
+  const t0=performance.now(),dur=1150;
+  const tw=()=>{const p=Math.min(1,(performance.now()-t0)/dur);u.uProgress.value=p;u.uRipAmp.value=Math.sin(p*Math.PI);if(p<1)requestAnimationFrame(tw);else done();};tw();
+ }
+ return true;
+}
 /* ===== 首幕：上滑起飞+水波转场 ===== */
 let _landed=false,_ig=null;
 function introBoot(a){
@@ -312,6 +392,7 @@ function introBoot(a){
  $('#iav').innerHTML=`${(a.name||'?')[0]}${a.av?`<img src="${a.av}" onerror="this.remove()">`:''}`;
  $('#iname').textContent=a.name||'';
  I.style.display='block';
+ initGL();
  I.addEventListener('click',()=>land());
  I.addEventListener('touchstart',e=>{if(e.touches.length!==1)return;_ig={y:e.touches[0].clientY,ly:e.touches[0].clientY,lt:performance.now(),v:0,d:false};},{passive:true});
  I.addEventListener('touchmove',e=>{
@@ -346,7 +427,7 @@ function land(){
  const pr=$('#phone').getBoundingClientRect();
  const from=$('#iav').getBoundingClientRect(),to=$('.hello .av').getBoundingClientRect();
  const cx=((from.left+from.width/2-pr.left)/pr.width*100).toFixed(1),cy=((from.top+from.width/2-pr.top)/pr.height*100).toFixed(1);
- rippleFX(cx,cy);
+ if(!glReveal(cx,cy))rippleFX(cx,cy);
  $('#ihero').style.transition='opacity .22s';$('#ihero').style.opacity='0';
  if(RM){finLand();return;}
  const fly=document.createElement('div');fly.id='fly';fly.innerHTML=$('#iav').innerHTML;
@@ -356,11 +437,14 @@ function land(){
   fly.style.transition='left .58s cubic-bezier(.32,.72,.35,1),top .58s cubic-bezier(.32,.72,.35,1),width .58s cubic-bezier(.32,.72,.35,1),height .58s cubic-bezier(.32,.72,.35,1),font-size .58s';
   fly.style.left=(to.left-pr.left)+'px';fly.style.top=(to.top-pr.top)+'px';fly.style.width=to.width+'px';fly.style.height=to.width+'px';fly.style.fontSize='13px';});});
  setTimeout(()=>fly.remove(),640);
- setTimeout(()=>{const I=$('#intro');if(!I)return;I.style.transition='opacity .3s';I.style.opacity='0';
-  ['#aibar','#dots'].forEach((s,i)=>{$(s).style.animation=`rise .45s ${0.05+i*0.07}s cubic-bezier(.32,.72,.35,1) both`;});},560);
+ setTimeout(()=>{const I=$('#intro');if(!I)return;I.style.transition='opacity .3s';I.style.opacity='0';},560);
  setTimeout(finLand,940);
 }
-function finLand(){$('#bg2').style.opacity='1';const I=$('#intro');if(I)I.remove();}
+function finLand(){
+ $('#phone').classList.add('landed');
+ $('#bg2').style.opacity='1';const I=$('#intro');if(I)I.remove();
+ ['#aibar','#dots'].forEach((s,i)=>{$(s).style.animation=`rise .45s ${0.05+i*0.07}s cubic-bezier(.32,.72,.35,1) both`;});
+}
 /* ===== 点卡 ===== */
 document.addEventListener('click',e=>{
  if(_supp)return;
