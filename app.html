@@ -325,7 +325,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v81';
+const APP_VERSION='v82';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;return '¥'+(y>=100?Math.round(y):Math.round(y*10)/10);}
@@ -1001,30 +1001,30 @@ function perfHtml(p){
  else if(prog>=50)cheer=`💪 保底进度 ${prog}%，已经过半，照这节奏稳稳的`;
  else if(_mom!=null&&_mom>0)cheer=`📈 上一场环比 ${_mm[1]}，在涨就是好势头`;
  else cheer='🌱 每一场都在积累，下一场就是你的高光';
- const _gap=(p.base&&prog<100)?Math.round(p.base*(1-(p.base_progress||0))):0;   /* 与进度条同源（base_progress 公式口径），不与 month_income 混算——两者口径不同会自相矛盾 */
- const _gapTxt=(p.base&&prog>=100)?'已达成 🎉':(p.base?('¥'+_gap.toLocaleString()):'—');
- const _daysTxt=p.month_days?(p.month_days+' 天'):'—';
+ /* v82 去重排版（老板口径：重复数据没必要、数字排版要干净）——删第二行三格（开播天数在副标/距保底由进度条表达/环比在横幅与简报）；数字统一千分位取整；🏆比赛日 从数字里摘成小标签；最近一场与趋势同为比赛日时合并通栏不再重复 */
+ const _fmt=n=>'¥'+Math.round(n||0).toLocaleString();
+ const _li=String(p.last_income||'');
+ const _liM=_li.match(/([\d][\d,.]*)/);
+ const _liNum=_liM?_fmt(parseFloat(_liM[1].replace(/,/g,''))):'—';
+ const _liMatch=/比赛日/.test(_li),_trMatch=/比赛日/.test(p.trend||'');
+ const _merge=_liMatch&&_trMatch;   /* 两格都是比赛日=同一信息，合并 */
+ const _lastLab='最近一场'+((_liMatch||_trMatch)?' · 🏆比赛日':'');
  return `${topbar()}<div class="wrap">
  <div class="profile" style="min-height:auto">
   <div style="padding:20px 16px 14px;text-align:center">
    <div style="font-size:12px;color:var(--ink3)">本月流水（元）</div>
-   <div style="font-size:34px;font-weight:900;margin:4px 0">¥${Math.round(p.month_income||0).toLocaleString()}</div>
-   <div style="font-size:12px;color:var(--ink2)">提成 ¥${Math.round(p.month_commission||0).toLocaleString()} · 开播 ${p.month_days||0} 天 · ${escapeHtml(p.status||'')}</div>
+   <div style="font-size:34px;font-weight:900;margin:4px 0">${_fmt(p.month_income)}</div>
+   <div style="font-size:12px;color:var(--ink2)">提成 ${_fmt(p.month_commission)} · 开播 ${p.month_days||0} 天 · ${escapeHtml(p.status||'')}</div>
   </div>
   <div style="padding:0 16px 14px">
    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink2);margin-bottom:5px"><span>保底 ¥${(p.base||0).toLocaleString()}</span><span>${prog}%</span></div>
    <div style="height:12px;border-radius:999px;background:var(--gray-bg);overflow:hidden"><div style="height:100%;width:${Math.max(3,prog)}%;border-radius:999px;background:linear-gradient(90deg,var(--brand-soft),var(--lime))"></div></div>
   </div>
   <div style="margin:0 16px 14px;background:var(--card2);border-left:4px solid var(--lime);border-radius:12px;padding:10px 12px;font-size:12px;line-height:1.6;color:#4a6232">${cheer}</div>
-  <div class="grid" style="grid-template-columns:repeat(3,1fr)">
-   <div class="cell"><div class="num">¥${Math.round(p.avg7||0)}</div><div class="lab">7场均线</div></div>
-   <div class="cell"><div class="num" style="font-size:14px">${escapeHtml(p.last_income||'—')}</div><div class="lab">最近一场</div></div>
-   <div class="cell"><div class="num" style="font-size:14px">${escapeHtml(p.trend||'—')}</div><div class="lab">趋势</div></div>
-  </div>
-  <div class="grid" style="grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)">
-   <div class="cell"><div class="num">${_daysTxt}</div><div class="lab">本月开播</div></div>
-   <div class="cell"><div class="num" style="font-size:14px">${_gapTxt}</div><div class="lab">距保底</div></div>
-   <div class="cell"><div class="num" style="font-size:14px">${_mom!=null?('环比 '+_mm[1]):'—'}</div><div class="lab">上一场</div></div>
+  <div class="grid" style="grid-template-columns:${_merge?'1fr 2fr':'repeat(3,1fr)'}">
+   <div class="cell"><div class="num">${_fmt(p.avg7)}</div><div class="lab">7场均线</div></div>
+   <div class="cell"><div class="num">${_liNum}</div><div class="lab">${_lastLab}</div></div>
+   ${_merge?'':`<div class="cell"><div class="num" style="font-size:14px">${escapeHtml(p.trend||'—')}</div><div class="lab">趋势</div></div>`}
   </div>
  </div>
  <div class="sec-title"><h3>最新场次简报</h3><span class="more">${escapeHtml(p.last_live||'')}</span></div>
