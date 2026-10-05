@@ -235,7 +235,7 @@ function render(){
  const a=DATA.anchor,c=DATA.counts||{},total=Object.keys(DATA.users||{}).length;
  const pending=(c.l3||0)+(c.l2||0)+(c.greet||0);
  $('#hdr').innerHTML=`
- <div class="st"><span>${esc(a.date||'')}</span><span style="display:flex;align-items:center"><span class="ver">v3.1 · 树境3D</span><span id="bellBtn">${ICO.bell}</span></span></div>
+ <div class="st"><span>${esc(a.date||'')}</span><span style="display:flex;align-items:center"><span class="ver">v3.2 · 树境3D</span><span id="bellBtn">${ICO.bell}</span></span></div>
  <div class="hello"><span class="hi">Hello,</span><div class="av">${(a.name||'?')[0]}${a.av?`<img src="${a.av}" onerror="this.remove()">`:''}</div><span class="nm">${esc(a.name||'')}</span></div>
  <div class="sub">${pending?`今天还有 <b>${pending}</b> 件事没做`:'今天的事都清了，清爽'}</div>`;
  const card=(ic,t,b,s,cls,act)=>`<div class="bc glass ${cls||''}" data-act="${act}"><div class="t">${ic}${t}</div><div class="b">${b}</div><div class="s">${s||''}</div></div>`;
@@ -317,10 +317,18 @@ async function initTree(){
   const T=await import('./assets/three.module.min.js'),ph=$('#phone');
   const renderer=new T.WebGLRenderer({canvas:$('#gl'),antialias:true,alpha:false,powerPreference:'low-power',stencil:false,depth:true});
   renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+  renderer.outputColorSpace=T.SRGBColorSpace;
+  renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
   const scene=new T.Scene();scene.background=new T.Color(0x0e1a1c);scene.fog=new T.Fog(0x0e1a1c,7,22);
   const cam=new T.PerspectiveCamera(58,1,.1,60);
   scene.add(new T.HemisphereLight(0xdfeeff,0x0c1614,0.9));
   const sun=new T.DirectionalLight(0xffe8d0,1.3);sun.position.set(5,8,4);scene.add(sun);
+  sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
+  sun.shadow.camera.near=1;sun.shadow.camera.far=22;
+  sun.shadow.camera.left=-7;sun.shadow.camera.right=7;sun.shadow.camera.top=9;sun.shadow.camera.bottom=-3;
+  sun.shadow.bias=-0.0002;sun.shadow.normalBias=0.02;
+  sun.target.position.set(0,1.5,-2.4);scene.add(sun.target);
   const rim=new T.DirectionalLight(0xbfe8ff,0.65);rim.position.set(-4,3,-6);scene.add(rim);
   // 背景氛围光晕
   const glowT=mkCanvasTex(T,(x,s)=>{const g=x.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);g.addColorStop(0,'rgba(110,160,168,.4)');g.addColorStop(1,'rgba(110,160,168,0)');x.fillStyle=g;x.fillRect(0,0,s,s);},128);
@@ -356,7 +364,7 @@ async function initTree(){
    dm.position.copy(a).add(b).multiplyScalar(.5);
    dm.quaternion.setFromUnitVectors(up,dir.clone().normalize());
    dm.scale.set((r0+r1)/2,len,(r0+r1)/2);dm.updateMatrix();bark.setMatrixAt(i,dm.matrix);});
-  tree.add(bark);
+  bark.castShadow=true;tree.add(bark);
   // 五瓣白花贴图
   const blosT=mkCanvasTex(T,(x,s)=>{
    x.translate(s/2,s/2);
@@ -382,7 +390,7 @@ async function initTree(){
   scene.add(tree);
   // 镜像倒影（暗色剪影）
   const refl=tree.clone(true);
-  refl.traverse(o=>{if(o.isMesh)o.material=new T.MeshBasicMaterial({color:0x0a1517,transparent:true,opacity:.45});});
+  refl.traverse(o=>{if(o.isMesh){o.material=new T.MeshBasicMaterial({color:0x0a1517,transparent:true,opacity:.45});o.castShadow=false;}});
   refl.scale.y=-1;scene.add(refl);
   // 水面（深色调+波纹+碎光）
   const waterMat=new T.ShaderMaterial({transparent:true,uniforms:{uTime:{value:0}},
@@ -399,7 +407,9 @@ async function initTree(){
      float a=0.8+ripple*.05;
      gl_FragColor=vec4(col,a);}`});
   const water=new T.Mesh(new T.PlaneGeometry(28,28),waterMat);
-  water.rotation.x=-Math.PI/2;scene.add(water);
+  water.receiveShadow=true;water.rotation.x=-Math.PI/2;scene.add(water);
+  const shadowCatcher=new T.Mesh(new T.PlaneGeometry(28,28),new T.ShadowMaterial({opacity:.42}));
+  shadowCatcher.rotation.x=-Math.PI/2;shadowCatcher.position.y=0.012;shadowCatcher.receiveShadow=true;scene.add(shadowCatcher);
   // 花瓣贴图
   const petalT=mkCanvasTex(T,(x,s)=>{const g=x.createRadialGradient(s/2,s*0.42,s*0.06,s/2,s/2,s*0.46);g.addColorStop(0,'rgba(255,253,253,.98)');g.addColorStop(.7,'rgba(249,236,241,.92)');g.addColorStop(1,'rgba(249,236,241,0)');x.fillStyle=g;x.beginPath();x.ellipse(s/2,s/2,s*0.42,s*0.24,0.55,0,6.3);x.fill();},64);
   const dummy=new T.Object3D();
@@ -408,8 +418,19 @@ async function initTree(){
   for(let i=0;i<110;i++)fallP.push({x:(Math.random()-.5)*8.5,y:0.8+Math.random()*6.8,z:-5+Math.random()*6.5,f:.22+Math.random()*.4,sw:.25+Math.random()*.55,ph:Math.random()*6.3,rs:(Math.random()-.5)*3.2,s:.08+Math.random()*.12});
   const flt=mkPetals(80),fltP=[];
   for(let i=0;i<80;i++)fltP.push({x:(Math.random()-.5)*9.5,z:-5+Math.random()*6.5,rz:Math.random()*6.3,sp:(Math.random()-.5)*.5,ph:Math.random()*6.3,s:.09+Math.random()*.13});
-  TS={renderer,scene,cam,waterMat,fall,fallP,flt,fltP,dummy,p:0,rafOn:false,raf:0,last:0};
-  const rs=()=>{const w=ph.clientWidth,h=ph.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();if(!TS.rafOn)renderer.render(scene,cam);};
+  let composer=null,bloomPass=null;
+  TS={renderer,scene,cam,waterMat,fall,fallP,flt,fltP,dummy,composer,bloomPass,p:0,rafOn:false,raf:0,last:0};
+  const doRender=()=>{if(composer)composer.render();else renderer.render(scene,cam);};
+  const rs=()=>{const w=ph.clientWidth,h=ph.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();if(composer)composer.setSize(w,h);if(!TS.rafOn)doRender();};
+  if(!RM){try{
+   const [{EffectComposer},{RenderPass},{UnrealBloomPass}]=await Promise.all([
+    import('./assets/pp/EffectComposer.js'),import('./assets/pp/RenderPass.js'),import('./assets/pp/UnrealBloomPass.js')]);
+   composer=new EffectComposer(renderer);
+   composer.addPass(new RenderPass(scene,cam));
+   bloomPass=new UnrealBloomPass(new T.Vector2(ph.clientWidth/2,ph.clientHeight/2),0.55,0.55,0.82);
+   composer.addPass(bloomPass);bloomPass.enabled=false; // 密白树冠下全局泛光必糊，留件备用（补丁116）
+  }catch(e){composer=null;window.__ppErr=String(e);}}
+  TS.composer=composer;TS.bloomPass=bloomPass;
   rs();addEventListener('resize',rs);
   ph.classList.add('gl-on');
   document.addEventListener('visibilitychange',()=>{if(document.hidden)tsLoop(false);else if(TS)tsLoop(true);});
@@ -429,7 +450,7 @@ function tsLoop(on){
    TS.fltP.forEach((o,i)=>{o.rz+=o.sp*dt;
     TS.dummy.position.set(o.x,0.035+Math.sin(tt*.9+o.ph)*.012,o.z);TS.dummy.rotation.set(-Math.PI/2,0,o.rz);TS.dummy.scale.set(o.s,o.s,o.s);TS.dummy.updateMatrix();TS.flt.setMatrixAt(i,TS.dummy.matrix);});
    TS.flt.instanceMatrix.needsUpdate=true;
-   TS.renderer.render(TS.scene,TS.cam);};
+   if(TS.composer)TS.composer.render();else TS.renderer.render(TS.scene,TS.cam);};
   TS.raf=requestAnimationFrame(step);}
  else if(!on&&TS.rafOn){TS.rafOn=false;if(TS.raf)cancelAnimationFrame(TS.raf);TS.raf=0;}
 }
