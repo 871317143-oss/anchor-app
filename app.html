@@ -329,7 +329,7 @@ const root=document.getElementById('root');
 let DATA=null;
 let _muMakeup=null;   // 工单⑲c：本人今明两天已发布妆发排班（Worker /api/anchor/makeup）
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v94';
+const APP_VERSION='v95';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;if(y>=100)return '¥'+Math.round(y).toLocaleString();return '¥'+(Math.round(y*10)/10);}   /* v84：≥100 加千分位（¥7,847），与业绩卡排版同标准 */
@@ -350,8 +350,11 @@ function rowTags(u){let t=[gradeTag(u)];
   if(u.cr&&!u.mine)t.push(tag('blue','别家'));   // 跨团且归属别家才提示；归我的不再打标（老板口径）
   if(u.ret)t.push(tag('amber','回归用户'));
   if(u.w>1200)t.push(tag('green','高陪伴'));return t.join('');}
-function topbar(){const a=DATA.anchor;return `<div class="topbar"><div class="who">
-  <div class="avatar">${a.name[0]}</div><div><div class="name">${a.teamName} · ${a.name}</div>
+function topbar(){const a=DATA.anchor;
+ /* v95 顶栏头像=主播抖音头像（a.av，build 写入）：色块兜底+img 覆盖+onerror 移除（与 avHtml 同模式） */
+ const inner=a.name[0]+(a.av?`<img src="${escapeHtml(a.av)}" style="position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover" onerror="this.remove()">`:'');
+ return `<div class="topbar"><div class="who">
+  <div class="avatar" style="position:relative;overflow:hidden">${inner}</div><div><div class="name">${a.teamName} · ${a.name}</div>
   <div class="meta">${a.date} · 主播专属</div></div></div></div>`;}
 const BELLF=`<button class="bellf" id="bellf" data-act="notif"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span class="bdg" id="notifBdg" style="display:none"></span></button>`;
 const GLOBE=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5a7a35" stroke-width="2" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>`;
@@ -408,18 +411,7 @@ function muReminder(){   // 进 App：今天有已发布妆发格且距开始 30
  pushBanner({kind:'data_updated',level:'banner',title:'你的妆发 '+first.x.slot.slice(0,5)+' 开始',
   body:first.x.artist+' 给你做'+first.x.type+' · '+first.x.venue+' · 还有 '+Math.round(first.mins)+' 分钟',time:'现在'});
  localStorage.setItem('mu_banner_'+day,'1');}
-function makeupCard(){
- if(!_muMakeup||!_muMakeup.length)return '';   // 无排班不显卡
- const day=bjToday();
- const row=x=>{const cls={'妆':'t-red','发':'t-amber','改':'t-blue','妆发':'t-green'}[x.type]||'t-gray';
-  return `<div class="urow" style="cursor:default;padding-top:9px;padding-bottom:9px"><div class="u-main">
-   <div class="u-line1"><span class="u-nick">${escapeHtml(x.slot.slice(0,5))}–${escapeHtml(x.slot.slice(6,11))} · ${escapeHtml(x.artist)}</span><span class="u-t">${x.date===day?'今天':'明天'}</span></div>
-   <div class="u-tags"><span class="tag ${cls}">${escapeHtml(x.type)}</span><span class="tag t-gray">${escapeHtml(x.venue||'')}</span></div></div></div>`;};
- const t=_muMakeup.filter(x=>x.date===day),m=_muMakeup.filter(x=>x.date!==day);
- return `<div class="tier" style="margin-bottom:14px"><div class="t-head"><div class="t-ico" style="background:var(--red-bg);color:var(--red)">妆</div>
-  <div><div class="t-name">你的妆发</div><div class="t-sub">${t.length?('今天 '+t.length+' 件'):'今天无排班'}${_muMakeup.length?(' · 共 '+_muMakeup.length+' 件 · 已发布'):''}</div></div>
-  <div class="t-cnt">${_muMakeup.length}<small> 件</small></div></div>
-  ${t.map(row).join('')}${m.map(row).join('')}</div>`;}
+/* v95：「你的妆发」卡整卡下线（老板红框撤功能 10-05）——makeupCard 删除，保留 loadMakeup+muReminder（开场前提醒横幅不占排版） */
 function viewToday(){const c=DATA.counts,ch=DATA.churn;
  const cross=DATA.crossToday.length?`<div class="cross">${GLOBE}
   <div class="c-txt">今天有 <b>${DATA.crossToday.length} 位跨团用户</b>给你送礼，也在其他团消费，注意客情；<b>不显示对方归属</b>。</div></div>`:'';
@@ -430,7 +422,6 @@ function viewToday(){const c=DATA.counts,ch=DATA.churn;
   ${ch.c.slice(0,1).map(s=>churnCard(s,'cc2','长尾')).join('')}</div>`;
  return `<div class="view show" id="v-today">${topbar()}<div class="wrap">
   ${cross}
-  ${makeupCard()}
   <div class="sec-title"><h3>今日维护</h3><span class="more">按对我消费分层</span></div>
   ${tier('l3','L3','重点维护','消费 > 99 元 · 今天必聊',DATA.l3)}
   ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2)}
