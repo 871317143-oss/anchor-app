@@ -102,6 +102,9 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .urow .u-line1{display:flex;align-items:baseline;gap:8px;}
 .urow .u-nick{font-size:14px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .urow .u-val{font-size:13px;color:var(--ink);font-weight:700;flex:none;}
+/* v87 金额下陪伴天数（老板口径：今日页行右金额下加陪伴天数，字段=画像页同款 u.days） */
+.urow .u-valbox{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:1px;}
+.urow .u-days{font-size:10px;color:var(--ink3);font-weight:500;letter-spacing:.3px;}
 .urow .u-tags{display:flex;flex-wrap:wrap;gap:5px;}
 .urow .u-tags:empty{display:none;}
 .tag.badge{padding:3px 6px;font-size:10px;gap:0;line-height:1.1;}
@@ -334,11 +337,13 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v86';
+const APP_VERSION='v87';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;if(y>=100)return '¥'+Math.round(y).toLocaleString();return '¥'+(Math.round(y*10)/10);}   /* v84：≥100 加千分位（¥7,847），与业绩卡排版同标准 */
 function daysBetween(d1,d2){return Math.round((new Date(d2)-new Date(d1))/86400000);}
+/* v87 行右金额+陪伴天数组合（今日页 tier/问候行用；神秘人无 days 概念不用） */
+function valBox(val,days){return `<div class="u-valbox"><span class="u-val">${val}</span>${days?`<span class="u-days">陪伴${days}天</span>`:''}</div>`;}
 function tag(cls,txt){return `<span class="tag t-${cls}"><span class="dot"></span>${txt}</span>`;}
 function churnLab(ch){return ch==='A'?'高价值流失':ch==='B'?'老客流失':'长尾流失';}
 function gradeTag(u){const m={S:'red',A:'amber',B:'blue',C:'green',D:'gray'};return u.t?tag(m[u.t],u.t+'级'):'';}
@@ -362,7 +367,7 @@ const GLOBE=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke=
 function tier(cls,code,name,sub,secs){if(!secs.length)return '';
  const rows=secs.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow-wrap"><div class="urow-acts"><button class="ua ua-fb" data-ua="fb"><span class="ua-c">传</span><span class="ua-l">回传</span></button><button class="ua ua-jl" data-ua="jl"><span class="ua-c">联</span><span class="ua-l">已建联</span></button><button class="ua ua-nr" data-ua="nr"><span class="ua-c">未</span><span class="ua-l">未回复</span></button></div><div class="urow${dn?' done':''}${dn&&fbDoneNr(s)?' nr':''}" data-sec="${s}">
   ${avHtml(u,s,36,14)}
-  <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span><span class="u-val">${yuan(u.tv)}</span></div><div class="u-tags">${rowTags(u)}${doneTagHTML(s)}</div></div></div></div>`;}).join('');
+  <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span>${valBox(yuan(u.tv),u.days)}</div><div class="u-tags">${rowTags(u)}${doneTagHTML(s)}</div></div></div></div>`;}).join('');
  const foot=secs.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${secs.length} 人 ▾</span></div>`:'';
  return `<div class="tier ${cls} closed"><div class="t-head"><div class="t-ico">${code}</div>
   <div><div class="t-name">${name}</div><div class="t-sub">${sub}</div></div>
@@ -373,7 +378,7 @@ function churnCard(s,cls,lab){const u=DATA.users[s];return `<div class="churn-ca
 function greetBlock(){const g=DATA.greet;if(!g||!g.length)return '';
  const rows=g.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow-wrap"><div class="urow-acts"><button class="ua ua-fb" data-ua="fb"><span class="ua-c">传</span><span class="ua-l">回传</span></button><button class="ua ua-jl" data-ua="jl"><span class="ua-c">联</span><span class="ua-l">已建联</span></button><button class="ua ua-nr" data-ua="nr"><span class="ua-c">未</span><span class="ua-l">未回复</span></button></div><div class="urow${dn?' done':''}${dn&&fbDoneNr(s)?' nr':''}" data-sec="${s}">
   ${avHtml(u,s,36,14)}
-  <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span><span class="u-val">给我 ${yuan(u.sv)}</span></div><div class="u-tags">${gradeTag(u)}${doneTagHTML(s)}</div></div></div></div>`;}).join('');
+  <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span>${valBox('给我 '+yuan(u.sv),u.days)}</div><div class="u-tags">${gradeTag(u)}${doneTagHTML(s)}</div></div></div></div>`;}).join('');
  const foot=g.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${g.length} 人 ▾</span></div>`:'';
  return `<div class="tier closed"><div class="t-head"><div class="t-ico" style="background:var(--amber-bg);color:var(--amber)">★</div>
   <div><div class="t-name">主动问候</div><div class="t-sub">S/A/B 级本场没刷 · 也要维系</div></div>
@@ -725,7 +730,7 @@ function thanksEntryHtml(){
 function openThanksSheet(){
  const secs=thanksCandidates();if(!secs.length){toast('今天没有需要感谢的小额心意');return;}
  const s=openSheet('一键感谢 · 第一句',
-  `<div class="tk-warn">💡 小额心意，一句谢谢就够——复制发出即可，不用深聊，别挨个想词。</div>
+  `<div class="tk-warn">💡 小额心意，一句谢谢就够——点「复制+私信」直接跳到 TA 主页，粘贴发出即可，不用深聊。</div>
    <div id="tkList"><div class="sk sk-card"></div><div class="sk sk-card"></div><div class="sk sk-card"></div></div>`);
  const foot=s.querySelector('.sheet-foot');
  foot.innerHTML='<button class="btn btn-primary" id="tkDone" style="flex:1">完成</button>';
@@ -743,9 +748,13 @@ function openThanksSheet(){
    return `<div class="tk-row"><div class="tk-main">
     <div class="tk-top"><span class="u-nick">${escapeHtml(u.n)}</span><span class="u-val">${yuan(u.tv)}</span></div>
     <div class="tk-text">${t?escapeHtml(t):'（这条没生成，跳过 TA 就好）'}</div></div>
-    <button class="btn btn-primary tk-copy" data-i="${i}"${t?'':' disabled style="opacity:.4"'}>复制</button></div>`;}).join('');
+    <button class="btn btn-primary tk-copy" data-i="${i}"${t?'':' disabled style="opacity:.4"'}>复制+私信</button></div>`;}).join('');
+  /* v87 老板口径：一步直达——复制话术同时跳 TA 抖音主页（与画像页「私信」同款 location.href，
+     iOS 会拉起抖音 App，回本 App 弹层还在）；复制用同步 fallback 保证跳转前已进剪贴板 */
   box.querySelectorAll('.tk-copy').forEach(b=>b.onclick=()=>{
-   copyText(texts[+b.dataset.i]);b.textContent='已复制 ✓';setTimeout(()=>{b.textContent='复制';},1500);});
+   const i=+b.dataset.i,t=texts[i];if(!t)return;
+   copyText(t);b.textContent='已复制 ✓ 去私信…';
+   setTimeout(()=>{window.location.href='https://www.douyin.com/user/'+secs[i];},250);});
  }).catch(()=>{const box=document.getElementById('tkList');
   if(box)box.innerHTML='<div class="empty">网络异常，关掉重开试试</div>';});}
 function openFeedbackSheet(sec){
