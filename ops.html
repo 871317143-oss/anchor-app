@@ -38,7 +38,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .topbar{background:transparent;color:var(--on-bg);padding:calc(20px + env(safe-area-inset-top)) 20px 14px;display:flex;align-items:center;gap:12px;}
 .avatar{width:46px;height:46px;border-radius:50%;background:#4f6b43;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:19px;flex:none;}
 .topbar .name{font-size:24px;font-weight:800;letter-spacing:.5px;}
-.topbar .meta{font-size:12px;color:var(--on-bg2);margin-top:4px;letter-spacing:.5px;}
+.topbar .meta{font-size:12px;color:var(--on-bg2);margin-top:4px;}
 .topbar .rf{margin-left:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);color:var(--on-bg);border-radius:999px;padding:8px 15px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
 .bellf{position:fixed;top:calc(10px + env(safe-area-inset-top));right:max(12px,calc(50% - 195px));z-index:35;width:38px;height:38px;border-radius:50%;background:rgba(28,41,26,.55);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);border:1px solid rgba(255,255,255,.14);box-shadow:0 4px 14px rgba(20,30,18,.25);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--on-bg);padding:0;font-family:inherit;}
 .bellf svg{width:19px;height:19px;}
@@ -54,7 +54,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .nc-time{font-size:10px;color:var(--ink3);margin-top:5px;}
 .nc-read{flex:none;font-size:11px;font-weight:600;color:var(--brand);background:var(--brand-soft);border:none;border-radius:999px;padding:6px 11px;cursor:pointer;font-family:inherit;}
 .nc-go{flex:none;font-size:11px;font-weight:600;color:#223014;background:var(--lime);border:none;border-radius:999px;padding:6px 11px;cursor:pointer;font-family:inherit;}
-.nc-group{font-size:12px;font-weight:700;color:var(--on-bg3);margin:16px 2px 8px;letter-spacing:.3px;}
+.nc-group{font-size:12px;font-weight:700;color:var(--on-bg3);margin:16px 2px 8px;}
 .nc-actions{display:flex;gap:8px;margin:2px 0 8px;}
 .nc-actions .tf{flex:1;text-align:center;font-size:12px;font-weight:600;padding:9px 4px;border-radius:9px;cursor:pointer;background:var(--gray-bg);color:var(--ink2);border:none;font-family:inherit;}
 .nc-actions .tf.on{background:var(--brand-soft);color:var(--brand);}
@@ -71,17 +71,18 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .wrap{padding:0 16px;}
 .sec-title{display:flex;align-items:center;justify-content:space-between;margin:20px 2px 12px;}
 .sec-title h3{font-size:20px;font-weight:800;color:var(--on-bg);}
-.sec-title .more{font-size:12px;color:var(--on-bg3);letter-spacing:.3px;}
+.sec-title .more{font-size:12px;color:var(--on-bg3);}
 .tier{background:var(--card);border-radius:20px;margin-bottom:16px;box-shadow:0 4px 14px rgba(20,30,18,.08);overflow:hidden;}
 .t-head{display:flex;align-items:center;gap:11px;padding:16px;}
 .t-ico{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex:none;}
 .t-name{font-size:16px;font-weight:700;}
-.t-sub{font-size:12px;color:var(--ink3);margin-top:2px;letter-spacing:.3px;}
+.t-sub{font-size:12px;color:var(--ink3);margin-top:2px;}
 .t-cnt{margin-left:auto;font-size:16px;font-weight:800;}
 .t-cnt small{font-weight:400;color:var(--ink3);font-size:11px;}
 .urow{display:flex;align-items:flex-start;gap:11px;padding:13px 16px;border-top:1px solid var(--line);cursor:pointer;transition:transform .12s ease;}
 .urow:active{transform:scale(.98);}
 .urow .avatar{width:36px;height:36px;font-size:14px;}
+.urow .u-val{font-size:13px;color:var(--ink);font-weight:700;flex:none;}
 .u-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;}
 .u-line1{display:flex;align-items:baseline;gap:8px;}
 .u-nick{font-size:14px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -197,7 +198,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 <script>
 const SUMMARY_URL='https://fb.menghualu.com.co/api/ops/summary';
 const REVIEW_URL='https://fb.menghualu.com.co/api/ops/review';
-const OPS_VERSION='v3.26';
+const OPS_VERSION='v3.27';
 const root=document.getElementById('root');
 let D=null, _af='', _tf='', _tab='proj', _rowMeta={};
 const name2team={};
