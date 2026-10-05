@@ -108,12 +108,13 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 #aiwork .stop{margin-left:auto;width:30px;height:30px;border-radius:50%;background:var(--dark);display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer}
 #aiwork .stop i{width:9px;height:9px;border-radius:2px;background:#fff}
 /* ---- 全屏详情 ---- */
-.xpage{position:absolute;inset:0;z-index:60;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;display:flex;flex-direction:column;background:linear-gradient(168deg,rgba(240,236,250,.9),rgba(232,226,246,.94));-webkit-backdrop-filter:blur(28px) saturate(1.25);backdrop-filter:blur(28px) saturate(1.25);transform-origin:var(--ox,50%) var(--oy,60%);animation:xin .34s var(--spring) both}
-.xpage::-webkit-scrollbar{display:none}
-@keyframes xin{from{transform:scale(.9) translateY(26px);opacity:0}to{transform:none;opacity:1}}
-.xpage.out{animation:xout .24s var(--ease-in) both}
-@keyframes xout{to{transform:scale(.94) translateY(18px);opacity:0}}
-.xtop{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:11px;padding:calc(env(safe-area-inset-top) + 14px) 18px 10px;background:linear-gradient(180deg,rgba(240,236,250,.96) 55%,rgba(240,236,250,0))}
+#mdim{position:absolute;inset:0;z-index:64;background:rgba(24,18,60,.45);opacity:0;transition:opacity .3s}
+#modal{position:absolute;z-index:65;border-radius:28px;display:flex;flex-direction:column;overflow:hidden;background:rgba(243,240,251,.8);-webkit-backdrop-filter:blur(26px) saturate(1.3);backdrop-filter:blur(26px) saturate(1.3);border:1px solid var(--gbrd);box-shadow:0 24px 60px rgba(24,18,60,.35)}
+.mtop{flex:none;display:flex;align-items:center;gap:11px;padding:16px 18px 10px;cursor:grab;touch-action:none}
+.mtop .xt{flex:1;min-width:0}
+.mclose{width:32px;height:32px;font-size:13px;color:var(--ink2)}
+#modal .xbody{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+#modal .xbody::-webkit-scrollbar{display:none}
 .xback{width:36px;height:36px;border-radius:50%;background:var(--glass2);border:1px solid var(--gbrd);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
 .xback svg{width:16px;height:16px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .xt{flex:1;min-width:0}
@@ -233,7 +234,7 @@ const ICO={
  back:'<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>',
  arrow:'<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'};
 const qs=new URLSearchParams(location.search),TOK=qs.get('t')||'';
-let DATA=null,PERF=null,_xp=null,_curTier='S',_exp=false,_dyCol=0,_aiBooted=false;
+let DATA=null,PERF=null,_md=null,_curTier='S',_exp=false,_dyCol=0,_aiBooted=false;
 if(!TOK){$('#hdr').innerHTML='<div class="sk">缺访问码：链接后加 ?t=你的码</div>';}
 else loadData(TOK);
 async function loadData(tok){
@@ -246,7 +247,7 @@ function render(){
  const a=DATA.anchor,c=DATA.counts||{},total=Object.keys(DATA.users||{}).length;
  const pending=(c.l3||0)+(c.l2||0)+(c.greet||0);
  $('#hdr').innerHTML=`
- <div class="st"><span>${esc(a.date||'')}</span><span style="display:flex;align-items:center"><span class="ver">v2.3 · GL</span><span id="bellBtn">${ICO.bell}</span></span></div>
+ <div class="st"><span>${esc(a.date||'')}</span><span style="display:flex;align-items:center"><span class="ver">v2.4 · GL</span><span id="bellBtn">${ICO.bell}</span></span></div>
  <div class="hello"><span class="hi">Hello,</span><div class="av">${(a.name||'?')[0]}${a.av?`<img src="${a.av}" onerror="this.remove()">`:''}</div><span class="nm">${esc(a.name||'')}</span></div>
  <div class="sub">${pending?`今天还有 <b>${pending}</b> 件事没做`:'今天的事都清了，清爽'}</div>`;
  const card=(ic,t,b,s,cls,act)=>`<div class="bc glass ${cls||''}" data-act="${act}"><div class="t">${ic}${t}</div><div class="b">${b}</div><div class="s">${s||''}</div></div>`;
@@ -446,33 +447,78 @@ function finLand(){
  $('#bg2').style.opacity='1';const I=$('#intro');if(I)I.remove();
  ['#aibar','#dots'].forEach((s,i)=>{$(s).style.animation=`rise .45s ${0.05+i*0.07}s cubic-bezier(.32,.72,.35,1) both`;});
 }
-/* ===== 点卡 ===== */
+/* ===== 点卡 · Card-to-Modal ===== */
 document.addEventListener('click',e=>{
  if(_supp)return;
  const c=e.target.closest('[data-act]');if(!c)return;const act=c.dataset.act;
  if(act==='soon')toast('该模块预留，点亮后第一时间告诉你');
- else if(act==='apply')openXpage('apply',e);
- else openXpage(act,e);
+ else openModal(act,e);
 });
-function openXpage(kind,ev){
- if(_xp)closeXpage(true);
- const el=document.createElement('div');el.className='xpage';
- const card=ev.target.closest('.bc');
- if(card){const pr=$('#phone').getBoundingClientRect(),r=card.getBoundingClientRect();
-  el.style.setProperty('--ox',((r.left+r.width/2-pr.left)/pr.width*100)+'%');
-  el.style.setProperty('--oy',((r.top+r.height/2-pr.top)/pr.height*100)+'%');}
+function openModal(kind,ev){
+ if(_md)closeModal(true);
+ const card=ev.target.closest('.bc');if(!card)return;
+ const pr=$('#phone').getBoundingClientRect(),r=card.getBoundingClientRect();
+ const W=pr.width,H=pr.height,tw=W-28,th=Math.round(H*0.8),tl=14,tt=Math.round(H*0.1);
  const T={users:['用户 · 维护与清单','主归属优先，只看你自己的人'],actions:['今日行动','L3 维护 · 问候 · 生日'],perf:['业绩','只用保底口径，永远正语调'],apply:['申请','休息与意向，直达运营']}[kind]||['',''];
- el.innerHTML=`<div class="xtop"><div class="xback">${ICO.back}</div><div class="xt"><div class="h">${T[0]}</div><div class="s">${T[1]}</div></div></div><div class="xbody"></div><div class="xask glass">${ICO.spark}继续问小梦…</div>`;
- $('#phone').appendChild(el);_xp=el;
- el.querySelector('.xback').onclick=()=>closeXpage();
- el.querySelector('.xask').onclick=()=>openAI();
- const body=el.querySelector('.xbody');
+ const dim=document.createElement('div');dim.id='mdim';
+ const md=document.createElement('div');md.id='modal';
+ md.innerHTML=`<div class="mtop"><div class="xt"><div class="h">${T[0]}</div><div class="s">${T[1]}</div></div><div class="xback mclose">✕</div></div><div class="xbody"></div><div class="xask glass">${ICO.spark}继续问小梦…</div>`;
+ md.style.left=tl+'px';md.style.top=tt+'px';md.style.width=tw+'px';md.style.height=th+'px';
+ const st={dim,card,tl,tt,tw,th,r:{left:r.left,top:r.top,width:r.width,height:r.height}};
+ _md={el:md,...st};
+ $('#phone').appendChild(dim);$('#phone').appendChild(md);
+ card.style.visibility='hidden';
+ const body=md.querySelector('.xbody');
  if(kind==='users')renderUsers(body);
  else if(kind==='actions')renderActions(body);
  else if(kind==='perf')renderPerf(body);
  else if(kind==='apply')renderApply(body);
+ if(!RM){
+  md.style.transformOrigin='top left';
+  md.style.transform=`translate(${st.r.left-pr.left-tl}px,${st.r.top-pr.top-tt}px) scale(${st.r.width/tw},${st.r.height/th})`;
+  md.style.opacity='0';
+  md.getBoundingClientRect();
+  dim.style.opacity='1';
+  md.style.transition='transform .44s cubic-bezier(.32,.72,.35,1),opacity .22s';
+  md.style.opacity='1';md.style.transform='none';
+ }else{dim.style.opacity='1';}
+ md.querySelector('.mclose').onclick=()=>closeModal();
+ dim.onclick=()=>closeModal();
+ md.querySelector('.xask').onclick=()=>openAI();
+ bindModalDrag(md);
 }
-function closeXpage(fast){if(!_xp)return;const el=_xp;_xp=null;if(fast){el.remove();return;}el.classList.add('out');setTimeout(()=>el.remove(),240);}
+function closeModal(instant){
+ if(!_md)return;const {el,dim,card,r,tl,tt,tw,th}=_md;_md=null;
+ const done=()=>{el.remove();dim.remove();card.style.visibility='';};
+ if(instant||RM){done();return;}
+ const pr=$('#phone').getBoundingClientRect();
+ dim.style.opacity='0';
+ el.style.transition='transform .34s cubic-bezier(.5,0,.75,0),opacity .24s';
+ el.style.transform=`translate(${r.left-pr.left-tl}px,${r.top-pr.top-tt}px) scale(${r.width/tw},${r.height/th})`;
+ el.style.opacity='0';
+ setTimeout(done,360);
+}
+function bindModalDrag(md){
+ const grip=md.querySelector('.mtop');let g=null;
+ grip.addEventListener('touchstart',e=>{if(e.touches.length!==1)return;g={y:e.touches[0].clientY,ly:e.touches[0].clientY,lt:performance.now(),v:0,d:false};},{passive:true});
+ grip.addEventListener('touchmove',e=>{
+  if(!g)return;const t=e.touches[0],dy=t.clientY-g.y,now=performance.now();
+  g.v=0.45*g.v+0.55*((t.clientY-g.ly)/Math.max(1,now-g.lt));g.ly=t.clientY;g.lt=now;
+  if(!g.d&&Math.abs(dy)>8)g.d=true;
+  if(g.d&&dy>0){e.preventDefault();md.style.transition='none';md.style.transform=`translateY(${dy*0.9}px)`;md.style.opacity=String(Math.max(.4,1-dy/600));}
+ },{passive:false});
+ grip.addEventListener('touchend',()=>{
+  if(!g)return;const gg=g;g=null;if(!gg.d)return;
+  const dy=gg.ly-g.y;
+  if(dy>120||gg.v>0.35){
+   if(!_md)return;const m=_md;_md=null;
+   m.dim.style.opacity='0';
+   md.style.transition='transform .22s cubic-bezier(.5,0,.75,0),opacity .2s';
+   md.style.opacity='0';md.style.transform=`translateY(${dy+180}px)`;
+   setTimeout(()=>{md.remove();m.dim.remove();m.card.style.visibility='';},240);
+  }else{md.style.transition='transform .3s cubic-bezier(.32,.72,.35,1),opacity .3s';md.style.transform='none';md.style.opacity='1';}
+ });
+}
 const TIERS=['S','A','B','C','D','未评级'];
 function tierOf(u){return u.t||'未评级';}
 function urow(s,u,val,tag){
