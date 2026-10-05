@@ -326,6 +326,10 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .tk-text{font-size:14px;line-height:1.6;color:var(--ink);margin-top:4px;word-break:break-all;}
 .tk-copy{flex:none;height:36px;padding:0 16px;font-size:13px;border-radius:12px;}
 .tk-warn{margin:0 0 12px;background:var(--card2);border-left:4px solid var(--lime);border-radius:12px;padding:10px 12px;font-size:12px;line-height:1.6;color:#4a6232;}
+/* v88 行内一键感谢：触条（触点≥44）+ 卡内气泡（tk-warn 同族 card2+lime） */
+.tk-trigger{display:flex;align-items:center;align-self:flex-start;min-height:44px;padding:0 14px;margin-top:4px;font-size:12px;font-weight:600;color:var(--brand);background:var(--brand-soft);border-radius:12px;gap:4px;}
+.tk-bubble{margin-top:6px;background:var(--card2);border-left:4px solid var(--lime);border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.6;color:var(--ink);word-break:break-all;}
+.tk-bubble .tk-hint{display:block;font-size:10px;color:var(--ink2);margin-top:4px;}
 </style>
 </head>
 <body>
@@ -337,7 +341,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 const root=document.getElementById('root');
 let DATA=null;
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v87';
+const APP_VERSION='v88';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;if(y>=100)return '¥'+Math.round(y).toLocaleString();return '¥'+(Math.round(y*10)/10);}   /* v84：≥100 加千分位（¥7,847），与业绩卡排版同标准 */
@@ -364,10 +368,13 @@ function topbar(){const a=DATA.anchor;return `<div class="topbar"><div class="wh
 const BELLF=`<button class="bellf" id="bellf" data-act="notif"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span class="bdg" id="notifBdg" style="display:none"></span></button>`;
 const GLOBE=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5a7a35" stroke-width="2" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>`;
 
-function tier(cls,code,name,sub,secs){if(!secs.length)return '';
- const rows=secs.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);return `<div class="urow-wrap"><div class="urow-acts"><button class="ua ua-fb" data-ua="fb"><span class="ua-c">传</span><span class="ua-l">回传</span></button><button class="ua ua-jl" data-ua="jl"><span class="ua-c">联</span><span class="ua-l">已建联</span></button><button class="ua ua-nr" data-ua="nr"><span class="ua-c">未</span><span class="ua-l">未回复</span></button></div><div class="urow${dn?' done':''}${dn&&fbDoneNr(s)?' nr':''}" data-sec="${s}">
+function tier(cls,code,name,sub,secs,tkMode){if(!secs.length)return '';
+ const rows=secs.map(s=>{const u=DATA.users[s];const dn=isFeedbackDone(s);
+  /* v88 行内一键感谢（老板拍板：话术直接在用户卡下显示，点气泡=复制+跳转）；只出主归属非私密，L1 全量/L2 高陪伴 */
+  const _tk=tkMode&&u.mine&&!u.priv&&(tkMode==='all'||u.w>1200);
+  return `<div class="urow-wrap"><div class="urow-acts"><button class="ua ua-fb" data-ua="fb"><span class="ua-c">传</span><span class="ua-l">回传</span></button><button class="ua ua-jl" data-ua="jl"><span class="ua-c">联</span><span class="ua-l">已建联</span></button><button class="ua ua-nr" data-ua="nr"><span class="ua-c">未</span><span class="ua-l">未回复</span></button></div><div class="urow${dn?' done':''}${dn&&fbDoneNr(s)?' nr':''}" data-sec="${s}">
   ${avHtml(u,s,36,14)}
-  <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span>${valBox(yuan(u.tv),u.days)}</div><div class="u-tags">${rowTags(u)}${doneTagHTML(s)}</div></div></div></div>`;}).join('');
+  <div class="u-main"><div class="u-line1"><span class="u-nick">${u.n||''}</span>${valBox(yuan(u.tv),u.days)}</div><div class="u-tags">${rowTags(u)}${doneTagHTML(s)}</div>${tkInlineHtml(s,_tk)}</div></div></div>`;}).join('');
  const foot=secs.length>5?`<div class="t-foot"><span class="tf exp" data-act="expand">查看全部 ${secs.length} 人 ▾</span></div>`:'';
  return `<div class="tier ${cls} closed"><div class="t-head"><div class="t-ico">${code}</div>
   <div><div class="t-name">${name}</div><div class="t-sub">${sub}</div></div>
@@ -405,8 +412,8 @@ function viewToday(){const c=DATA.counts,ch=DATA.churn;
   ${cross}
   <div class="sec-title"><h3>今日维护</h3><span class="more">按对我消费分层</span></div>
   ${tier('l3','L3','重点维护','消费 > 99 元 · 今天必聊',DATA.l3)}
-  ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2)}
-  ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1)}${thanksEntryHtml()}${greetBlock()}${mysteryBlock()}${churn}</div></div>`;}
+  ${tier('l2','L2','完成拉群','消费 9.9–99 元',DATA.l2,'hp')}
+  ${tier('l1','L1','口头感谢','消费 < 9.9 元',DATA.l1,'all')}${thanksEntryHtml()}${greetBlock()}${mysteryBlock()}${churn}</div></div>`;}
 const TIERS=['S','A','B','C','D',''];
 function tierCounts(){const c={};TIERS.forEach(t=>c[t]=0);
  for(const s in DATA.users){const u=DATA.users[s];if(!u.mine)continue;const t=u.t||'';c[t]=(c[t]||0)+1;}return c;}
@@ -727,6 +734,29 @@ function thanksEntryHtml(){
   <div style="flex:1;min-width:0"><div class="t-name">一键感谢</div>
   <div class="t-sub">小额心意/陪伴粉 ${n} 人 · AI 写好第一句，复制发出即可</div></div>
   <div style="color:var(--ink3);font-size:18px">›</div></div>`;}
+/* v88 行内一键感谢（老板拍板：话术直接在用户卡下显示，点气泡=复制+跳转）——
+   首次触发即批量预取全部候选人，之后每行秒开；弹层与行内共用 _tkCache */
+function tkInlineHtml(s,ok){if(!ok)return '';
+ return `<div class="tk-trigger" data-tk="${s}">✍️ 一键感谢</div><div class="tk-bubble" data-tkb="${s}" style="display:none"></div>`;}
+let _tkCache=null,_tkBusy=false,_tkCbs=[],_tkFbs=[];
+function getThanks(cb,fb){
+ if(_tkCache){cb();return;}
+ _tkCbs.push(cb);if(fb)_tkFbs.push(fb);
+ if(_tkBusy)return;_tkBusy=true;
+ const secs=thanksCandidates();
+ const users=secs.map(sec=>{const u=DATA.users[sec];
+  return {nick:u.n,gift:u.g0||'',commented:!!u.cm,isNew:!!u.nf};});
+ fetch(THANKS_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({token:storedToken(),users})})
+ .then(r=>r.json()).then(d=>{
+  _tkBusy=false;
+  if(d.error||!d.texts){const fs=_tkFbs;_tkCbs=[];_tkFbs=[];fs.forEach(f=>f(d.error||'生成失败，稍后再试'));if(!fs.length)toast(d.error||'生成失败');return;}
+  _tkCache={};secs.forEach((s,i)=>{if(d.texts[i])_tkCache[s]=d.texts[i];});
+  const cbs=_tkCbs;_tkCbs=[];_tkFbs=[];cbs.forEach(f=>f());
+ }).catch(()=>{_tkBusy=false;const fs=_tkFbs;_tkCbs=[];_tkFbs=[];
+  fs.forEach(f=>f('网络异常，稍后再试'));if(!fs.length)toast('网络异常，稍后再试');});}
+function fillTkBubble(b,sec){b.dataset.loading='';
+ b.innerHTML=escapeHtml(_tkCache[sec])+'<span class="tk-hint">点我：复制这句并去 TA 主页私信 →</span>';}
 function openThanksSheet(){
  const secs=thanksCandidates();if(!secs.length){toast('今天没有需要感谢的小额心意');return;}
  const s=openSheet('一键感谢 · 第一句',
@@ -736,15 +766,9 @@ function openThanksSheet(){
  foot.innerHTML='<button class="btn btn-primary" id="tkDone" style="flex:1">完成</button>';
  foot.querySelector('#tkDone').onclick=closeSheet;
  track('ai_open');
- const users=secs.map(sec=>{const u=DATA.users[sec];
-  return {nick:u.n,gift:u.g0||'',commented:!!u.cm,isNew:!!u.nf};});
- fetch(THANKS_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-  body:JSON.stringify({token:storedToken(),users})})
- .then(r=>r.json()).then(d=>{
+ getThanks(()=>{
   const box=document.getElementById('tkList');if(!box)return;
-  if(d.error){box.innerHTML=`<div class="empty">${escapeHtml(d.error)}</div>`;return;}
-  const texts=d.texts||[];
-  box.innerHTML=secs.map((sec,i)=>{const u=DATA.users[sec];const t=texts[i]||'';
+  box.innerHTML=secs.map((sec,i)=>{const u=DATA.users[sec];const t=_tkCache[sec]||'';
    return `<div class="tk-row"><div class="tk-main">
     <div class="tk-top"><span class="u-nick">${escapeHtml(u.n)}</span><span class="u-val">${yuan(u.tv)}</span></div>
     <div class="tk-text">${t?escapeHtml(t):'（这条没生成，跳过 TA 就好）'}</div></div>
@@ -752,11 +776,11 @@ function openThanksSheet(){
   /* v87 老板口径：一步直达——复制话术同时跳 TA 抖音主页（与画像页「私信」同款 location.href，
      iOS 会拉起抖音 App，回本 App 弹层还在）；复制用同步 fallback 保证跳转前已进剪贴板 */
   box.querySelectorAll('.tk-copy').forEach(b=>b.onclick=()=>{
-   const i=+b.dataset.i,t=texts[i];if(!t)return;
+   const i=+b.dataset.i,t=_tkCache[secs[i]];if(!t)return;
    copyText(t);b.textContent='已复制 ✓ 去私信…';
    setTimeout(()=>{window.location.href='https://www.douyin.com/user/'+secs[i];},250);});
- }).catch(()=>{const box=document.getElementById('tkList');
-  if(box)box.innerHTML='<div class="empty">网络异常，关掉重开试试</div>';});}
+ },err=>{const box=document.getElementById('tkList');
+  if(box)box.innerHTML=`<div class="empty">${escapeHtml(err)}</div>`;});}
 function openFeedbackSheet(sec){
  const u=DATA.users[sec];const localNote=localStorage.getItem('note_'+sec)||'';
  const pv=(k)=>{const v=u[k];return v?escapeHtml(v):'';};
@@ -913,6 +937,21 @@ document.addEventListener('click',e=>{
  if(e.target.closest('[data-nall]')){readAllNotifs();return;}
  if(e.target.closest('[data-ntoggle]')){_ncShowRead=!_ncShowRead;renderNotifBody();return;}
  const nsec=e.target.closest('[data-nsec]');if(nsec){closeNotif();openProfile(nsec.dataset.nsec);return;}
+ /* v88 行内一键感谢：触条开合卡内气泡（首次触发批量预取），气泡=复制+跳 TA 主页；必须先于行开画像分支 */
+ const tkT=e.target.closest('[data-tk]');
+ if(tkT){const sec=tkT.dataset.tk;const bub=tkT.parentElement.querySelector('[data-tkb]');if(!bub)return;
+  if(bub.style.display==='none'){bub.style.display='';
+   if(_tkCache&&_tkCache[sec])fillTkBubble(bub,sec);
+   else{bub.dataset.loading='1';bub.innerHTML='<span style="color:var(--ink2)">小梦写一句中…</span>';
+    getThanks(()=>{if(_tkCache[sec])fillTkBubble(bub,sec);
+     else bub.innerHTML='<span style="color:var(--ink2)">这条没生成，点下方「一键感谢」卡批量试试</span>';},
+    err=>{bub.innerHTML='<span style="color:var(--ink2)">'+escapeHtml(err)+'</span>';});}}
+  else bub.style.display='none';
+  return;}
+ const tkB=e.target.closest('[data-tkb]');
+ if(tkB){const sec=tkB.dataset.tkb;const t=_tkCache&&_tkCache[sec];if(!t||tkB.dataset.loading)return;
+  copyText(t);tkB.classList.add('copied');
+  setTimeout(()=>{window.location.href='https://www.douyin.com/user/'+sec;},250);return;}
  const ac=e.target.closest('[data-act]');
  const se=e.target.closest('.urow[data-sec],.churn-card[data-sec],.srow[data-sec]');   /* v48 修闪屏：不再匹配 #pv 容器自身，否则画像页内点哪都重开 */
  const tb=e.target.closest('.tabbar .tb');
