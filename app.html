@@ -329,7 +329,7 @@ const root=document.getElementById('root');
 let DATA=null;
 let _muMakeup=null;   // 工单⑲c：本人今明两天已发布妆发排班（Worker /api/anchor/makeup）
 let _aiDepth=localStorage.getItem('ai_depth')||'deep';
-const APP_VERSION='v92';
+const APP_VERSION='v93';
 const COLORS=['#55704a','#43604a','#6b7a3d','#7a6440','#4a6b5a','#5d7a43','#6f5a45','#3f5a3e'];
 function colorOf(s){let h=0;for(const c of (s||''))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS];}
 function yuan(v){v=v||0;const y=v/10;if(y>=100)return '¥'+Math.round(y).toLocaleString();return '¥'+(Math.round(y*10)/10);}   /* v84：≥100 加千分位（¥7,847），与业绩卡排版同标准 */
@@ -470,8 +470,57 @@ function viewMe(){const a=DATA.anchor,c=DATA.counts,total=Object.keys(DATA.users
   <div class="me-row"><span>需唤醒 A/B/C</span><b>${c.chA}/${c.chB}/${c.chC}</b></div>
   <div class="me-row"><span>今日跨团用户</span><b>${c.crossToday} 人</b></div>
   <div class="me-row"><span>今日回归老客</span><b>${c.ret} 人</b></div></div>
+  <div class="me-card" style="margin-top:12px">
+  <div class="me-row" data-act="rest" style="cursor:pointer"><span>🛌 申请休息</span><b>›</b></div>
+  <div class="me-row" data-act="pref" style="cursor:pointer"><span>💇 我的意向老师</span><b>›</b></div></div>
   <div style="padding:16px 2px 0"><button class="btn btn-ghost" data-act="logout" style="width:100%">退出登录 / 换账号</button></div>
   <div class="empty" style="padding:24px 10px 10px">版本 ${APP_VERSION}　数据每场下播后自动更新<br>口径只与你自己相关</div></div></div>`;}
+/* 工单⑲d：休息申请 + 意向老师（老板 10-05 规则：休息都要运营点头，无卡必填原因；意向>师承） */
+const MU_TEACHERS=['小月','小颖','潘潘','阿日','岩岩','娜娜酱','刘媚','张倩','李庆','萍萍','常蕾','徐徐'];
+const REST_TYPES=['休息卡抵扣','事假（无卡）','病假（无卡）','其他（无卡）'];
+function openRestSheet(){
+ const tmr=new Date(Date.now()+8*3600e3+86400e3).toISOString().slice(0,10);
+ const today=new Date(Date.now()+8*3600e3).toISOString().slice(0,10);
+ const s=openSheet('申请休息',`
+  <div style="font-size:12px;color:var(--ink3);margin-bottom:6px">休息日期</div>
+  <input id="restDate" type="date" value="${tmr}" min="${today}" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink)">
+  <div style="font-size:12px;color:var(--ink3);margin:12px 0 6px">类型（休息卡=赛事获得；无卡类型必须填原因）</div>
+  <div class="chips" id="restTypes">${REST_TYPES.map((t,i)=>`<span class="chip${i===0?' on':''}" data-rt="${t}">${t}</span>`).join('')}</div>
+  <div style="font-size:12px;color:var(--ink3);margin:12px 0 6px">原因（无卡必填）</div>
+  <textarea id="restWhy" rows="3" placeholder="说清楚点，运营审批会看" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px;font-family:inherit;resize:none"></textarea>`);
+ s._type='休息卡抵扣';
+ s.querySelectorAll('[data-rt]').forEach(c=>c.onclick=()=>{s._type=c.dataset.rt;s.querySelectorAll('[data-rt]').forEach(x=>x.classList.toggle('on',x===c));});
+ const sub=s.querySelector('#sheetSubmit');sub.textContent='提交申请';
+ sub.onclick=async()=>{
+  const date=s.querySelector('#restDate').value,reason=s.querySelector('#restWhy').value.trim();
+  if(!date){toast('请选择日期');return;}
+  if(s._type!=='休息卡抵扣'&&!reason){toast('请填写原因');return;}
+  sub.disabled=true;
+  try{const r=await fetch('https://fb.menghualu.com.co/api/anchor/rest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken(),date,type:s._type,reason})});
+   const d=await r.json().catch(()=>({}));
+   if(!r.ok||!d.ok)throw new Error(d.error||'提交失败');
+   toast('已提交，运营审批后生效');closeSheet();
+  }catch(e){toast(e.message);sub.disabled=false;}};}
+async function openPrefSheet(){
+ const s=openSheet('我的意向老师',`
+  <div style="font-size:12px;color:var(--ink3);margin-bottom:6px">第一意向</div>
+  <select id="pref1" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink)"><option value="">不选</option>${MU_TEACHERS.map(t=>`<option>${t}</option>`).join('')}</select>
+  <div style="font-size:12px;color:var(--ink3);margin:12px 0 6px">第二意向</div>
+  <select id="pref2" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink)"><option value="">不选</option>${MU_TEACHERS.map(t=>`<option>${t}</option>`).join('')}</select>
+  <div style="font-size:11px;color:var(--ink3);margin-top:12px;line-height:1.6">意向优先于固定师承：排班会先按你的意向安排，冲突时才回原配。</div>`);
+ try{const r=await fetch('https://fb.menghualu.com.co/api/anchor/pref',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken()})});
+  const d=await r.json().catch(()=>({}));
+  if(d.ok){s.querySelector('#pref1').value=d.pref1||'';s.querySelector('#pref2').value=d.pref2||'';}}catch(e){}
+ const sub=s.querySelector('#sheetSubmit');sub.textContent='保存';
+ sub.onclick=async()=>{
+  const p1=s.querySelector('#pref1').value,p2=s.querySelector('#pref2').value;
+  if(p1&&p2&&p1===p2){toast('第一/第二意向不能是同一位老师');return;}
+  sub.disabled=true;
+  try{const r=await fetch('https://fb.menghualu.com.co/api/anchor/pref',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:storedToken(),pref1:p1,pref2:p2})});
+   const d=await r.json().catch(()=>({}));
+   if(!r.ok||!d.ok)throw new Error(d.error||'保存失败');
+   toast('已保存，排班会优先按意向安排');closeSheet();
+  }catch(e){toast(e.message);sub.disabled=false;}};}
 function pvNote(sec){const u=DATA.users[sec]||{};const v=localStorage.getItem('note_'+sec)||u.anote||'';
  const cloud=localStorage.getItem('note_'+sec)?'':'（云端）';
  return v?`<div class="advice" style="background:var(--gray-bg)"><div class="at" style="color:var(--ink2)">我的备注${cloud}</div><p style="color:var(--ink2)">${v.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</p></div>`:'';}
@@ -903,6 +952,8 @@ document.addEventListener('click',e=>{
  if(ac){const act=ac.dataset.act;
  if(act==='logout'){localStorage.removeItem('anchor_token');location.reload();return;}
  if(act==='notif'){openNotif();return;}
+ if(act==='rest'){openRestSheet();return;}
+ if(act==='pref'){openPrefSheet();return;}
  if(act==='expand'){const tEl=ac.closest('.tier');const closed=tEl.classList.toggle('closed');
   ac.textContent=closed?ac.textContent.replace('收起','查看全部').replace('▴','▾'):ac.textContent.replace('查看全部','收起').replace('▾','▴');return;}
  const pv=document.getElementById('pv');if(!pv)return;const k=pv.dataset.sec;
