@@ -32,6 +32,34 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 #loader .rp2{border:1px solid rgba(159,195,187,.4);animation:lrp 1.2s cubic-bezier(.2,.6,.3,1) .5s forwards}
 @keyframes lem{60%{opacity:1;filter:blur(1.5px)}100%{opacity:1;filter:blur(0);transform:scale(1)}}
 @keyframes lrp{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(2.4)}}
+/* ---- 氛围层（WoodNest 萃取：液滴+焦散+噪点） ---- */
+#amb{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+.blob{position:absolute;border-radius:48% 52% 55% 45%/50% 46% 54% 50%;filter:blur(72px);opacity:.07;will-change:transform}
+.b1{width:340px;height:340px;left:-90px;top:8%;background:#3d7a86;animation:blob1 22s ease-in-out infinite}
+.b2{width:280px;height:280px;right:-80px;top:38%;background:#2f6b5e;animation:blob2 25s ease-in-out infinite}
+.b3{width:240px;height:240px;left:20%;bottom:-70px;background:#9fc3bb;opacity:.05;animation:blob3 19s ease-in-out infinite}
+@keyframes blob1{50%{transform:translate(50px,38px) rotate(24deg) scale(1.12);border-radius:56% 44% 48% 52%/46% 54% 46% 54%}}
+@keyframes blob2{50%{transform:translate(-42px,-30px) rotate(-18deg) scale(1.08);border-radius:44% 56% 52% 48%/54% 46% 52% 48%}}
+@keyframes blob3{50%{transform:translate(36px,-44px) rotate(14deg) scale(1.15);border-radius:52% 48% 44% 56%/48% 52% 56% 44%}}
+.cau{position:absolute;width:6px;height:6px;border-radius:50%;background:rgba(230,250,248,.8);filter:blur(3px);opacity:.5;animation:cau 10s ease-in-out infinite}
+.cau.c2{animation-delay:-4.5s;animation-duration:12s}
+@keyframes cau{50%{transform:translate(60px,-46px);opacity:.12}}
+#amb .c1{left:24%;top:30%}
+#amb .c2{right:22%;top:62%}
+#noise{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:.4;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2"/><feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.015 0"/></filter><rect width="160" height="160" filter="url(%23n)"/></svg>')}
+/* ---- 入场错落（fadeUp + stagger） ---- */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+#stage.enter .vwin{animation:fadeUp .8s cubic-bezier(.16,1,.3,1) both}
+#stage.enter .hello{animation:fadeUp .8s cubic-bezier(.16,1,.3,1) .15s both}
+#stage.enter .hint{animation:fadeUp .8s cubic-bezier(.16,1,.3,1) .3s both,ihint 1.9s ease-in-out 1.4s infinite}
+#work.in .sec:nth-of-type(1){animation:fadeUp .7s cubic-bezier(.16,1,.3,1) both}
+#work.in .hr:nth-of-type(2){animation:fadeUp .7s cubic-bezier(.16,1,.3,1) .06s both}
+#work.in .sec:nth-of-type(3){animation:fadeUp .7s cubic-bezier(.16,1,.3,1) .12s both}
+#work.in .hr:nth-of-type(4){animation:fadeUp .7s cubic-bezier(.16,1,.3,1) .18s both}
+#work.in .sec:nth-of-type(5){animation:fadeUp .7s cubic-bezier(.16,1,.3,1) .24s both}
+#work.in .hr:nth-of-type(6){animation:fadeUp .7s cubic-bezier(.16,1,.3,1) .3s both}
+#work.in .sec:nth-of-type(7){animation:fadeUp .7s cubic-bezier(.16,1,.3,1) .36s both}
+#work.in .resv{animation:fadeUp .7s cubic-bezier(.16,1,.3,1) .46s both}
 /* ---- 顶部状态带 ---- */
 #stbar{position:absolute;top:calc(env(safe-area-inset-top) + 10px);left:14px;right:14px;z-index:20;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
 .pill{font-size:10px;color:#fff;background:rgba(20,28,32,.5);border:1px solid rgba(255,255,255,.22);padding:5px 11px;border-radius:99px;letter-spacing:.08em;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
@@ -71,7 +99,7 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 .resv{position:absolute;left:0;right:0;bottom:calc(96px + env(safe-area-inset-bottom));display:flex;justify-content:center;gap:22px}
 .resv span{font-size:10px;color:rgba(159,195,187,.34);letter-spacing:.18em;cursor:pointer}
 /* ---- 小梦胶囊 ---- */
-#aibar{position:absolute;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:21;display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:30px;background:rgba(30,42,46,.55);border:1px solid rgba(255,255,255,.2);-webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3);opacity:0;pointer-events:none}
+#aibar{position:absolute;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:21;display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:30px;background:rgba(15,25,45,.42);border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 12px 40px rgba(0,0,0,.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);opacity:0;pointer-events:none}
 .cbtn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid var(--gbrd);display:flex;align-items:center;justify-content:center;flex:none;cursor:pointer}
 .cbtn svg{width:15px;height:15px;stroke:var(--ink2);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .cfld{flex:1;min-width:0;font-size:13.5px;color:var(--ink);background:transparent;border:0;outline:0;font-family:inherit}
@@ -159,7 +187,9 @@ body{font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",s
 </style></head><body>
 <div id="phone">
  <canvas id="gl"></canvas>
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v4.0.1</b> · 梦华录</span></div>
+ <div id="amb"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="cau c1"></div><div class="cau c2"></div></div>
+ <div id="noise"></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v4.0.2</b> · 梦华录</span></div>
  <div id="stage">
   <div class="vwin"><video id="vv" playsinline muted loop autoplay preload="auto"></video><div class="dur" id="vdur"></div></div>
   <div class="hello"><span class="hi">Hello,</span><div class="av" id="hAv">?</div><span class="nm" id="hNm"></span></div>
@@ -226,7 +256,7 @@ async function boot(){
  const vv=$('#vv');
  const ready=new Promise(res=>{let done=false;const ok=()=>{if(!done){done=true;res();}};vv.addEventListener('loadeddata',ok,{once:true});setTimeout(ok,RM?300:2400);});
  await ready;
- $('#loader').classList.add('done');setTimeout(()=>$('#loader').remove(),RM?60:500);
+ $('#loader').classList.add('done');$('#stage').classList.add('enter');setTimeout(()=>$('#loader').remove(),RM?60:500);
 }
 function render(){
  const a=DATA.anchor,c=DATA.counts||{},total=Object.keys(DATA.users||{}).length;
@@ -340,7 +370,8 @@ function setP(p){
  if(p>=0.5&&!_flashed&&_sg&&_sg.dir==='down'&&!RM){_flashed=true;
   $('#flash').animate([{opacity:0},{opacity:.85,offset:.25},{opacity:0}],{duration:170,easing:'ease-out'});}
  if(p<0.2)_flashed=false;
- if(p>=0.97)_landed=true;
+ if(p>=0.97){_landed=true;const w=$('#work');if(!w.classList.contains('in'))w.classList.add('in');}
+ if(p<0.2)$('#work').classList.remove('in');
  diagLine();
 }
 function tweenTo(target){
