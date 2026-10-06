@@ -1,5 +1,5 @@
 {
- "date": "2026-10-05",
+ "date": "2026-10-06",
  "tid": "menghualu_xunyin",
  "anchors": {
   "晴岚": {
@@ -8,9 +8,9 @@
    "av": "https://p3.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-avt-0015_5e403a560691601351d438935e7de838.jpeg?from=3835648678",
    "stability": 88,
    "trend": 77,
-   "coop": 15,
+   "coop": 17,
    "retention": 48,
-   "newc_n": 135,
+   "newc_n": 130,
    "top1nick": "太空不太空",
    "top1pct": 12,
    "avg7": 4419,
@@ -27,9 +27,9 @@
    "av": "https://p3.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-avt-0015_b0131fe54b0c7654f928f5745164aa68.jpeg?from=3835648678",
    "stability": 85,
    "trend": 96,
-   "coop": 17,
+   "coop": 18,
    "retention": 24,
-   "newc_n": 122,
+   "newc_n": 117,
    "top1nick": "路过一只可达鸭",
    "top1pct": 42,
    "avg7": 10535,
@@ -48,7 +48,7 @@
    "trend": 54,
    "coop": 0,
    "retention": 35,
-   "newc_n": 106,
+   "newc_n": 98,
    "top1nick": "家有好运",
    "top1pct": 38,
    "avg7": 8045,
@@ -56,8 +56,8 @@
    "fb": "0天/0条",
    "retention_n": "50/142",
    "income": 78,
-   "newcus": 72,
-   "overall": 64
+   "newcus": 61,
+   "overall": 62
   },
   "小呜": {
    "name": "小呜",
@@ -65,18 +65,18 @@
    "av": "https://p3.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-avt-0015_b86614de374b644f30c044ce1167cc40.jpeg?from=3835648678",
    "stability": 88,
    "trend": 38,
-   "coop": 8,
+   "coop": 17,
    "retention": 46,
-   "newc_n": 104,
+   "newc_n": 101,
    "top1nick": "刘海燕～合美口腔合伙人",
    "top1pct": 30,
    "avg7": 3503,
    "days30": 23,
-   "fb": "1天/12条",
+   "fb": "2天/13条",
    "retention_n": "51/111",
    "income": 56,
-   "newcus": 61,
-   "overall": 58
+   "newcus": 72,
+   "overall": 60
   },
   "恬清": {
    "name": "恬清",
@@ -86,7 +86,7 @@
    "trend": 63,
    "coop": 0,
    "retention": 35,
-   "newc_n": 97,
+   "newc_n": 90,
    "top1nick": "恹尘",
    "top1pct": 36,
    "avg7": 3418,
@@ -103,9 +103,9 @@
    "av": "https://p11.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-avt-0015_fc3efcd7473fff393bb4f044f872b7cd.jpeg?from=3835648678",
    "stability": 81,
    "trend": 62,
-   "coop": 27,
+   "coop": 30,
    "retention": 33,
-   "newc_n": 37,
+   "newc_n": 35,
    "top1nick": "小蛋",
    "top1pct": 34,
    "avg7": 4648,
@@ -113,8 +113,8 @@
    "fb": "3天/43条",
    "retention_n": "26/78",
    "income": 78,
-   "newcus": 11,
-   "overall": 53
+   "newcus": 6,
+   "overall": 52
   },
   "沐沐": {
    "name": "沐沐",
@@ -138,12 +138,12 @@
   "小鱼": {
    "name": "小鱼",
    "gid": "1506810115919163",
-   "av": "https://p11.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-avt-0015_394aa7dabe50ec8e909e9d0078da44cd.jpeg?from=3835648678",
+   "av": "https://p11.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-avt-0015_6807b83717650611e865a09f26aa1162.jpeg?from=3835648678",
    "stability": 88,
    "trend": 55,
    "coop": 8,
    "retention": 42,
-   "newc_n": 47,
+   "newc_n": 44,
    "top1nick": "TT (退网版)",
    "top1pct": 68,
    "avg7": 1798,
@@ -170,8 +170,8 @@
    "fb": "2天/42条",
    "retention_n": "16/42",
    "income": 33,
-   "newcus": 11,
-   "overall": 35
+   "newcus": 17,
+   "overall": 37
   }
  }
 }
