@@ -144,10 +144,30 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 .mtop .h{font-size:22px;font-weight:700}
 .mtop .s{font-size:12px;color:var(--ink2);margin-top:2px}
 .xback{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid var(--gbrd);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;font-size:13px;color:var(--ink2)}
-#modal .xbody{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
-#modal .xbody::-webkit-scrollbar{display:none}
+#modal .xbody{flex:1;min-height:0;overflow:hidden}
 .xask{position:sticky;bottom:calc(14px + env(safe-area-inset-bottom));margin:auto 16px 0;display:flex;align-items:center;gap:8px;padding:12px 16px;border-radius:26px;font-size:13px;color:var(--ink3);cursor:pointer;flex:none;background:rgba(22,32,38,.8);border:1px solid var(--gbrd);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
 .xask svg{width:15px;height:15px;stroke:var(--cyan);fill:none;stroke-width:1.7;stroke-linecap:round}
+/* ---- 弹窗双页轨道（清单⇄画像 跟手滑动） ---- */
+#modal .xtrack{display:flex;height:100%;will-change:transform;transition:transform .3s var(--spring)}
+#modal .xpage{flex:0 0 100%;width:100%;height:100%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+#modal .xpage::-webkit-scrollbar{display:none}
+/* ---- 长按快捷操作 ---- */
+.lpv{position:absolute;inset:0;z-index:5;background:rgba(4,8,11,.45);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center}
+.lcard{width:74%;background:rgba(24,34,40,.96);border:1px solid var(--gbrd);border-radius:22px;padding:16px;transform:scale(.94);animation:lpup .18s var(--spring) forwards}
+@keyframes lpup{to{transform:scale(1)}}
+.lhead{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.lhead .av{width:36px;height:36px;border-radius:50%;background:#3a4a54;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;position:relative;overflow:hidden;flex:none}
+.lhead .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.lhead .n{font-size:15px;font-weight:600}
+.lbtns{display:flex;gap:8px}
+.lbtns span{flex:1;text-align:center;font-size:12.5px;padding:10px 0;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid var(--gbrd);cursor:pointer}
+.lbtns span:active{background:var(--cyan);color:var(--night)}
+/* ---- 空状态（图+话+出口） ---- */
+.empty2{text-align:center;padding:44px 24px;color:var(--ink3)}
+.empty2 svg{width:30px;height:30px;stroke:rgba(143,182,201,.4);fill:none;stroke-width:1.4;stroke-linecap:round;margin-bottom:12px}
+.empty2 .et{font-size:13.5px;color:var(--ink2)}
+.empty2 .es{font-size:11.5px;margin-top:5px}
+.mkimg img{width:100%;border-radius:16px;border:1px solid var(--gbrd);display:block}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:8px 18px 4px}
 .stat{background:rgba(255,255,255,.06);border:1px solid var(--gbrd);border-radius:16px;padding:13px 14px}
 .stat .v{font-size:19px;font-weight:700}
@@ -199,7 +219,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 <div id="phone">
  <div id="amb"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="cau c1"></div><div class="cau c2"></div></div>
  <div id="noise"></div>
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.4.1</b> · 梦华录</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.5.0</b> · 梦华录</span></div>
  <div id="vfly"><div class="vwin"><video id="vv" playsinline muted loop autoplay preload="auto"></video><div class="dur" id="vdur"></div></div></div>
  <div id="stage">
   <div class="hello"><span class="hi">Hello,</span><div class="av" id="hAv">?</div><span class="nm" id="hNm"></span></div>
@@ -210,7 +230,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
   <div id="cards">
    <div class="dcard" data-act="perf"><div class="dk">我的荣誉</div><div class="dv" id="cPerf">…</div><div class="ds" id="cPerfS">保底 …</div><div class="pbar"><i id="cPerfBar"></i></div><div class="go">›</div></div>
    <div class="dcard" data-act="users"><div class="dk">我的粉丝</div><div class="dv" id="cUsers">…</div><div class="ds" id="cUsersS"></div><div class="go">›</div></div>
-   <div class="dcard soon" data-soon="日程安排"><div class="dk">日程安排</div><div class="dv" id="cTodo">…</div><div class="ds">今日安排 · 每周时间表</div></div>
+   <div class="dcard" data-act="sched"><div class="dk">日程安排</div><div class="dv" id="cTodo">…</div><div class="ds">今日安排 · 每周时间表</div><div class="go">›</div></div>
    <div class="dcard soon" data-soon="妆容相册"><div class="dk">妆容相册</div><div class="dv sm2">往期每日妆容</div><div class="ds">截图回顾</div></div>
    <div class="dcard soon" data-soon="申请反馈"><div class="dk">申请反馈</div><div class="dv sm2">休息 · 意向 · 直达</div><div class="ds">化妆师优先级</div></div>
    <div class="dcard soon" data-soon="通关打卡"><div class="dk">通关打卡</div><div class="dv sm2">每日作业</div><div class="ds">表管 · 话术 · 资料</div></div>
@@ -296,6 +316,9 @@ function setP(p){
  vf.style.transform=`translate3d(0,${-1.18*PH*p}px,0) scale(${1-0.07*p})`;
  vf.style.opacity=String(Math.max(0,1-Math.max(0,(p-0.72)/0.14)));
  vv.style.transform=`scale(${1+0.06*p}) translateY(${-1.2*p}%)`;
+ // 视频后台暂停：落定工作台即停，回戏台续播（发烫元凶）
+ const vact=p<0.98;
+ if(vact&&vv.paused)vv.play().catch(()=>{});else if(!vact&&!vv.paused)vv.pause();
  // 工作台：Hello 先定格，六盘错落浮起
  w.style.opacity=p>0.02?'1':'0';
  const who=Math.max(0,Math.min(1,(p-0.3)/0.22));
@@ -352,18 +375,19 @@ function openModal(kind,ev){
  const pr=$('#phone').getBoundingClientRect();
  const r=sec?sec.getBoundingClientRect():{left:pr.width/2-60,top:pr.height/2-40,width:120,height:80};
  const W=pr.width,H=pr.height,tw=W-28,th=Math.round(H*0.8),tl=14,tt=Math.round(H*0.1);
- const T={perf:['我的荣誉','业绩数据 · 保底口径，永远正语调'],users:['我的粉丝','主归属优先，只看你自己的人']}[kind]||['',''];
+ const T={perf:['我的荣誉','业绩数据 · 保底口径，永远正语调'],users:['我的粉丝','主归属优先，只看你自己的人'],sched:['日程安排','今日待办 · 本周时间表']}[kind]||['',''];
  const dim=document.createElement('div');dim.id='mdim';
  const md=document.createElement('div');md.id='modal';
- md.innerHTML=`<div class="mtop"><div class="xback mback" style="display:none">‹</div><div class="xt"><div class="h">${T[0]}</div><div class="s">${T[1]}</div></div><div class="xback mclose">✕</div></div><div class="xbody"></div>`;
+ md.innerHTML=`<div class="mtop"><div class="xback mback" style="display:none">‹</div><div class="xt"><div class="h">${T[0]}</div><div class="s">${T[1]}</div></div><div class="xback mclose">✕</div></div><div class="xbody"><div class="xtrack"><div class="xpage" id="xList"></div><div class="xpage" id="xProf"></div></div></div>`;
  md.style.left=tl+'px';md.style.top=tt+'px';md.style.width=tw+'px';md.style.height=th+'px';
  const st={dim,card:sec,tl,tt,tw,th,r:{left:r.left,top:r.top,width:r.width,height:r.height}};
- _md={el:md,view:'list',...st};
+ _md={el:md,view:'list',t0:T[0],t1:T[1],...st};
  $('#phone').appendChild(dim);$('#phone').appendChild(md);
  if(sec)sec.style.visibility='hidden';
- const body=md.querySelector('.xbody');
+ const body=md.querySelector('#xList');
  if(kind==='users')renderUsers(body);
  else if(kind==='perf')renderPerf(body);
+ else if(kind==='sched')renderSched(body);
  if(!RM){
   md.style.transformOrigin='top left';
   md.style.transform=`translate(${st.r.left-pr.left-tl}px,${st.r.top-pr.top-tt}px) scale(${st.r.width/tw},${st.r.height/th})`;
@@ -413,21 +437,35 @@ function bindModalDrag(md){
   }else{md.style.transition='transform .3s cubic-bezier(.32,.72,.35,1),opacity .3s';md.style.transform='none';md.style.opacity='1';}
  });
 }
-/* ===== 弹窗右滑返回（画像→清单） ===== */
+/* ===== 弹窗右滑返回（跟手：面板随指+清单 35% 视差） ===== */
 function bindModalSwipe(md){
+ const track=md.querySelector('.xtrack'),xList=md.querySelector('#xList');
+ let sw=null;
  md.addEventListener('touchstart',e=>{
-  if(e.touches.length!==1)return;
-  md._sw={x:e.touches[0].clientX,y:e.touches[0].clientY,done:false};
+  if(e.touches.length!==1||!_md||_md.view!=='profile'){sw=null;return;}
+  sw={x:e.touches[0].clientX,y:e.touches[0].clientY,on:false,p:0};
  },{passive:true});
  md.addEventListener('touchmove',e=>{
-  const s=md._sw;if(!s||s.done)return;
-  const t=e.touches[0],dx=t.clientX-s.x,dy=t.clientY-s.y;
-  if(dx>50&&Math.abs(dy)<32&&dx>Math.abs(dy)*1.5){
-   s.done=true;
-   if(_md&&_md.view==='profile'){const b=md.querySelector('.mback');if(b)b.click();}
+  if(!sw)return;const t=e.touches[0],dx=t.clientX-sw.x,dy=t.clientY-sw.y;
+  if(!sw.on){
+   if(dx>12&&Math.abs(dy)<10&&dx>Math.abs(dy)*2){sw.on=true;track.style.transition='none';xList.style.transition='none';}
+   else if(Math.abs(dy)>10||dx<-10){sw=null;return;}
+   else return;
   }
- },{passive:true});
- md.addEventListener('touchend',()=>{md._sw=null;},{passive:true});
+  e.preventDefault();
+  sw.p=Math.max(0,Math.min(1,dx/md.clientWidth));
+  track.style.transform=`translateX(${-100+sw.p*100}%)`;
+  xList.style.transform=`translateX(${-35*(1-sw.p)}%)`;
+ },{passive:false});
+ const end=()=>{
+  if(!sw)return;const p=sw.p,on=sw.on;sw=null;
+  if(!on)return;
+  track.style.transition='';xList.style.transition='';
+  if(p>0.32)setView('list');
+  else{track.style.transform='translateX(-100%)';xList.style.transform='translateX(-35%)';}
+ };
+ md.addEventListener('touchend',end,{passive:true});
+ md.addEventListener('touchcancel',end,{passive:true});
 }
 const TIERS=['S','A','B','C','D','未评级'];
 function tierOf(u){return u.t||'未评级';}
@@ -448,7 +486,35 @@ function urow(s,u,val,extra){
  <div class="v">${val}</div></div>`;
 }
 let _uTab='today';
-function bindUrows(ub){ub.querySelectorAll('.urow').forEach(r=>r.onclick=()=>openProfile(r.dataset.sec));}
+function bindUrows(ub){
+ ub.querySelectorAll('.urow').forEach(r=>{
+  let tm=null,lp=false;
+  r.addEventListener('touchstart',()=>{lp=false;clearTimeout(tm);tm=setTimeout(()=>{lp=true;openLP(r.dataset.sec);},460);},{passive:true});
+  r.addEventListener('touchmove',()=>clearTimeout(tm),{passive:true});
+  r.addEventListener('touchend',()=>clearTimeout(tm),{passive:true});
+  r.addEventListener('click',e=>{if(lp){lp=false;e.stopPropagation();e.preventDefault();return;}openProfile(r.dataset.sec);},true);
+ });
+}
+/* ===== 长按快捷操作（移动端右键） ===== */
+function openLP(sec){
+ const u=DATA.users[sec];if(!u||!_md)return;
+ const md=_md.el;
+ const old=md.querySelector('.lpv');if(old)old.remove();
+ const lp=document.createElement('div');lp.className='lpv';
+ lp.innerHTML=`<div class="lcard"><div class="lhead"><div class="av">${(u.n||'?')[0]}${u.av?`<img src="${u.av}" onerror="this.remove()">`:''}</div><div class="n">${esc(u.n||'')}</div></div>
+ <div class="lbtns"><span data-a="已私信">已私信</span><span data-a="已拉群">已拉群</span><span data-a="跳主页">跳主页</span></div></div>`;
+ md.appendChild(lp);
+ lp.addEventListener('click',e=>{if(e.target===lp)lp.remove();});
+ lp.querySelectorAll('.lbtns span').forEach(b=>b.onclick=()=>{
+  const a=b.dataset.a;
+  if(a==='跳主页'){
+   if(u.priv||!u.mine){toast(u.priv?'主页不可见':'归属别家');return;}
+   location.href='https://www.douyin.com/user/'+sec;return;
+  }
+  b.textContent='回传中…';
+  postFeedback(sec,u,[a],[],'',ok=>{lp.remove();toast(ok?'已回传，运营可见':'网络异常，稍后再试');});
+ });
+}
 function usecHTML(t){return `<div class="usec">${t}</div>`;}
 function paintToday(ub){
  const U=DATA.users,has=s=>U[s]&&U[s].mine;
@@ -460,7 +526,7 @@ function paintToday(ub){
   +grp(DATA.l1,'L1 本场支持','L1 本场支持',u=>`${yuan(u.tv)}<small>本场</small>`)
   +grp(DATA.greet,'主动问候 · S/A/B 本场没来','主动问候',u=>`${yuan(u.sv)}<small>累计</small>`)
   +(()=>{const rows=(DATA.bday||[]).filter(([s])=>has(s)).map(([s,d])=>{const u=U[s];return urow(s,u,`<small>${d===0?'今天':d+' 天后'}</small>`,'🎂 生日');}).join('');return rows?usecHTML('生日提醒 · 未来一周')+rows:'';})();
- ub.innerHTML=h||'<div class="empty">今天没有待办，清爽</div>';
+ ub.innerHTML=h||emptyState('今日清爽','没有待办，好好休息');
 }
 function paintTiers(ub){
  const counts={};Object.values(DATA.users).forEach(u=>{if(!u.mine)return;const t=tierOf(u);counts[t]=(counts[t]||0)+1;});
@@ -477,7 +543,7 @@ function paintTiers(ub){
 function paintChurn(ub){
  const U=DATA.users,list=[...((DATA.churn||{}).a||[]),...((DATA.churn||{}).b||[])].filter(s=>U[s]&&U[s].mine);
  list.sort((a,b)=>(U[b].sv||0)-(U[a].sv||0));
- if(!list.length){ub.innerHTML='<div class="empty">高价值用户都在，没人掉队</div>';return;}
+ if(!list.length){ub.innerHTML=emptyState('高价值用户都在','没人掉队，继续保持');return;}
  const today=DATA.anchor.date;
  ub.innerHTML=usecHTML('高价值唤醒 · 90 天留存原则')+list.slice(0,40).map(s=>{const u=U[s];
   const gap=u.last&&today?Math.max(0,Math.round((new Date(today)-new Date(u.last))/86400000)):null;
@@ -521,36 +587,46 @@ function renderProfile(body,sec,u){
  const dm=body.querySelector('#pDm');
  if(!dm.classList.contains('off'))dm.onclick=()=>{location.href='https://www.douyin.com/user/'+sec;};
 }
-function submitActions(sec,u,chips,sub,note){
- const actions=chips.filter(c=>c.classList.contains('on')).map(c=>c.dataset.a);
- const unflags=['已拉群','已互关'].filter(f=>u.ff&&u.ff.includes(f)&&!actions.includes(f));
- if(!actions.length&&!unflags.length&&!note)return;
+function postFeedback(sec,u,actions,unflags,note,done){
  const body={token:TOK,sec,nick:u.n||'',room_id:(DATA.anchor&&DATA.anchor.room_id)||'',kind:'日常维护',actions,grade:'',note:note||'',contact:'',demand:'',birthday:'',hometown:'',hobby:'',keyevent:'',address:'',job:'',taboo:'',unflags};
  body.sub_id=TOK+'_'+sec+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
- sub.textContent='提交中…';sub.style.pointerEvents='none';
  fetch('https://fb.menghualu.com.co/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
  .then(r=>{if(!r.ok)throw 0;return r.json();}).then(()=>{
   u.ff=u.ff||[];for(const f of['已拉群','已互关'])if(actions.includes(f)&&!u.ff.includes(f))u.ff.push(f);
   if(unflags.length)u.ff=u.ff.filter(f=>!unflags.includes(f));
   if(note)localStorage.setItem('note_'+sec,note);
-  sub.textContent='已回传 ✓';toast('已回传，运营可见');})
- .catch(()=>{sub.textContent='提交回传';sub.style.pointerEvents='';toast('网络异常，稍后再试');});
+  done(true);}).catch(()=>done(false));
+}
+function submitActions(sec,u,chips,sub,note){
+ const actions=chips.filter(c=>c.classList.contains('on')).map(c=>c.dataset.a);
+ const unflags=['已拉群','已互关'].filter(f=>u.ff&&u.ff.includes(f)&&!actions.includes(f));
+ if(!actions.length&&!unflags.length&&!note)return;
+ sub.textContent='提交中…';sub.style.pointerEvents='none';
+ postFeedback(sec,u,actions,unflags,note,ok=>{
+  if(ok){sub.textContent='已回传 ✓';toast('已回传，运营可见');}
+  else{sub.textContent='提交回传';sub.style.pointerEvents='';toast('网络异常，稍后再试');}
+ });
+}
+/* ===== 弹窗双页视图（清单⇄画像） ===== */
+function setView(v){
+ if(!_md)return;
+ const md=_md.el,track=md.querySelector('.xtrack'),xList=md.querySelector('#xList');
+ track.style.transform=v==='profile'?'translateX(-100%)':'translateX(0)';
+ xList.style.transform=v==='profile'?'translateX(-35%)':'translateX(0)';
+ _md.view=v;
+ md.querySelector('.mback').style.display=v==='profile'?'flex':'none';
+ md.querySelector('.mtop .h').textContent=v==='profile'?(_md.pname||'画像'):_md.t0;
+ md.querySelector('.mtop .s').textContent=v==='profile'?'粉丝画像 · 初版（本地数据）':_md.t1;
 }
 function openProfile(sec){
  if(!_md)return;
  const u=DATA.users[sec];if(!u)return;
- const md=_md.el,body=md.querySelector('.xbody');
- md.querySelector('.mtop .h').textContent=u.n||'画像';
- md.querySelector('.mtop .s').textContent='粉丝画像 · 初版（本地数据）';
- const bk=md.querySelector('.mback');bk.style.display='flex';
- _md.view='profile';
- bk.onclick=()=>{if(!_md)return;
-  _md.view='list';
-  md.querySelector('.mtop .h').textContent='我的粉丝';
-  md.querySelector('.mtop .s').textContent='主归属优先，只看你自己的人';
-  bk.style.display='none';renderUsers(body);};
- renderProfile(body,sec,u);
- body.scrollTop=0;
+ const md=_md.el;
+ _md.pname=u.n||'画像';
+ renderProfile(md.querySelector('#xProf'),sec,u);
+ md.querySelector('#xProf').scrollTop=0;
+ setView('profile');
+ md.querySelector('.mback').onclick=()=>setView('list');
 }
 function renderPerf(body){
  const p=PERF;
@@ -563,6 +639,18 @@ function renderPerf(body){
   <div class="stat"><div class="v">${p.month_days||0} 天</div><div class="k">本月开播</div></div>
   <div class="stat"><div class="v">${(()=>{const n=parseFloat(String(p.last_income??'').replace(/[^\d.]/g,''));return isNaN(n)?'—':yuanW(n);})()}</div><div class="k">上一场</div></div></div>
  <div class="enc">${enc}</div>`;
+}
+/* ===== 空状态（图+话+出口） ===== */
+function emptyState(t,s){return `<div class="empty2"><svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg><div class="et">${t}</div><div class="es">${s||''}</div></div>`;}
+/* ===== 日程盘 ===== */
+function renderSched(body){
+ const c=DATA.counts||{};
+ const rows=[['L3 重点维护',c.l3],['L2 拉群',c.l2],['L1 本场支持',c.l1],['主动问候',c.greet],['生日提醒',c.bday]].filter(x=>x[1]>0);
+ const today=`<div class="usec">今日待办</div>`+(rows.length?rows.map(([k,v])=>`<div class="mrow"><span>${k}</span><b>${v} 人</b></div>`).join(''):emptyState('今日清爽','没有待办，好好休息'));
+ const week=`<div class="usec">本周时间表</div>`+(DATA.schedule&&DATA.schedule.length?'':emptyState('排班数据接通中','主播侧只读接口派单主控中'));
+ const mk=`<div class="usec">本周化妆表</div><div class="mkimg" id="mkImg">${emptyState('等组长发表','发群里后丢给我，我挂上来')}</div>`;
+ body.innerHTML=today+week+mk;
+ const img=new Image();img.onload=()=>{const d=body.querySelector('#mkImg');if(d)d.innerHTML=`<img src="assets/schedule/makeup.jpg" alt="本周化妆表">`;};img.src='assets/schedule/makeup.jpg';
 }
 /* ===== 小梦 ===== */
 function bootChips(){
@@ -649,4 +737,5 @@ function diagLine(){
 }
 setupGestures();
 setP(0);
+document.addEventListener('visibilitychange',()=>{const vv=$('#vv');if(!vv)return;if(document.hidden)vv.pause();else if(_p<0.98)vv.play().catch(()=>{});});
 </script></body></html>
