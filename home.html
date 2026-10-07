@@ -199,7 +199,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 <div id="phone">
  <div id="amb"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="cau c1"></div><div class="cau c2"></div></div>
  <div id="noise"></div>
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.4.0</b> · 梦华录</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.4.1</b> · 梦华录</span></div>
  <div id="vfly"><div class="vwin"><video id="vv" playsinline muted loop autoplay preload="auto"></video><div class="dur" id="vdur"></div></div></div>
  <div id="stage">
   <div class="hello"><span class="hi">Hello,</span><div class="av" id="hAv">?</div><span class="nm" id="hNm"></span></div>
@@ -358,7 +358,7 @@ function openModal(kind,ev){
  md.innerHTML=`<div class="mtop"><div class="xback mback" style="display:none">‹</div><div class="xt"><div class="h">${T[0]}</div><div class="s">${T[1]}</div></div><div class="xback mclose">✕</div></div><div class="xbody"></div>`;
  md.style.left=tl+'px';md.style.top=tt+'px';md.style.width=tw+'px';md.style.height=th+'px';
  const st={dim,card:sec,tl,tt,tw,th,r:{left:r.left,top:r.top,width:r.width,height:r.height}};
- _md={el:md,...st};
+ _md={el:md,view:'list',...st};
  $('#phone').appendChild(dim);$('#phone').appendChild(md);
  if(sec)sec.style.visibility='hidden';
  const body=md.querySelector('.xbody');
@@ -376,6 +376,7 @@ function openModal(kind,ev){
  md.querySelector('.mclose').onclick=()=>closeModal();
  dim.onclick=()=>closeModal();
  bindModalDrag(md);
+ bindModalSwipe(md);
 }
 function closeModal(instant){
  if(!_md)return;const {el,dim,card,r,tl,tt,tw,th}=_md;_md=null;
@@ -411,6 +412,22 @@ function bindModalDrag(md){
    setTimeout(()=>{md.remove();m.dim.remove();},240);
   }else{md.style.transition='transform .3s cubic-bezier(.32,.72,.35,1),opacity .3s';md.style.transform='none';md.style.opacity='1';}
  });
+}
+/* ===== 弹窗右滑返回（画像→清单） ===== */
+function bindModalSwipe(md){
+ md.addEventListener('touchstart',e=>{
+  if(e.touches.length!==1)return;
+  md._sw={x:e.touches[0].clientX,y:e.touches[0].clientY,done:false};
+ },{passive:true});
+ md.addEventListener('touchmove',e=>{
+  const s=md._sw;if(!s||s.done)return;
+  const t=e.touches[0],dx=t.clientX-s.x,dy=t.clientY-s.y;
+  if(dx>50&&Math.abs(dy)<32&&dx>Math.abs(dy)*1.5){
+   s.done=true;
+   if(_md&&_md.view==='profile'){const b=md.querySelector('.mback');if(b)b.click();}
+  }
+ },{passive:true});
+ md.addEventListener('touchend',()=>{md._sw=null;},{passive:true});
 }
 const TIERS=['S','A','B','C','D','未评级'];
 function tierOf(u){return u.t||'未评级';}
@@ -476,39 +493,19 @@ function renderUsers(body){
  bindUrows(ub);
 }
 /* ===== 粉丝画像（下钻窗 · 初版本地数据） ===== */
-function profAdvice(u,inL3,inGreet){
- if(u.bg!=null&&u.bg<=3)return `生日近了${u.bg===0?'，就是今天':`，还有 ${u.bg} 天`}——开场单独提一句，比什么都暖。`;
- if(inL3)return '他在 L3 重点维护名单里，今天必须落到——下播前私信一句。';
- if((u.tv||0)>0)return '本场刚支持过，开场先点名谢一句，别拖到下播。';
- if((u.days||0)>=30)return '高陪伴老人，稳字当头——记得他的习惯，一句就够。';
- return '保持自然互动，别硬聊——有来有往就是维护。';
-}
 function renderProfile(body,sec,u){
- const inL3=(DATA.l3||[]).includes(sec),inGreet=(DATA.greet||[]).includes(sec);
- const bd=(DATA.bday||[]).find(x=>x[0]===sec);
- const bgv=u.bg!=null?u.bg:(bd?bd[1]:null);
- const gap=u.last&&DATA.anchor.date?Math.max(0,Math.round((new Date(DATA.anchor.date)-new Date(u.last))/86400000)):null;
  const info=[u.gr&&('荣耀'+u.gr),u.fl&&('灯牌'+u.fl),u.l,u.g&&(u.g===1?'男':'女'),u.a&&(u.a+'岁')].filter(Boolean).join(' · ');
- const info2=[u.fs0?('首刷 '+u.fs0):'',u.fs||''].filter(Boolean).join(' · ');
  const yuanD=v=>'¥'+((v||0)/10).toLocaleString('zh-CN',{maximumFractionDigits:1});
  const note0=(localStorage.getItem('note_'+sec)||u.anote||'');
  const cloudTag=localStorage.getItem('note_'+sec)?'':(u.anote?'（云端）':'');
  body.innerHTML=`<div class="phead"><div class="pav">${(u.n||'?')[0]}${u.av?`<img src="${u.av}" onerror="this.remove()">`:''}</div>
   <div><div class="pnm">${esc(u.n||'')}<span class="ptier">${u.t?esc(u.t)+' 级':'未评级'}</span></div>
-  <div class="ptags">${esc(info||'资料待补')}</div>
-  <div class="ptags">${esc(info2)}</div></div></div>
+  <div class="ptags">${esc(info||'资料待补')}</div></div></div>
  <div class="stats">
   <div class="stat"><div class="v">${yuanD(u.sv)}</div><div class="k">给我累计</div></div>
   <div class="stat"><div class="v">${yuanD(u.tv)}</div><div class="k">本场</div></div>
-  <div class="stat"><div class="v">${gap==null?'—':gap+' 天'}</div><div class="k">没来了</div></div>
-  <div class="stat"><div class="v">${(u.last||'—').slice(5)}</div><div class="k">上次来</div></div>
   <div class="stat"><div class="v">${u.days||0} 天</div><div class="k">陪伴我的天数</div></div>
   <div class="stat"><div class="v">${u.w?Math.round(u.w/60):0} 分</div><div class="k">今日观看</div></div></div>
- <div class="mrows">
-  <div class="mrow"><span>L3 重点维护</span><b>${inL3?'在名单 · 今天必落':'—'}</b></div>
-  <div class="mrow"><span>主动问候</span><b>${inGreet?'待问候':'—'}</b></div>
-  <div class="mrow"><span>生日提醒</span><b>${bgv!=null&&bgv<=7?(bgv===0?'今天！':bgv+' 天后'):'—'}</b></div></div>
- <div class="enc"><b>维护提示</b><br>${esc(u.adv||profAdvice(u,inL3,inGreet))}</div>
  <div class="pnote"><div class="pk">我的备注${cloudTag}</div><textarea id="pNote" rows="2" placeholder="写一句，随回传上云">${esc(note0)}</textarea></div>
  <div class="pacts" id="pActs"><div class="pk">维护动作（点选后提交，运营可见）</div>
   <div class="pchips">${['已私信','已回复','已拉群','已互关','已流失'].map(a=>`<span class="chip${u.ff&&u.ff.includes(a)?' on':''}" data-a="${a}">${a}</span>`).join('')}</div></div>
@@ -546,7 +543,9 @@ function openProfile(sec){
  md.querySelector('.mtop .h').textContent=u.n||'画像';
  md.querySelector('.mtop .s').textContent='粉丝画像 · 初版（本地数据）';
  const bk=md.querySelector('.mback');bk.style.display='flex';
+ _md.view='profile';
  bk.onclick=()=>{if(!_md)return;
+  _md.view='list';
   md.querySelector('.mtop .h').textContent='我的粉丝';
   md.querySelector('.mtop .s').textContent='主归属优先，只看你自己的人';
   bk.style.display='none';renderUsers(body);};
