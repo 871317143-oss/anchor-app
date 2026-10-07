@@ -173,6 +173,12 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 .mrow span{color:var(--ink2)}
 .mrow b{font-weight:600}
 .dimrow{margin:12px 18px 4px;padding:11px 14px;border:1px dashed rgba(143,182,201,.3);border-radius:14px;font-size:11px;color:var(--ink3);text-align:center}
+.usec{font-size:11px;color:var(--ink3);padding:12px 18px 6px;letter-spacing:.1em}
+.pacts{padding:12px 18px 0}
+.pacts .pk{font-size:11px;color:var(--ink3);padding-bottom:8px}
+.pchips{display:flex;gap:7px;flex-wrap:wrap}
+.psub{margin-top:10px;text-align:center;font-size:13px;font-weight:600;padding:12px;border-radius:16px;background:var(--ink);color:var(--night);cursor:pointer;opacity:.35;pointer-events:none;transition:opacity .2s}
+.psub.on{opacity:1;pointer-events:auto}
 .empty{text-align:center;color:var(--ink3);font-size:13px;padding:36px 16px}
 .sk{padding:40px 20px;text-align:center;color:var(--ink3);font-size:13px}
 #toast{position:absolute;left:50%;bottom:110px;transform:translateX(-50%) translateY(16px);background:rgba(8,14,17,.92);color:#fff;font-size:13px;padding:11px 18px;border-radius:10px;max-width:82%;text-align:center;opacity:0;transition:all .25s;pointer-events:none;z-index:90}
@@ -181,7 +187,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 <div id="phone">
  <div id="amb"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="cau c1"></div><div class="cau c2"></div></div>
  <div id="noise"></div>
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.2.0</b> · 梦华录</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.3.0</b> · 梦华录</span></div>
  <div id="vfly"><div class="vwin"><video id="vv" playsinline muted loop autoplay preload="auto"></video><div class="dur" id="vdur"></div></div></div>
  <div id="stage">
   <div class="hello"><span class="hi">Hello,</span><div class="av" id="hAv">?</div><span class="nm" id="hNm"></span></div>
@@ -402,17 +408,50 @@ function urow(s,u,val,tag){
  <div><div class="n">${esc(u.n||'')}</div><div class="tags">${tag||''}</div></div>
  <div class="v">${val}</div></div>`;
 }
-function renderUsers(body){
+let _uTab='today';
+function bindUrows(ub){ub.querySelectorAll('.urow').forEach(r=>r.onclick=()=>openProfile(r.dataset.sec));}
+function usecHTML(t){return `<div class="usec">${t}</div>`;}
+function paintToday(ub){
+ const U=DATA.users,has=s=>U[s]&&U[s].mine;
+ const grp=(list,label,tag,valFn)=>{
+  const rows=(list||[]).filter(has).map(s=>{const u=U[s];return urow(s,u,valFn(u),tag);}).join('');
+  return rows?usecHTML(label)+rows:'';};
+ const h=grp(DATA.l3,'L3 重点维护 · 本场 ≥¥99','L3 重点维护',u=>`${yuan(u.tv)}<small>本场</small>`)
+  +grp(DATA.l2,'L2 拉群 · 本场 ≥¥9.9','L2 拉群',u=>`${yuan(u.tv)}<small>本场</small>`)
+  +grp(DATA.l1,'L1 本场支持','L1 本场支持',u=>`${yuan(u.tv)}<small>本场</small>`)
+  +grp(DATA.greet,'主动问候 · S/A/B 本场没来','主动问候',u=>`${yuan(u.sv)}<small>累计</small>`)
+  +(()=>{const rows=(DATA.bday||[]).filter(([s])=>has(s)).map(([s,d])=>{const u=U[s];return urow(s,u,`<small>${d===0?'今天':d+' 天后'}</small>`,'🎂 生日');}).join('');return rows?usecHTML('生日提醒 · 未来一周')+rows:'';})();
+ ub.innerHTML=h||'<div class="empty">今天没有待办，清爽</div>';
+}
+function paintTiers(ub){
  const counts={};Object.values(DATA.users).forEach(u=>{if(!u.mine)return;const t=tierOf(u);counts[t]=(counts[t]||0)+1;});
  if(!(counts[_curTier]>0))_curTier=TIERS.find(t=>counts[t]>0)||'S';
  const paint=()=>{
   const list=Object.entries(DATA.users).filter(([s,u])=>tierOf(u)===_curTier&&u.mine).sort((a,b)=>(b[1].sv||0)-(a[1].sv||0));
-  body.innerHTML=`<div class="xchips">${TIERS.map(t=>`<span class="chip${t===_curTier?' on':''}" data-t="${t}">${t} ${counts[t]||0}</span>`).join('')}</div>`+
+  ub.innerHTML=`<div class="xchips">${TIERS.map(t=>`<span class="chip${t===_curTier?' on':''}" data-t="${t}">${t} ${counts[t]||0}</span>`).join('')}</div>`+
    (list.slice(0,40).map(([s,u])=>urow(s,u,`${yuan(u.sv)}<small>累计</small>`,[u.t?u.t+'级':'',u.bg!=null&&u.bg<=7?'🎂'+u.bg+'天':'',u.days>=30?'高陪伴':''].filter(Boolean).join(' · '))).join('')||'<div class="empty">该分级暂无用户</div>');
-  body.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{_curTier=ch.dataset.t;paint();});
-  body.querySelectorAll('.urow').forEach(r=>r.onclick=()=>openProfile(r.dataset.sec));
+  ub.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{_curTier=ch.dataset.t;paint();});
+  bindUrows(ub);
  };
  paint();
+}
+function paintChurn(ub){
+ const U=DATA.users,list=[...((DATA.churn||{}).a||[]),...((DATA.churn||{}).b||[])].filter(s=>U[s]&&U[s].mine);
+ list.sort((a,b)=>(U[b].sv||0)-(U[a].sv||0));
+ if(!list.length){ub.innerHTML='<div class="empty">高价值用户都在，没人掉队</div>';return;}
+ const today=DATA.anchor.date;
+ ub.innerHTML=usecHTML('高价值唤醒 · 90 天留存原则')+list.slice(0,40).map(s=>{const u=U[s];
+  const gap=u.last&&today?Math.max(0,Math.round((new Date(today)-new Date(u.last))/86400000)):null;
+  return urow(s,u,`${yuan(u.sv)}<small>累计</small>`,[u.t?u.t+'级':'',gap!=null?`缺席 ${gap} 天`:''].filter(Boolean).join(' · '));}).join('');
+}
+function renderUsers(body){
+ body.innerHTML=`<div class="xchips" id="uTabs">${[['today','今日维护'],['tiers','粉丝清单'],['churn','唤醒清单']].map(([k,n])=>`<span class="chip${k===_uTab?' on':''}" data-t="${k}">${n}</span>`).join('')}</div><div class="ubody"></div>`;
+ body.querySelectorAll('#uTabs .chip').forEach(ch=>ch.onclick=()=>{_uTab=ch.dataset.t;renderUsers(body);body.querySelector('.xbody,#modal .xbody')&&(body.scrollTop=0);});
+ const ub=body.querySelector('.ubody');
+ if(_uTab==='today')paintToday(ub);
+ else if(_uTab==='tiers')paintTiers(ub);
+ else paintChurn(ub);
+ bindUrows(ub);
 }
 /* ===== 粉丝画像（下钻窗 · 初版本地数据） ===== */
 function profAdvice(u,inL3,inGreet){
@@ -438,8 +477,31 @@ function renderProfile(body,sec,u){
   <div class="mrow"><span>L3 重点维护</span><b>${inL3?'在名单 · 今天必落':'—'}</b></div>
   <div class="mrow"><span>主动问候</span><b>${inGreet?'待问候':'—'}</b></div>
   <div class="mrow"><span>生日提醒</span><b>${bgv!=null&&bgv<=7?(bgv===0?'今天！':bgv+' 天后'):'—'}</b></div></div>
+ <div class="pacts" id="pActs"><div class="pk">维护动作（点选后提交，运营可见）</div>
+  <div class="pchips">${['已私信','已回复','已拉群','已互关','已流失'].map(a=>`<span class="chip${u.ff&&u.ff.includes(a)?' on':''}" data-a="${a}">${a}</span>`).join('')}</div>
+  <div class="psub" id="pSub">提交回传</div></div>
  <div class="enc">${profAdvice(u,inL3,inGreet)}</div>
  <div class="dimrow">回传记录 · 曾用名 · 档案五字段——接 Worker 后点亮</div>`;
+ const chips=[...body.querySelectorAll('#pActs .chip')],sub=body.querySelector('#pSub');
+ const init=chips.map(c=>c.classList.contains('on')?'1':'0').join('');
+ const refresh=()=>{sub.classList.toggle('on',chips.map(c=>c.classList.contains('on')?'1':'0').join('')!==init);};
+ chips.forEach(c=>c.onclick=()=>{c.classList.toggle('on');refresh();});
+ refresh();
+ sub.onclick=()=>submitActions(sec,u,chips,sub);
+}
+function submitActions(sec,u,chips,sub){
+ const actions=chips.filter(c=>c.classList.contains('on')).map(c=>c.dataset.a);
+ const unflags=['已拉群','已互关'].filter(f=>u.ff&&u.ff.includes(f)&&!actions.includes(f));
+ if(!actions.length&&!unflags.length)return;
+ const body={token:TOK,sec,nick:u.n||'',room_id:(DATA.anchor&&DATA.anchor.room_id)||'',kind:'日常维护',actions,grade:'',note:'',contact:'',demand:'',birthday:'',hometown:'',hobby:'',keyevent:'',address:'',job:'',taboo:'',unflags};
+ body.sub_id=TOK+'_'+sec+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+ sub.textContent='提交中…';sub.style.pointerEvents='none';
+ fetch('https://fb.menghualu.com.co/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+ .then(r=>{if(!r.ok)throw 0;return r.json();}).then(()=>{
+  u.ff=u.ff||[];for(const f of['已拉群','已互关'])if(actions.includes(f)&&!u.ff.includes(f))u.ff.push(f);
+  if(unflags.length)u.ff=u.ff.filter(f=>!unflags.includes(f));
+  sub.textContent='已回传 ✓';toast('已回传，运营可见');})
+ .catch(()=>{sub.textContent='提交回传';sub.style.pointerEvents='';toast('网络异常，稍后再试');});
 }
 function openProfile(sec){
  if(!_md)return;
