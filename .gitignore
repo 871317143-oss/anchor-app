@@ -2,3 +2,4 @@ _shots/
 _*.json
 *.log
 .DS_Store
+.codegraph/
