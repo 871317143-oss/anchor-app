@@ -179,6 +179,18 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 .pchips{display:flex;gap:7px;flex-wrap:wrap}
 .psub{margin-top:10px;text-align:center;font-size:13px;font-weight:600;padding:12px;border-radius:16px;background:var(--ink);color:var(--night);cursor:pointer;opacity:.35;pointer-events:none;transition:opacity .2s}
 .psub.on{opacity:1;pointer-events:auto}
+.bdg{display:inline-block;font-size:10px;padding:2px 7px;border-radius:99px;margin:2px 4px 0 0;line-height:1.4}
+.bdg.gd{color:var(--gold);background:rgba(201,163,92,.12);border:1px solid rgba(201,163,92,.3)}
+.bdg.gn{color:#7fb069;background:rgba(127,176,105,.12);border:1px solid rgba(127,176,105,.3)}
+.bdg.rd{color:#d9704f;background:rgba(217,112,79,.12);border:1px solid rgba(217,112,79,.3)}
+.bdg.bl{color:#7d9fc4;background:rgba(125,159,196,.12);border:1px solid rgba(125,159,196,.3)}
+.pnote{padding:12px 18px 0}
+.pnote .pk{font-size:11px;color:var(--ink3);padding-bottom:8px}
+.pnote textarea{width:100%;resize:none;border-radius:14px;border:1px solid var(--gbrd);background:rgba(255,255,255,.06);color:var(--ink);font-family:inherit;font-size:13px;padding:11px 13px;outline:0}
+.prow{display:flex;gap:9px;padding:10px 18px 0;align-items:stretch}
+.prow .psub{flex:1;margin-top:0}
+.pdm{flex:1;text-align:center;font-size:13px;font-weight:600;padding:12px;border-radius:16px;background:linear-gradient(135deg,var(--cyan),#6a8fb5);color:#fff;cursor:pointer}
+.pdm.off{opacity:.4;background:rgba(255,255,255,.08);color:var(--ink3)}
 .empty{text-align:center;color:var(--ink3);font-size:13px;padding:36px 16px}
 .sk{padding:40px 20px;text-align:center;color:var(--ink3);font-size:13px}
 #toast{position:absolute;left:50%;bottom:110px;transform:translateX(-50%) translateY(16px);background:rgba(8,14,17,.92);color:#fff;font-size:13px;padding:11px 18px;border-radius:10px;max-width:82%;text-align:center;opacity:0;transition:all .25s;pointer-events:none;z-index:90}
@@ -187,7 +199,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 <div id="phone">
  <div id="amb"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="cau c1"></div><div class="cau c2"></div></div>
  <div id="noise"></div>
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.3.0</b> · 梦华录</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.4.0</b> · 梦华录</span></div>
  <div id="vfly"><div class="vwin"><video id="vv" playsinline muted loop autoplay preload="auto"></video><div class="dur" id="vdur"></div></div></div>
  <div id="stage">
   <div class="hello"><span class="hi">Hello,</span><div class="av" id="hAv">?</div><span class="nm" id="hNm"></span></div>
@@ -343,7 +355,7 @@ function openModal(kind,ev){
  const T={perf:['我的荣誉','业绩数据 · 保底口径，永远正语调'],users:['我的粉丝','主归属优先，只看你自己的人']}[kind]||['',''];
  const dim=document.createElement('div');dim.id='mdim';
  const md=document.createElement('div');md.id='modal';
- md.innerHTML=`<div class="mtop"><div class="xback mback" style="display:none">‹</div><div class="xt"><div class="h">${T[0]}</div><div class="s">${T[1]}</div></div><div class="xback mclose">✕</div></div><div class="xbody"></div><div class="xask">${ICO.spark}继续问小梦…</div>`;
+ md.innerHTML=`<div class="mtop"><div class="xback mback" style="display:none">‹</div><div class="xt"><div class="h">${T[0]}</div><div class="s">${T[1]}</div></div><div class="xback mclose">✕</div></div><div class="xbody"></div>`;
  md.style.left=tl+'px';md.style.top=tt+'px';md.style.width=tw+'px';md.style.height=th+'px';
  const st={dim,card:sec,tl,tt,tw,th,r:{left:r.left,top:r.top,width:r.width,height:r.height}};
  _md={el:md,...st};
@@ -363,7 +375,6 @@ function openModal(kind,ev){
  }else{dim.style.opacity='1';}
  md.querySelector('.mclose').onclick=()=>closeModal();
  dim.onclick=()=>closeModal();
- md.querySelector('.xask').onclick=()=>openAI();
  bindModalDrag(md);
 }
 function closeModal(instant){
@@ -403,9 +414,20 @@ function bindModalDrag(md){
 }
 const TIERS=['S','A','B','C','D','未评级'];
 function tierOf(u){return u.t||'未评级';}
-function urow(s,u,val,tag){
+function badges(u){
+ const b=[];
+ if(u.t)b.push(`<span class="bdg gd">${esc(u.t)}级</span>`);
+ if(u.nf)b.push('<span class="bdg rd">新客</span>');
+ if(u.bg!=null&&u.bg<=7)b.push(`<span class="bdg rd">🎂${u.bg===0?'今天':u.bg+'天'}</span>`);
+ if(u.days>=30)b.push('<span class="bdg gn">高陪伴</span>');
+ if(u.cr)b.push(`<span class="bdg bl">${u.mine?'归我':'别家'}</span>`);
+ if(u.ff&&u.ff.includes('已拉群'))b.push('<span class="bdg gn">群</span>');
+ if(u.ff&&u.ff.includes('已互关'))b.push('<span class="bdg bl">互</span>');
+ return b.join('');
+}
+function urow(s,u,val,extra){
  return `<div class="urow" data-sec="${s}"><div class="av">${(u.n||'?')[0]}${u.av?`<img src="${u.av}" onerror="this.remove()">`:''}</div>
- <div><div class="n">${esc(u.n||'')}</div><div class="tags">${tag||''}</div></div>
+ <div><div class="n">${esc(u.n||'')}</div><div class="tags">${badges(u)}${extra?`<span class="bdg bl">${extra}</span>`:''}</div></div>
  <div class="v">${val}</div></div>`;
 }
 let _uTab='today';
@@ -414,7 +436,7 @@ function usecHTML(t){return `<div class="usec">${t}</div>`;}
 function paintToday(ub){
  const U=DATA.users,has=s=>U[s]&&U[s].mine;
  const grp=(list,label,tag,valFn)=>{
-  const rows=(list||[]).filter(has).map(s=>{const u=U[s];return urow(s,u,valFn(u),tag);}).join('');
+  const rows=(list||[]).filter(has).map(s=>{const u=U[s];return urow(s,u,valFn(u));}).join('');
   return rows?usecHTML(label)+rows:'';};
  const h=grp(DATA.l3,'L3 重点维护 · 本场 ≥¥99','L3 重点维护',u=>`${yuan(u.tv)}<small>本场</small>`)
   +grp(DATA.l2,'L2 拉群 · 本场 ≥¥9.9','L2 拉群',u=>`${yuan(u.tv)}<small>本场</small>`)
@@ -429,7 +451,7 @@ function paintTiers(ub){
  const paint=()=>{
   const list=Object.entries(DATA.users).filter(([s,u])=>tierOf(u)===_curTier&&u.mine).sort((a,b)=>(b[1].sv||0)-(a[1].sv||0));
   ub.innerHTML=`<div class="xchips">${TIERS.map(t=>`<span class="chip${t===_curTier?' on':''}" data-t="${t}">${t} ${counts[t]||0}</span>`).join('')}</div>`+
-   (list.slice(0,40).map(([s,u])=>urow(s,u,`${yuan(u.sv)}<small>累计</small>`,[u.t?u.t+'级':'',u.bg!=null&&u.bg<=7?'🎂'+u.bg+'天':'',u.days>=30?'高陪伴':''].filter(Boolean).join(' · '))).join('')||'<div class="empty">该分级暂无用户</div>');
+   (list.slice(0,40).map(([s,u])=>urow(s,u,`${yuan(u.sv)}<small>累计</small>`)).join('')||'<div class="empty">该分级暂无用户</div>');
   ub.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{_curTier=ch.dataset.t;paint();});
   bindUrows(ub);
  };
@@ -442,7 +464,7 @@ function paintChurn(ub){
  const today=DATA.anchor.date;
  ub.innerHTML=usecHTML('高价值唤醒 · 90 天留存原则')+list.slice(0,40).map(s=>{const u=U[s];
   const gap=u.last&&today?Math.max(0,Math.round((new Date(today)-new Date(u.last))/86400000)):null;
-  return urow(s,u,`${yuan(u.sv)}<small>累计</small>`,[u.t?u.t+'级':'',gap!=null?`缺席 ${gap} 天`:''].filter(Boolean).join(' · '));}).join('');
+  return urow(s,u,`${yuan(u.sv)}<small>累计</small>`,gap!=null?`缺席 ${gap} 天`:'');}).join('');
 }
 function renderUsers(body){
  body.innerHTML=`<div class="xchips" id="uTabs">${[['today','今日维护'],['tiers','粉丝清单'],['churn','唤醒清单']].map(([k,n])=>`<span class="chip${k===_uTab?' on':''}" data-t="${k}">${n}</span>`).join('')}</div><div class="ubody"></div>`;
@@ -465,41 +487,55 @@ function renderProfile(body,sec,u){
  const inL3=(DATA.l3||[]).includes(sec),inGreet=(DATA.greet||[]).includes(sec);
  const bd=(DATA.bday||[]).find(x=>x[0]===sec);
  const bgv=u.bg!=null?u.bg:(bd?bd[1]:null);
+ const gap=u.last&&DATA.anchor.date?Math.max(0,Math.round((new Date(DATA.anchor.date)-new Date(u.last))/86400000)):null;
+ const info=[u.gr&&('荣耀'+u.gr),u.fl&&('灯牌'+u.fl),u.l,u.g&&(u.g===1?'男':'女'),u.a&&(u.a+'岁')].filter(Boolean).join(' · ');
+ const info2=[u.fs0?('首刷 '+u.fs0):'',u.fs||''].filter(Boolean).join(' · ');
+ const yuanD=v=>'¥'+((v||0)/10).toLocaleString('zh-CN',{maximumFractionDigits:1});
+ const note0=(localStorage.getItem('note_'+sec)||u.anote||'');
+ const cloudTag=localStorage.getItem('note_'+sec)?'':(u.anote?'（云端）':'');
  body.innerHTML=`<div class="phead"><div class="pav">${(u.n||'?')[0]}${u.av?`<img src="${u.av}" onerror="this.remove()">`:''}</div>
   <div><div class="pnm">${esc(u.n||'')}<span class="ptier">${u.t?esc(u.t)+' 级':'未评级'}</span></div>
-  <div class="ptags">${esc(u.l||'地域未知')} · 首刷 ${esc(u.fs0||'—')} · ${esc(u.fs||'未跟进')}</div></div></div>
+  <div class="ptags">${esc(info||'资料待补')}</div>
+  <div class="ptags">${esc(info2)}</div></div></div>
  <div class="stats">
-  <div class="stat"><div class="v">${yuan(u.sv)}</div><div class="k">累计消费</div></div>
-  <div class="stat"><div class="v">${yuan(u.tv)}</div><div class="k">本场</div></div>
-  <div class="stat"><div class="v">${u.days||0} 天</div><div class="k">陪伴天数</div></div>
-  <div class="stat"><div class="v">${bgv==null?'—':(bgv===0?'今天':bgv+' 天后')}</div><div class="k">生日</div></div></div>
+  <div class="stat"><div class="v">${yuanD(u.sv)}</div><div class="k">给我累计</div></div>
+  <div class="stat"><div class="v">${yuanD(u.tv)}</div><div class="k">本场</div></div>
+  <div class="stat"><div class="v">${gap==null?'—':gap+' 天'}</div><div class="k">没来了</div></div>
+  <div class="stat"><div class="v">${(u.last||'—').slice(5)}</div><div class="k">上次来</div></div>
+  <div class="stat"><div class="v">${u.days||0} 天</div><div class="k">陪伴我的天数</div></div>
+  <div class="stat"><div class="v">${u.w?Math.round(u.w/60):0} 分</div><div class="k">今日观看</div></div></div>
  <div class="mrows">
   <div class="mrow"><span>L3 重点维护</span><b>${inL3?'在名单 · 今天必落':'—'}</b></div>
   <div class="mrow"><span>主动问候</span><b>${inGreet?'待问候':'—'}</b></div>
   <div class="mrow"><span>生日提醒</span><b>${bgv!=null&&bgv<=7?(bgv===0?'今天！':bgv+' 天后'):'—'}</b></div></div>
+ <div class="enc"><b>维护提示</b><br>${esc(u.adv||profAdvice(u,inL3,inGreet))}</div>
+ <div class="pnote"><div class="pk">我的备注${cloudTag}</div><textarea id="pNote" rows="2" placeholder="写一句，随回传上云">${esc(note0)}</textarea></div>
  <div class="pacts" id="pActs"><div class="pk">维护动作（点选后提交，运营可见）</div>
-  <div class="pchips">${['已私信','已回复','已拉群','已互关','已流失'].map(a=>`<span class="chip${u.ff&&u.ff.includes(a)?' on':''}" data-a="${a}">${a}</span>`).join('')}</div>
-  <div class="psub" id="pSub">提交回传</div></div>
- <div class="enc">${profAdvice(u,inL3,inGreet)}</div>
+  <div class="pchips">${['已私信','已回复','已拉群','已互关','已流失'].map(a=>`<span class="chip${u.ff&&u.ff.includes(a)?' on':''}" data-a="${a}">${a}</span>`).join('')}</div></div>
+ <div class="prow"><div class="psub" id="pSub">提交回传</div><div class="pdm${u.priv||!u.mine?' off':''}" id="pDm">${u.priv?'主页不可见':(!u.mine?'归属别家':'私信 TA')}</div></div>
  <div class="dimrow">回传记录 · 曾用名 · 档案五字段——接 Worker 后点亮</div>`;
- const chips=[...body.querySelectorAll('#pActs .chip')],sub=body.querySelector('#pSub');
- const init=chips.map(c=>c.classList.contains('on')?'1':'0').join('');
- const refresh=()=>{sub.classList.toggle('on',chips.map(c=>c.classList.contains('on')?'1':'0').join('')!==init);};
+ const chips=[...body.querySelectorAll('#pActs .chip')],sub=body.querySelector('#pSub'),noteEl=body.querySelector('#pNote');
+ const init=chips.map(c=>c.classList.contains('on')?'1':'0').join('')+'|'+note0;
+ const refresh=()=>{sub.classList.toggle('on',(chips.map(c=>c.classList.contains('on')?'1':'0').join('')+'|'+noteEl.value.trim())!==init);};
  chips.forEach(c=>c.onclick=()=>{c.classList.toggle('on');refresh();});
+ noteEl.addEventListener('input',refresh);
  refresh();
- sub.onclick=()=>submitActions(sec,u,chips,sub);
+ sub.onclick=()=>submitActions(sec,u,chips,sub,noteEl.value.trim());
+ const dm=body.querySelector('#pDm');
+ if(!dm.classList.contains('off'))dm.onclick=()=>{location.href='https://www.douyin.com/user/'+sec;};
 }
-function submitActions(sec,u,chips,sub){
+function submitActions(sec,u,chips,sub,note){
  const actions=chips.filter(c=>c.classList.contains('on')).map(c=>c.dataset.a);
  const unflags=['已拉群','已互关'].filter(f=>u.ff&&u.ff.includes(f)&&!actions.includes(f));
- if(!actions.length&&!unflags.length)return;
- const body={token:TOK,sec,nick:u.n||'',room_id:(DATA.anchor&&DATA.anchor.room_id)||'',kind:'日常维护',actions,grade:'',note:'',contact:'',demand:'',birthday:'',hometown:'',hobby:'',keyevent:'',address:'',job:'',taboo:'',unflags};
+ if(!actions.length&&!unflags.length&&!note)return;
+ const body={token:TOK,sec,nick:u.n||'',room_id:(DATA.anchor&&DATA.anchor.room_id)||'',kind:'日常维护',actions,grade:'',note:note||'',contact:'',demand:'',birthday:'',hometown:'',hobby:'',keyevent:'',address:'',job:'',taboo:'',unflags};
  body.sub_id=TOK+'_'+sec+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
  sub.textContent='提交中…';sub.style.pointerEvents='none';
  fetch('https://fb.menghualu.com.co/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
  .then(r=>{if(!r.ok)throw 0;return r.json();}).then(()=>{
   u.ff=u.ff||[];for(const f of['已拉群','已互关'])if(actions.includes(f)&&!u.ff.includes(f))u.ff.push(f);
   if(unflags.length)u.ff=u.ff.filter(f=>!unflags.includes(f));
+  if(note)localStorage.setItem('note_'+sec,note);
   sub.textContent='已回传 ✓';toast('已回传，运营可见');})
  .catch(()=>{sub.textContent='提交回传';sub.style.pointerEvents='';toast('网络异常，稍后再试');});
 }
