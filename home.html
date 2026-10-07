@@ -161,6 +161,18 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 .urow .tags{font-size:10px;color:var(--gold);margin-top:2px}
 .urow .v{margin-left:auto;font-size:13px;font-weight:700;text-align:right;flex:none}
 .urow .v small{display:block;font-weight:400;color:var(--ink3);font-size:10px}
+/* ---- 粉丝画像（下钻窗） ---- */
+.phead{display:flex;align-items:center;gap:13px;padding:12px 18px 4px}
+.pav{width:56px;height:56px;border-radius:50%;background:#3a4a54;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;flex:none;border:1.5px solid rgba(255,255,255,.25)}
+.pav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pnm{font-size:19px;font-weight:700;display:flex;align-items:center;gap:8px}
+.ptier{font-size:10px;font-weight:600;color:var(--gold);border:1px solid rgba(201,163,92,.4);padding:2px 8px;border-radius:99px}
+.ptags{font-size:11px;color:var(--ink3);margin-top:4px}
+.mrows{padding:12px 18px 0}
+.mrow{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;background:rgba(255,255,255,.06);border:1px solid var(--gbrd);border-radius:14px;margin-bottom:8px;font-size:12.5px}
+.mrow span{color:var(--ink2)}
+.mrow b{font-weight:600}
+.dimrow{margin:12px 18px 4px;padding:11px 14px;border:1px dashed rgba(143,182,201,.3);border-radius:14px;font-size:11px;color:var(--ink3);text-align:center}
 .empty{text-align:center;color:var(--ink3);font-size:13px;padding:36px 16px}
 .sk{padding:40px 20px;text-align:center;color:var(--ink3);font-size:13px}
 #toast{position:absolute;left:50%;bottom:110px;transform:translateX(-50%) translateY(16px);background:rgba(8,14,17,.92);color:#fff;font-size:13px;padding:11px 18px;border-radius:10px;max-width:82%;text-align:center;opacity:0;transition:all .25s;pointer-events:none;z-index:90}
@@ -169,7 +181,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 <div id="phone">
  <div id="amb"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="cau c1"></div><div class="cau c2"></div></div>
  <div id="noise"></div>
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.1.2</b> · 梦华录</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.2.0</b> · 梦华录</span></div>
  <div id="vfly"><div class="vwin"><video id="vv" playsinline muted loop autoplay preload="auto"></video><div class="dur" id="vdur"></div></div></div>
  <div id="stage">
   <div class="hello"><span class="hi">Hello,</span><div class="av" id="hAv">?</div><span class="nm" id="hNm"></span></div>
@@ -325,7 +337,7 @@ function openModal(kind,ev){
  const T={perf:['我的荣誉','业绩数据 · 保底口径，永远正语调'],users:['我的粉丝','主归属优先，只看你自己的人']}[kind]||['',''];
  const dim=document.createElement('div');dim.id='mdim';
  const md=document.createElement('div');md.id='modal';
- md.innerHTML=`<div class="mtop"><div class="xt"><div class="h">${T[0]}</div><div class="s">${T[1]}</div></div><div class="xback mclose">✕</div></div><div class="xbody"></div><div class="xask">${ICO.spark}继续问小梦…</div>`;
+ md.innerHTML=`<div class="mtop"><div class="xback mback" style="display:none">‹</div><div class="xt"><div class="h">${T[0]}</div><div class="s">${T[1]}</div></div><div class="xback mclose">✕</div></div><div class="xbody"></div><div class="xask">${ICO.spark}继续问小梦…</div>`;
  md.style.left=tl+'px';md.style.top=tt+'px';md.style.width=tw+'px';md.style.height=th+'px';
  const st={dim,card:sec,tl,tt,tw,th,r:{left:r.left,top:r.top,width:r.width,height:r.height}};
  _md={el:md,...st};
@@ -398,9 +410,50 @@ function renderUsers(body){
   body.innerHTML=`<div class="xchips">${TIERS.map(t=>`<span class="chip${t===_curTier?' on':''}" data-t="${t}">${t} ${counts[t]||0}</span>`).join('')}</div>`+
    (list.slice(0,40).map(([s,u])=>urow(s,u,`${yuan(u.sv)}<small>累计</small>`,[u.t?u.t+'级':'',u.bg!=null&&u.bg<=7?'🎂'+u.bg+'天':'',u.days>=30?'高陪伴':''].filter(Boolean).join(' · '))).join('')||'<div class="empty">该分级暂无用户</div>');
   body.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{_curTier=ch.dataset.t;paint();});
-  body.querySelectorAll('.urow').forEach(r=>r.onclick=()=>toast('画像页整套搬迁在 backlog 第一位'));
+  body.querySelectorAll('.urow').forEach(r=>r.onclick=()=>openProfile(r.dataset.sec));
  };
  paint();
+}
+/* ===== 粉丝画像（下钻窗 · 初版本地数据） ===== */
+function profAdvice(u,inL3,inGreet){
+ if(u.bg!=null&&u.bg<=3)return `生日近了${u.bg===0?'，就是今天':`，还有 ${u.bg} 天`}——开场单独提一句，比什么都暖。`;
+ if(inL3)return '他在 L3 重点维护名单里，今天必须落到——下播前私信一句。';
+ if((u.tv||0)>0)return '本场刚支持过，开场先点名谢一句，别拖到下播。';
+ if((u.days||0)>=30)return '高陪伴老人，稳字当头——记得他的习惯，一句就够。';
+ return '保持自然互动，别硬聊——有来有往就是维护。';
+}
+function renderProfile(body,sec,u){
+ const inL3=(DATA.l3||[]).includes(sec),inGreet=(DATA.greet||[]).includes(sec);
+ const bd=(DATA.bday||[]).find(x=>x[0]===sec);
+ const bgv=u.bg!=null?u.bg:(bd?bd[1]:null);
+ body.innerHTML=`<div class="phead"><div class="pav">${(u.n||'?')[0]}${u.av?`<img src="${u.av}" onerror="this.remove()">`:''}</div>
+  <div><div class="pnm">${esc(u.n||'')}<span class="ptier">${u.t?esc(u.t)+' 级':'未评级'}</span></div>
+  <div class="ptags">${esc(u.l||'地域未知')} · 首刷 ${esc(u.fs0||'—')} · ${esc(u.fs||'未跟进')}</div></div></div>
+ <div class="stats">
+  <div class="stat"><div class="v">${yuan(u.sv)}</div><div class="k">累计消费</div></div>
+  <div class="stat"><div class="v">${yuan(u.tv)}</div><div class="k">本场</div></div>
+  <div class="stat"><div class="v">${u.days||0} 天</div><div class="k">陪伴天数</div></div>
+  <div class="stat"><div class="v">${bgv==null?'—':(bgv===0?'今天':bgv+' 天后')}</div><div class="k">生日</div></div></div>
+ <div class="mrows">
+  <div class="mrow"><span>L3 重点维护</span><b>${inL3?'在名单 · 今天必落':'—'}</b></div>
+  <div class="mrow"><span>主动问候</span><b>${inGreet?'待问候':'—'}</b></div>
+  <div class="mrow"><span>生日提醒</span><b>${bgv!=null&&bgv<=7?(bgv===0?'今天！':bgv+' 天后'):'—'}</b></div></div>
+ <div class="enc">${profAdvice(u,inL3,inGreet)}</div>
+ <div class="dimrow">回传记录 · 曾用名 · 档案五字段——接 Worker 后点亮</div>`;
+}
+function openProfile(sec){
+ if(!_md)return;
+ const u=DATA.users[sec];if(!u)return;
+ const md=_md.el,body=md.querySelector('.xbody');
+ md.querySelector('.mtop .h').textContent=u.n||'画像';
+ md.querySelector('.mtop .s').textContent='粉丝画像 · 初版（本地数据）';
+ const bk=md.querySelector('.mback');bk.style.display='flex';
+ bk.onclick=()=>{if(!_md)return;
+  md.querySelector('.mtop .h').textContent='我的粉丝';
+  md.querySelector('.mtop .s').textContent='主归属优先，只看你自己的人';
+  bk.style.display='none';renderUsers(body);};
+ renderProfile(body,sec,u);
+ body.scrollTop=0;
 }
 function renderPerf(body){
  const p=PERF;
