@@ -197,9 +197,24 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 .usec.big{font-size:13px;color:var(--ink);font-weight:600;letter-spacing:.06em;padding:20px 18px 8px}
 .usec.big:first-child{padding-top:12px}
 .murem{margin:2px 18px 10px;padding:10px 14px;border:1px solid var(--gold);border-radius:14px;font-size:12.5px;color:var(--gold);background:rgba(201,163,92,.08)}
-.gstrip{display:flex;overflow-x:auto;gap:10px;padding:2px 18px 10px;scrollbar-width:none}
-.gstrip::-webkit-scrollbar{display:none}
-.gstrip img{height:150px;width:auto;border-radius:14px;border:1px solid var(--gbrd);flex:none;object-fit:cover}
+.gthumbs{display:flex;gap:8px;height:56px;margin-bottom:10px}
+.gthumbs img{flex:1;min-width:0;height:56px;object-fit:cover;border-radius:12px}
+#gfull{position:absolute;inset:0;z-index:60;background:radial-gradient(120% 70% at 20% 0%,rgba(64,90,104,.35),transparent 55%),linear-gradient(180deg,#101a20,#0c141a);display:flex;flex-direction:column;will-change:transform,opacity}
+#gfull .ghead{flex:none;display:flex;align-items:center;gap:11px;padding:calc(env(safe-area-inset-top) + 14px) 16px 10px}
+#gfull .gt{flex:1;text-align:center;font-size:18px;font-weight:600}
+#gfull .gn{font-size:11px;color:var(--ink3)}
+#gfull .gbody{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-content:start;padding:12px 14px calc(24px + env(safe-area-inset-bottom));scrollbar-width:none}
+#gfull .gbody::-webkit-scrollbar{display:none}
+.gcard{position:relative;border-radius:24px}
+.gcard::before{content:'';position:absolute;inset:0;border-radius:24px;padding:1.4px;background:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0) 50%,rgba(255,255,255,.45));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;opacity:.5;pointer-events:none}
+.gcard .gf{position:relative;padding-bottom:133%;border-radius:24px;overflow:hidden;background:#16221f}
+.gcard .gf>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%}
+.gcard .gsnap{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.gcard .gsnap::-webkit-scrollbar{display:none}
+.gcard .gsnap img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;object-position:center 20%;scroll-snap-align:start}
+.gcard .ginfo{display:flex;align-items:center;gap:8px;padding:8px 2px 0;font-size:12px;color:var(--ink2)}
+.gcard .ginfo span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gcard .ginfo i{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid var(--gbrd);display:flex;align-items:center;justify-content:center;font-style:normal;flex:none;color:var(--ink3)}
 .pviewer{position:absolute;inset:0;z-index:66;background:rgba(2,6,8,.94);display:flex;align-items:center;justify-content:center}
 .pviewer img{max-width:94%;max-height:86%;border-radius:12px}
 .pacts{padding:12px 18px 0}
@@ -275,7 +290,7 @@ function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity='1';clearT
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const qs=new URLSearchParams(location.search),TOK=qs.get('t')||'';
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v6.0.0';
+const VER='v6.1.0';
 function track(ev,meta){try{const b=JSON.stringify({token:TOK,ev:ev,meta:String(meta||'')});
  if(navigator.sendBeacon&&navigator.sendBeacon('https://fb.menghualu.com.co/api/track',new Blob([b],{type:'application/json'})))return;
  fetch('https://fb.menghualu.com.co/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:b}).catch(()=>{});}catch(e){}}
@@ -361,6 +376,7 @@ function setP(p){
  w.style.pointerEvents=p>0.9?'auto':'none';
  const ao=Math.max(0,Math.min(1,(p-0.86)/0.12));
  ai.style.opacity=String(ao);ai.style.pointerEvents=ao>0.5?'auto':'none';
+ if(!_gPeek&&p>=0.97){_gPeek=true;peekGallery();}
  diagLine();
 }
 function tweenTo(target){
@@ -373,7 +389,7 @@ function setupGestures(){
  PH=ph.clientHeight;addEventListener('resize',()=>{PH=ph.clientHeight;});
  ph.addEventListener('touchstart',e=>{
   if(e.touches.length!==1)return;
-  if(_md||document.querySelector('#aisheet.on')){_sg=null;return;}
+  if(_md||_gf||document.querySelector('#aisheet.on')){_sg=null;return;}
   _sg={y:e.touches[0].clientY,ly:e.touches[0].clientY,lt:performance.now(),v:0,d:false,p0:_p,dir:null};
  },{capture:true,passive:true});
  ph.addEventListener('touchmove',e=>{
@@ -398,6 +414,7 @@ function setupGestures(){
 document.addEventListener('click',e=>{
  const s=e.target.closest('.dcard.soon');if(s){toast(s.dataset.soon+'，点灯在即');return;}
  const c=e.target.closest('.dcard[data-act]');if(!c||_p<0.9)return;
+ if(c.dataset.act==='gallery'){openGallery(c);return;}
  openModal(c.dataset.act,e);
 });
 /* ===== 详情弹窗（Card-to-Modal） ===== */
@@ -407,7 +424,7 @@ function openModal(kind,ev){
  const pr=$('#phone').getBoundingClientRect();
  const r=sec?sec.getBoundingClientRect():{left:pr.width/2-60,top:pr.height/2-40,width:120,height:80};
  const W=pr.width,H=pr.height,tw=W-28,th=Math.round(H*0.8),tl=14,tt=Math.round(H*0.1);
- const T={perf:['我的荣誉','业绩数据 · 保底口径，永远正语调'],users:['我的粉丝','主归属优先，只看你自己的人'],sched:['日程安排','今日待办 · 本周时间表'],apply:['申请反馈','休息与意向，直达运营'],gallery:['妆容相册','往期每日妆容']}[kind]||['',''];
+ const T={perf:['我的荣誉','业绩数据 · 保底口径，永远正语调'],users:['我的粉丝','主归属优先，只看你自己的人'],sched:['日程安排','今日待办 · 本周时间表'],apply:['申请反馈','休息与意向，直达运营']}[kind]||['',''];
  const dim=document.createElement('div');dim.id='mdim';
  const md=document.createElement('div');md.id='modal';
  md.innerHTML=`<div class="mtop"><div class="xback mback" style="display:none">‹</div><div class="xt"><div class="h">${T[0]}</div><div class="s">${T[1]}</div></div><div class="xback mclose">✕</div></div><div class="xbody"><div class="xtrack"><div class="xpage" id="xList"></div><div class="xpage" id="xProf"></div></div></div>`;
@@ -421,7 +438,6 @@ function openModal(kind,ev){
  else if(kind==='perf')renderPerf(body);
  else if(kind==='sched')renderSched(body);
  else if(kind==='apply')renderApply(body);
- else if(kind==='gallery')renderGallery(body);
  if(!RM){
   md.style.transformOrigin='top left';
   md.style.transform=`translate(${st.r.left-pr.left-tl}px,${st.r.top-pr.top-tt}px) scale(${st.r.width/tw},${st.r.height/th})`;
@@ -796,21 +812,63 @@ function openPhoto(src){
  v.onclick=()=>v.remove();
  $('#phone').appendChild(v);
 }
-function renderGallery(body){
- body.innerHTML=`<div id="gBox"><div class="mrow"><span>…</span><b></b></div></div>`;
- const box=body.querySelector('#gBox');
- const fail=()=>{box.innerHTML=emptyState('还没有妆容照片','每日妆容归档后自动出现在这里');};
+/* ===== 妆容相册（全屏竖卡专场 + 卡面 peek · 只读 wo-25a） ===== */
+let _gf=null,_gPeek=false;
+function peekGallery(){
  fetch('https://fb.menghualu.com.co/api/anchor/gallery',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOK,n:30})})
  .then(r=>r.json()).then(d=>{
-  const rows=(d&&d.rows)||[];
-  if(!rows.length)return fail();
-  box.innerHTML=rows.filter(g=>(g.imgs||[]).length).map(g=>{
-   const head=String(g.date||'').slice(5)+' · '+((g.artists||[]).join('、')||'化妆师待补')+(g.venue?' · '+g.venue:'');
-   return `<div class="usec">${esc(head)}</div><div class="gstrip">${g.imgs.map(u=>`<img src="${u}" loading="lazy" onerror="this.remove()">`).join('')}</div>`;
-  }).join('');
-  if(!box.querySelector('.gstrip'))return fail();
-  box.querySelectorAll('.gstrip img').forEach(im=>im.onclick=()=>openPhoto(im.src));
- }).catch(()=>fail());
+  const rows=(d&&d.rows)||[],g=rows[0];
+  const card=document.querySelector('.dcard[data-act="gallery"]');
+  if(!card||!g||!(g.imgs||[]).length)return;
+  card.innerHTML=`<div class="gthumbs" id="gThumbs">${g.imgs.slice(0,3).map(u=>`<img src="${u}" loading="lazy" onerror="this.remove()">`).join('')}</div><div class="dv sm2">共 ${rows.length} 场</div><div class="ds">最新 ${String(g.date).slice(5)}</div><div class="go">›</div>`;
+ }).catch(()=>{});
+}
+function openGallery(card){
+ if(_gf)return;
+ const pr=$('#phone').getBoundingClientRect();
+ const r=card?card.getBoundingClientRect():null;
+ const el=document.createElement('div');el.id='gfull';
+ el.innerHTML=`<div class="ghead"><div class="xback" id="gfX">✕</div><div class="gt">妆容相册</div><div class="gn" id="gfN"></div></div><div class="gbody" id="gfBody"><div class="mrow" style="grid-column:1/-1"><span>…</span><b></b></div></div>`;
+ $('#phone').appendChild(el);
+ _gf={el,r:{left:(r?r.left:pr.left+pr.width/2-60)-pr.left,top:(r?r.top:pr.top+pr.height/2-40)-pr.top,width:r?r.width:120,height:r?r.height:80}};
+ if(!RM){
+  el.style.transformOrigin='top left';
+  el.style.borderRadius='26px';
+  el.style.transform=`translate(${_gf.r.left}px,${_gf.r.top}px) scale(${_gf.r.width/pr.width},${_gf.r.height/pr.height})`;
+  el.style.opacity='0';
+  el.getBoundingClientRect();
+  el.style.transition='transform .44s cubic-bezier(.32,.72,.35,1),opacity .22s,border-radius .44s';
+  el.style.transform='none';el.style.opacity='1';el.style.borderRadius='0';
+ }
+ $('#gfX').onclick=()=>closeGallery();
+ fetch('https://fb.menghualu.com.co/api/anchor/gallery',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOK,n:30})})
+ .then(r=>r.json()).then(d=>{if(_gf)paintGfull((d&&d.rows)||[]);}).catch(()=>{if(_gf)paintGfull([]);});
+}
+function closeGallery(){
+ if(!_gf)return;const {el,r}=_gf;_gf=null;
+ if(RM){el.remove();return;}
+ const pr=$('#phone').getBoundingClientRect();
+ el.style.transition='transform .34s cubic-bezier(.5,0,.75,0),opacity .24s,border-radius .34s';
+ el.style.transform=`translate(${r.left}px,${r.top}px) scale(${r.width/pr.width},${r.height/pr.height})`;
+ el.style.opacity='0';el.style.borderRadius='26px';
+ setTimeout(()=>el.remove(),380);
+}
+function paintGfull(rows){
+ const body=$('#gfBody');if(!body)return;
+ const ok=rows.filter(g=>(g.imgs||[]).length);
+ $('#gfN').textContent='共 '+ok.length+' 场';
+ if(!ok.length){body.innerHTML=`<div style="grid-column:1/-1">${emptyState('还没有妆容照片','每日妆容归档后自动出现在这里')}</div>`;return;}
+ body.innerHTML=ok.map(g=>{
+  const head=String(g.date||'').slice(5)+' · '+((g.artists||[]).join('、')||'化妆师待补')+(g.venue?' · '+g.venue:'');
+  const imgs=g.imgs.length>1
+   ?`<div class="gsnap">${g.imgs.map(u=>`<img src="${u}" loading="lazy" onerror="this.remove()">`).join('')}</div>`
+   :`<img src="${g.imgs[0]}" loading="lazy" onerror="this.remove()">`;
+  return `<div class="gcard"><div class="gf">${imgs}</div><div class="ginfo"><span>${esc(head)}</span><i>›</i></div></div>`;
+ }).join('');
+ body.querySelectorAll('.gcard').forEach(c=>c.onclick=e=>{
+  const im=e.target.tagName==='IMG'?e.target:c.querySelector('.gf img');
+  if(im)openPhoto(im.src);
+ });
 }
 /* ===== 小梦 ===== */
 function bootChips(){
