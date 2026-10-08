@@ -20,15 +20,18 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
  body{display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 50% 0%,#16241f 0%,#0a1210 62%)}
  #phone{width:406px;height:min(880px,94vh);border-radius:46px;border:1px solid rgba(255,255,255,.1);box-shadow:0 46px 120px -30px rgba(0,0,0,.85),0 0 0 10px #141d22}
 }
-/* ---- 加载动画（B 款：整标水波浮现 · 墨底原标） ---- */
-#loader{position:absolute;inset:0;z-index:95;background:linear-gradient(175deg,#101e22,#0c171a);display:flex;align-items:center;justify-content:center;transition:opacity .45s}
+/* ---- 加载动画（水波玻璃 · 自研 waterLoad 双挂：#loader 与 #gfWater 同一实现） ---- */
+#loader{position:absolute;inset:0;z-index:95;background:linear-gradient(175deg,#101e22,#0c171a);transition:opacity .45s}
 #loader.done{opacity:0;pointer-events:none}
-#loader img{width:150px;opacity:0;filter:blur(10px);transform:scale(.86);animation:lem 1s cubic-bezier(.32,.72,.35,1) .12s forwards}
-#loader .rp,#loader .rp2{position:absolute;width:150px;height:150px;border-radius:50%;opacity:0;transform:scale(.4)}
-#loader .rp{border:1.5px solid rgba(143,182,201,.8);animation:lrp 1.1s cubic-bezier(.2,.6,.3,1) .3s forwards}
-#loader .rp2{border:1px solid rgba(143,182,201,.4);animation:lrp 1.2s cubic-bezier(.2,.6,.3,1) .5s forwards}
-@keyframes lem{60%{opacity:1;filter:blur(1.5px)}100%{opacity:1;filter:blur(0);transform:scale(1)}}
-@keyframes lrp{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(2.4)}}
+.wload{position:absolute;inset:0}
+.wload canvas{position:absolute;inset:0;width:100%;height:100%}
+.wload .wrock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.wload .wrock.rock{animation:wrock .5s ease}
+.wload .wpan{position:relative;animation:wfloat 3s ease-in-out infinite}
+.wload .wpb{position:absolute;inset:0;border-radius:28px;background:rgba(255,255,255,.02);transform:translate(6px,6px)}
+.wload .wpf{position:relative;width:100%;height:100%;border-radius:28px;background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(10px) saturate(1.2);backdrop-filter:blur(10px) saturate(1.2);display:flex;align-items:center;justify-content:center}
+@keyframes wfloat{50%{transform:translateY(-8px)}}
+@keyframes wrock{25%{transform:translateX(3px)}75%{transform:translateX(-3px)}}
 /* ---- 氛围层（暗底青黛液滴+微光+噪点） ---- */
 #amb{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
 .blob{position:absolute;border-radius:48% 52% 55% 45%/50% 46% 54% 50%;filter:blur(72px);opacity:.32;will-change:transform}
@@ -199,17 +202,10 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 .murem{margin:2px 18px 10px;padding:10px 14px;border:1px solid var(--gold);border-radius:14px;font-size:12.5px;color:var(--gold);background:rgba(201,163,92,.08)}
 .gthumbs{display:flex;gap:8px;height:56px;margin-bottom:10px}
 .gthumbs img{flex:1;min-width:0;height:56px;object-fit:cover;object-position:center 20%;border-radius:12px}
-.gfload{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.gfload img{width:96px;opacity:0;filter:blur(8px);transform:scale(.86);animation:lem 1s cubic-bezier(.32,.72,.35,1) .12s forwards}
-.gfload .rp,.gfload .rp2{position:absolute;width:96px;height:96px;border-radius:50%;opacity:0;transform:scale(.4)}
-.gfload .rp{border:1.5px solid rgba(143,182,201,.8);animation:lrp 1.1s cubic-bezier(.2,.6,.3,1) .3s forwards}
-.gfload .rp2{border:1px solid rgba(143,182,201,.4);animation:lrp 1.2s cubic-bezier(.2,.6,.3,1) .5s forwards}
-@media (prefers-reduced-motion:reduce){.gfload img{opacity:1;filter:none;transform:none}.gfload .rp,.gfload .rp2{display:none}}
-.gfav{position:absolute;right:10px;bottom:10px;width:36px;height:36px;border-radius:50%;background:rgba(10,16,20,.5);border:1px solid var(--gbrd);display:flex;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);z-index:2;cursor:pointer}
-.gfav svg{width:17px;height:17px;fill:none;stroke:rgba(255,255,255,.8);stroke-width:1.8}
+#gfull,#gfull *{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.gfav{width:24px;height:24px;flex:none;cursor:pointer}
+.gfav svg{width:24px;height:24px;fill:none;stroke:rgba(255,255,255,.7);stroke-width:1.8}
 .gfav.on svg{fill:var(--red);stroke:var(--red)}
-.gbrk{position:absolute;top:10px;right:10px;width:28px;height:28px;z-index:2;pointer-events:none}
-.gcard.broken{filter:grayscale(.9);opacity:.45}
 .gshdim{position:absolute;inset:0;z-index:64;background:rgba(4,8,11,.45)}
 .gsheet{position:absolute;left:10px;right:10px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:65;background:rgba(24,34,40,.96);border:1px solid var(--gbrd);border-radius:24px;-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);box-shadow:0 18px 46px rgba(0,0,0,.5);overflow:hidden}
 .gsh{border-top:1px solid rgba(255,255,255,.06)}
@@ -235,17 +231,17 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 #gfull .gn{font-size:11px;color:var(--ink3)}
 #gfull .gbody{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-content:start;padding:12px 14px calc(24px + env(safe-area-inset-bottom));scrollbar-width:none}
 #gfull .gbody::-webkit-scrollbar{display:none}
-.gcard{position:relative;border-radius:24px}
-.gcard::before{content:'';position:absolute;inset:0;border-radius:24px;padding:1.4px;background:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0) 50%,rgba(255,255,255,.45));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;opacity:.5;pointer-events:none}
-.gcard .gf{position:relative;padding-bottom:133%;border-radius:24px;overflow:hidden;background:#16221f}
+.gcard{position:relative;border-radius:18px}
+.gcard::before{content:'';position:absolute;inset:0;border-radius:18px;padding:1.4px;background:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0) 50%,rgba(255,255,255,.45));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;opacity:.5;pointer-events:none}
+.gcard .gf{position:relative;padding-bottom:133%;border-radius:18px;overflow:hidden;background:#16221f}
 .gcard .gf>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%}
 .gcard .gsnap{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
 .gcard .gsnap::-webkit-scrollbar{display:none}
-.gcard .gsnap .gs{flex:0 0 100%;width:100%;height:100%;position:relative;scroll-snap-align:start}
-.gcard .gsnap .gs img{width:100%;height:100%;object-fit:cover;object-position:center 20%}
-.gcard .ginfo{display:flex;align-items:center;gap:8px;padding:8px 2px 0;font-size:12px;color:var(--ink2)}
-.gcard .ginfo span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.gcard .ginfo i{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid var(--gbrd);display:flex;align-items:center;justify-content:center;font-style:normal;flex:none;color:var(--ink3)}
+.gcard .gsnap img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;object-position:center 20%;scroll-snap-align:start}
+.gcard .ginfo{display:flex;align-items:center;gap:8px;padding:8px 2px 0;overflow:hidden}
+.gcard .ginfo .gl{flex:1;min-width:0}
+.gcard .ginfo .gd{font-size:13px;font-weight:600;color:var(--ink)}
+.gcard .ginfo .gs{font-size:11px;color:var(--ink3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pviewer{position:absolute;inset:0;z-index:66;background:rgba(2,6,8,.94);display:flex;align-items:center;justify-content:center}
 .pviewer img{max-width:94%;max-height:86%;border-radius:12px}
 .pacts{padding:12px 18px 0}
@@ -310,7 +306,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
   </div>
   <div id="aiwork"><div class="orb"></div><div class="wst" id="aiWst">小梦在翻你的数据…</div><div class="stop" id="aiStop"><i></i></div></div>
  </div>
- <div id="loader"><div class="rp"></div><div class="rp2"></div><img src="assets/logo-mark.png" alt="梦华录"></div>
+ <div id="loader"></div>
  <div id="toast"></div>
 </div>
 <script src="assets/gsap.min.js"></script>
@@ -321,7 +317,53 @@ function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity='1';clearT
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const qs=new URLSearchParams(location.search),TOK=qs.get('t')||'';
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v6.2.0';
+const VER='v6.3.0';
+try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
+/* ===== 水波玻璃加载（自研 · #loader 与 #gfWater 双挂同一实现） ===== */
+function waterLoad(mount,{panelW=150,logoW=84}={}){
+ const el=document.createElement('div');el.className='wload';
+ el.innerHTML=`<canvas></canvas><div class="wrock"><div class="wpan" style="width:${panelW}px;height:${Math.round(panelW*190/150)}px"><div class="wpb"></div><div class="wpf"><img src="assets/logo-mark.png" style="width:${logoW}px" alt=""></div></div></div>`;
+ mount.appendChild(el);
+ const cv=el.querySelector('canvas'),ctx=cv.getContext('2d'),rock=el.querySelector('.wrock');
+ let W=0,H=0,rips=[],run=true,raf=0,autoT=0;
+ const size=()=>{W=cv.width=el.clientWidth||mount.clientWidth||402;H=cv.height=el.clientHeight||mount.clientHeight||700;};
+ size();
+ const drop=(x,y)=>{rips.push({x,y,t0:performance.now()});if(!RM){rock.classList.remove('rock');void rock.offsetWidth;rock.classList.add('rock');}};
+ el.addEventListener('touchstart',e=>{const rc=el.getBoundingClientRect();drop(e.touches[0].clientX-rc.left,e.touches[0].clientY-rc.top);},{passive:true});
+ const paint=now=>{
+  ctx.clearRect(0,0,W,H);
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0e1a22');g.addColorStop(1,'#0a141a');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  const br=0.12+0.08*Math.sin(now/1400);
+  const rg=ctx.createRadialGradient(W/2,H*0.62,10,W/2,H*0.62,Math.max(W,H)*0.6);
+  rg.addColorStop(0,'rgba(143,182,201,'+br.toFixed(3)+')');rg.addColorStop(1,'rgba(143,182,201,0)');
+  ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
+  rips=rips.filter(r=>now-r.t0<1600);
+  rips.forEach(r=>{
+   const p=(now-r.t0)/1600;
+   ctx.beginPath();ctx.arc(r.x,r.y,p*160,0,6.3);
+   ctx.strokeStyle='rgba(143,182,201,'+(0.5*(1-p)).toFixed(3)+')';ctx.lineWidth=1.5;ctx.stroke();
+  });
+ };
+ const frame=now=>{if(!run||!el.isConnected){run=false;return;}paint(now);raf=requestAnimationFrame(frame);};
+ if(RM){paint(performance.now());drop(W/2,H*0.62);paint(performance.now()+900);}
+ else{raf=requestAnimationFrame(frame);drop(W/2,H*0.62);autoT=setInterval(()=>{if(run&&el.isConnected)drop(W/2,H*0.62);else clearInterval(autoT);},2400);}
+ return {el,done(fade){run=false;cancelAnimationFrame(raf);clearInterval(autoT);if(fade===false)return;el.style.transition='opacity .4s';el.style.opacity='0';setTimeout(()=>el.remove(),400);}};
+}
+/* ===== 右滑返回上一层（全站约定：dx>60、|dy|<40、横向主导1.5倍；触发即走不跟手） ===== */
+function bindSwipeBack(el,onBack,allow){
+ let sw=null;
+ el.addEventListener('touchstart',e=>{
+  if(e.touches.length!==1){sw=null;return;}
+  if(allow&&!allow(e.target)){sw=null;return;}
+  sw={x:e.touches[0].clientX,y:e.touches[0].clientY};
+ },{passive:true});
+ el.addEventListener('touchend',e=>{
+  if(!sw)return;
+  const t=e.changedTouches[0],dx=t.clientX-sw.x,dy=t.clientY-sw.y;sw=null;
+  if(dx>60&&Math.abs(dy)<40&&dx>1.5*Math.abs(dy))onBack();
+ },{passive:true});
+}
 function track(ev,meta){try{const b=JSON.stringify({token:TOK,ev:ev,meta:String(meta||'')});
  if(navigator.sendBeacon&&navigator.sendBeacon('https://fb.menghualu.com.co/api/track',new Blob([b],{type:'application/json'})))return;
  fetch('https://fb.menghualu.com.co/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:b}).catch(()=>{});}catch(e){}}
@@ -338,6 +380,7 @@ if(!TOK){document.body.innerHTML='<div class="sk">缺访问码：链接后加 ?t
 else boot();
 /* ===== 启动：数据+视频+加载动画 ===== */
 async function boot(){
+ const _wl0=waterLoad($('#loader'),{panelW:190,logoW:110});
  try{
   const [dj,vj]=await Promise.all([fetch(`data/${TOK}.json`),fetch('assets/videos/videos.json')]);
   if(!dj.ok)throw 0;DATA=await dj.json();VIDEOS=vj.ok?await vj.json():[];
@@ -347,7 +390,7 @@ async function boot(){
  const vv=$('#vv');
  const ready=new Promise(res=>{let done=false;const ok=()=>{if(!done){done=true;res();}};vv.addEventListener('loadeddata',ok,{once:true});setTimeout(ok,RM?300:2400);});
  await ready;
- $('#loader').classList.add('done');$('#vfly').classList.add('enter');$('#stage').classList.add('enter');setTimeout(()=>$('#loader').remove(),RM?60:500);
+ $('#loader').classList.add('done');$('#vfly').classList.add('enter');$('#stage').classList.add('enter');setTimeout(()=>{const l=$('#loader');if(l)l.remove();_wl0.done(false);},RM?60:500);
 }
 /* ===== 戏台轮播：多片 hold 轮转 + 0.6s 淡切（单片静默，不挂定时器） ===== */
 function applyVid(i){
@@ -523,11 +566,13 @@ function bindModalSwipe(md){
  const track=md.querySelector('.xtrack'),xList=md.querySelector('#xList');
  let sw=null;
  md.addEventListener('touchstart',e=>{
-  if(e.touches.length!==1||!_md||_md.view!=='profile'){sw=null;return;}
-  sw={x:e.touches[0].clientX,y:e.touches[0].clientY,on:false,p:0};
+  if(e.touches.length!==1||!_md){sw=null;return;}
+  if(_md.view==='profile'){sw={x:e.touches[0].clientX,y:e.touches[0].clientY,on:false,p:0};return;}
+  if(e.target.closest('img,textarea,input,.chip')){sw=null;return;}
+  sw={x:e.touches[0].clientX,y:e.touches[0].clientY,list:true};
  },{passive:true});
  md.addEventListener('touchmove',e=>{
-  if(!sw)return;const t=e.touches[0],dx=t.clientX-sw.x,dy=t.clientY-sw.y;
+  if(!sw||sw.list)return;const t=e.touches[0],dx=t.clientX-sw.x,dy=t.clientY-sw.y;
   if(!sw.on){
    if(dx>12&&Math.abs(dy)<10&&dx>Math.abs(dy)*2){sw.on=true;track.style.transition='none';xList.style.transition='none';}
    else if(Math.abs(dy)>10||dx<-10){sw=null;return;}
@@ -538,8 +583,15 @@ function bindModalSwipe(md){
   track.style.transform=`translateX(${-100+sw.p*100}%)`;
   xList.style.transform=`translateX(${-35*(1-sw.p)}%)`;
  },{passive:false});
- const end=()=>{
-  if(!sw)return;const p=sw.p,on=sw.on;sw=null;
+ const end=e=>{
+  if(!sw)return;
+  if(sw.list){
+   const g=sw;sw=null;
+   const t=e.changedTouches[0],dx=t.clientX-g.x,dy=t.clientY-g.y;
+   if(dx>60&&Math.abs(dy)<40&&dx>1.5*Math.abs(dy))closeModal();
+   return;
+  }
+  const p=sw.p,on=sw.on;sw=null;
   if(!on)return;
   track.style.transition='';xList.style.transition='';
   if(p>0.32)setView('list');
@@ -851,7 +903,7 @@ function peekGallery(){
   const rows=(d&&d.rows)||[],g=rows[0];
   const card=document.querySelector('.dcard[data-act="gallery"]');
   if(!card||!g||!(g.imgs||[]).length)return;
-  card.innerHTML=`<div class="dk">妆容相册</div><div class="gthumbs" id="gThumbs">${g.imgs.slice(0,3).map(u=>`<img src="${u}" loading="lazy" onerror="this.remove()">`).join('')}</div><div class="dv sm2">共 ${rows.length} 场</div><div class="ds">最新 ${String(g.date).slice(5)}</div><div class="go">›</div>`;
+  card.innerHTML=`<div class="dk">妆容相册</div><div class="gthumbs" id="gThumbs">${g.imgs.slice(0,3).map(u=>`<img src="${u}" loading="lazy" onerror="this.remove()">`).join('')}</div><div class="ds">截图回顾</div><div class="go">›</div>`;
  }).catch(()=>{});
 }
 function openGallery(card){
@@ -859,7 +911,7 @@ function openGallery(card){
  const pr=$('#phone').getBoundingClientRect();
  const r=card?card.getBoundingClientRect():null;
  const el=document.createElement('div');el.id='gfull';
- el.innerHTML=`<div class="ghead"><div class="xback" id="gfX">✕</div><div class="gt">妆容相册</div><div class="gn"><span class="chip on" data-f="all">全部</span><span class="chip" data-f="fav">最爱妆造</span><span id="gfN"></span></div></div><div class="gbody" id="gfBody"></div><div class="gfload"><div class="rp"></div><div class="rp2"></div><img src="assets/logo-mark.png" alt="梦华录"></div>`;
+ el.innerHTML=`<div class="ghead"><div class="xback" id="gfX">✕</div><div class="gt">妆容相册</div><div class="gn"><span class="chip on" data-f="all">全部</span><span class="chip" data-f="fav">最爱妆造</span><span id="gfN"></span></div></div><div class="gbody" id="gfBody"></div>`;
  $('#phone').appendChild(el);
  _gf={el,r:{left:(r?r.left:pr.left+pr.width/2-60)-pr.left,top:(r?r.top:pr.top+pr.height/2-40)-pr.top,width:r?r.width:120,height:r?r.height:80}};
  if(!RM){
@@ -872,15 +924,18 @@ function openGallery(card){
   el.style.transform='none';el.style.opacity='1';el.style.borderRadius='0';
  }
  $('#gfX').onclick=()=>closeGallery();
+ bindSwipeBack(el,()=>closeGallery(),t=>t.closest('.ghead')||t.id==='gfBody');
+ const wl=waterLoad(el,{panelW:150,logoW:84});wl.el.id='gfWater';wl.el.style.zIndex='62';_gf.wl=wl;
  el.querySelectorAll('.gn .chip').forEach(ch=>ch.onclick=()=>{
   el.querySelectorAll('.gn .chip').forEach(x=>x.classList.toggle('on',x===ch));
   if(_gf){_gf.favOnly=ch.dataset.f==='fav';paintGfull();}
  });
  fetch('https://fb.menghualu.com.co/api/anchor/gallery',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOK,n:30})})
- .then(r=>r.json()).then(d=>{if(_gf){_gf.rows=(d&&d.rows)||[];paintGfull();}}).catch(()=>{if(_gf){_gf.rows=[];paintGfull();}});
+ .then(r=>r.json()).then(d=>{if(_gf){_gf.rows=(d&&d.rows)||[];if(_gf.wl){_gf.wl.done();_gf.wl=null;}paintGfull();}}).catch(()=>{if(_gf){_gf.rows=[];if(_gf.wl){_gf.wl.done();_gf.wl=null;}paintGfull();}});
 }
 function closeGallery(){
- if(!_gf)return;const {el,r}=_gf;_gf=null;
+ if(!_gf)return;const {el,r,wl}=_gf;_gf=null;
+ if(wl)wl.done(false);
  if(RM){el.remove();return;}
  const pr=$('#phone').getBoundingClientRect();
  el.style.transition='transform .34s cubic-bezier(.5,0,.75,0),opacity .24s,border-radius .34s';
@@ -889,25 +944,21 @@ function closeGallery(){
  setTimeout(()=>el.remove(),380);
 }
 const HEART='<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
-const BROKEN='<svg viewBox="0 0 24 24"><path d="M11.2 5.9 9.8 4.5a5 5 0 0 0-7 7l7.1 7.1 1.3-1.5" fill="var(--red)"/><path d="M13.6 6.7l1.3-1.3a5 5 0 0 1 7 7l-7.1 7.1-1.2-1.6" fill="var(--red)"/></svg>';
 const gfavK=(d,i)=>'gfav_'+String(d).replace(/-/g,'')+'_'+i;
-const gbrkK=d=>'gbroken_'+String(d).replace(/-/g,'');
 function paintGfull(){
  const body=$('#gfBody');if(!body||!_gf)return;
- const ld=_gf.el.querySelector('.gfload');if(ld)ld.remove();
  const rows=(_gf.rows||[]).filter(g=>(g.imgs||[]).length);
  $('#gfN').textContent='共 '+rows.length+' 场';
- const show=_gf.favOnly?rows.filter(g=>g.imgs.some((u,i)=>localStorage.getItem(gfavK(g.date,i)))):rows;
+ const show=_gf.favOnly?rows.filter(g=>localStorage.getItem(gfavK(g.date,0))):rows;
  if(!rows.length){body.innerHTML=`<div style="grid-column:1/-1">${emptyState('还没有妆容照片','每日妆容归档后自动出现在这里')}</div>`;return;}
  if(!show.length){body.innerHTML=`<div style="grid-column:1/-1">${emptyState('还没有最爱妆造','点右下角小心心，把最好看的妆收进来')}</div>`;return;}
  body.innerHTML=show.map(g=>{
-  const head=String(g.date||'').slice(5)+' · '+((g.artists||[]).join('、')||'化妆师待补')+(g.venue?' · '+g.venue:'');
-  const broken=localStorage.getItem(gbrkK(g.date));
-  const favBtn=(u,i)=>`<div class="gfav${localStorage.getItem(gfavK(g.date,i))?' on':''}" data-k="${gfavK(g.date,i)}">${HEART}</div>`;
+  const md=String(g.date||'').slice(5);
+  const sub=((g.artists||[]).join('、')||'化妆师待补')+(g.venue?' · '+g.venue:'');
   const imgs=g.imgs.length>1
-   ?`<div class="gsnap">${g.imgs.map((u,i)=>`<div class="gs"><img src="${u}" loading="lazy" onerror="this.remove()">${favBtn(u,i)}</div>`).join('')}</div>`
-   :`<img src="${g.imgs[0]}" loading="lazy" onerror="this.remove()">${favBtn(g.imgs[0],0)}`;
-  return `<div class="gcard${broken?' broken':''}" data-d="${g.date}"><div class="gf">${imgs}${broken?`<div class="gbrk">${BROKEN}</div>`:''}</div><div class="ginfo"><span>${esc(head)}</span></div></div>`;
+   ?`<div class="gsnap">${g.imgs.map(u=>`<img src="${u}" loading="lazy" onerror="this.remove()">`).join('')}</div>`
+   :`<img src="${g.imgs[0]}" loading="lazy" onerror="this.remove()">`;
+  return `<div class="gcard" data-d="${g.date}"><div class="gf">${imgs}</div><div class="ginfo"><div class="gl"><div class="gd">${esc(md)}</div><div class="gs">${esc(sub)}</div></div><div class="gfav${localStorage.getItem(gfavK(g.date,0))?' on':''}" data-k="${gfavK(g.date,0)}">${HEART}</div></div></div>`;
  }).join('');
  body.querySelectorAll('.gcard').forEach(c=>{
   const g=show.find(x=>x.date===c.dataset.d);
@@ -916,11 +967,12 @@ function paintGfull(){
    const im=e.target.tagName==='IMG'?e.target:c.querySelector('.gf img');
    if(im)openPhoto(im.src);
   };
-  c.querySelectorAll('.gfav').forEach(b=>b.onclick=e=>{
+  const fv=c.querySelector('.gfav');
+  fv.onclick=e=>{
    e.stopPropagation();
-   const on=b.classList.toggle('on');
-   if(on)localStorage.setItem(b.dataset.k,'1');else localStorage.removeItem(b.dataset.k);
-  });
+   const on=fv.classList.toggle('on');
+   if(on)localStorage.setItem(fv.dataset.k,'1');else localStorage.removeItem(fv.dataset.k);
+  };
   const gi=c.querySelector('.ginfo');
   let tm=null,lp=false;
   gi.addEventListener('touchstart',()=>{lp=false;clearTimeout(tm);tm=setTimeout(()=>{lp=true;openGsheet(g);},460);},{passive:true});
@@ -942,11 +994,9 @@ function openGsheet(g){
  const sh=document.createElement('div');sh.className='gsheet';
  const chev='<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
  sh.innerHTML=
-  [['mu','申请','改妆面老师'],['fa','申请','改发型老师'],['br','申诉','妆造心碎']].map(([k,eb,tt])=>
+  [['mu','修改','改妆面老师'],['fa','修改','改发型老师']].map(([k,eb,tt])=>
   `<div class="gsh" data-k="${k}"><div class="gsh-h"><div><div class="eb">${eb}</div><div class="tt">${tt}</div></div><div class="gv">${chev}</div></div>
-   <div class="gsh-b"><div class="in">${k==='br'
-    ?`<div class="bk">当天妆造心碎了</div><textarea id="gbrWhy" rows="3" placeholder="写清哪里不对，运营会逐条看"></textarea><div class="psub" id="gbrGo">提交申诉</div>`
-    :`<div class="xchips">${MU_TEACHERS.map(t=>`<span class="chip" data-v="${t}">${t}</span>`).join('')}</div><div class="psub" data-go="${k}">确认</div>`}</div></div>`).join('');
+   <div class="gsh-b"><div class="in"><div class="xchips">${MU_TEACHERS.map(t=>`<span class="chip" data-v="${t}">${t}</span>`).join('')}</div><div class="psub" data-go="${k}">确认</div></div></div>`).join('');
  _gf.el.appendChild(dim);_gf.el.appendChild(sh);
  dim.onclick=()=>closeGsheet();
  sh.querySelectorAll('.gsh').forEach(row=>{
@@ -967,19 +1017,6 @@ function openGsheet(g){
    else{toast('网络异常，稍后再试');btn.textContent='确认';btn.style.pointerEvents='';}
   });
  });
- const brGo=sh.querySelector('#gbrGo'),brWhy=sh.querySelector('#gbrWhy');
- brGo.onclick=()=>{
-  const reason=brWhy.value.trim();
-  if(!reason){toast('请填写理由');return;}
-  brGo.textContent='提交中…';brGo.style.pointerEvents='none';
-  postSuggest(`【妆造申诉】${g.date}：${reason}`,ok=>{
-   if(ok){
-    localStorage.setItem(gbrkK(g.date),'1');
-    toast('已申诉，运营会看');
-    closeGsheet();paintGfull();
-   }else{toast('网络异常，稍后再试');brGo.textContent='提交申诉';brGo.style.pointerEvents='';}
-  });
- };
 }
 /* ===== 小梦 ===== */
 function bootChips(){
@@ -1066,6 +1103,7 @@ function diagLine(){
 }
 setupGestures();
 setP(0);
+bindSwipeBack($('#aisheet'),closeAI,t=>t.closest('#aigrab,.ai-greet,.ai-sub'));
 $('#vPill').textContent=VER;
 document.addEventListener('visibilitychange',()=>{const vv=$('#vv');if(!vv)return;if(document.hidden)vv.pause();else if(_p<0.98)vv.play().catch(()=>{});});
 </script></body></html>
