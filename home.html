@@ -196,6 +196,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 .usec{font-size:11px;color:var(--ink3);padding:12px 18px 6px;letter-spacing:.1em}
 .usec.big{font-size:13px;color:var(--ink);font-weight:600;letter-spacing:.06em;padding:20px 18px 8px}
 .usec.big:first-child{padding-top:12px}
+.murem{margin:2px 18px 10px;padding:10px 14px;border:1px solid var(--gold);border-radius:14px;font-size:12.5px;color:var(--gold);background:rgba(201,163,92,.08)}
 .pacts{padding:12px 18px 0}
 .pacts .pk{font-size:11px;color:var(--ink3);padding-bottom:8px}
 .pchips{display:flex;gap:7px;flex-wrap:wrap}
@@ -221,7 +222,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 <div id="phone">
  <div id="amb"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="cau c1"></div><div class="cau c2"></div></div>
  <div id="noise"></div>
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.6.1</b> · 梦华录</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.7.0</b> · 梦华录</span></div>
  <div id="vfly"><div class="vwin"><video id="vv" playsinline muted loop preload="auto"></video><div class="dur" id="vdur"></div></div></div>
  <div id="stage">
   <div class="hello"><span class="hi">Hello,</span><div class="av" id="hAv">?</div><span class="nm" id="hNm"></span></div>
@@ -663,11 +664,37 @@ function emptyState(t,s){return `<div class="empty2"><svg viewBox="0 0 24 24"><p
 function renderSched(body){
  const c=DATA.counts||{};
  const rows=[['L3 重点维护',c.l3],['L2 拉群',c.l2],['L1 本场支持',c.l1],['主动问候',c.greet],['生日提醒',c.bday]].filter(x=>x[1]>0);
- const today=`<div class="usec">今日待办</div>`+(rows.length?rows.map(([k,v])=>`<div class="mrow"><span>${k}</span><b>${v} 人</b></div>`).join(''):emptyState('今日清爽','没有待办，好好休息'));
- const week=`<div class="usec">本周时间表</div>`+(DATA.schedule&&DATA.schedule.length?'':emptyState('排班数据接通中','主播侧只读接口派单主控中'));
+ const today=`<div class="usec">今日待办</div><div id="muRemind"></div>`+(rows.length?rows.map(([k,v])=>`<div class="mrow"><span>${k}</span><b>${v} 人</b></div>`).join(''):emptyState('今日清爽','没有待办，好好休息'));
+ const week=`<div class="usec">今明妆发</div><div id="muBox"><div class="mrow"><span>…</span><b></b></div></div>`;
  const mk=`<div class="usec">本周化妆表</div><div class="mkimg" id="mkImg">${emptyState('等组长发表','发群里后丢给我，我挂上来')}</div>`;
  body.innerHTML=today+week+mk;
  const img=new Image();img.onload=()=>{const d=body.querySelector('#mkImg');if(d)d.innerHTML=`<img src="assets/schedule/makeup.jpg" alt="本周化妆表">`;};img.src='assets/schedule/makeup.jpg';
+ loadMakeup(body);
+}
+function bjToday(){return new Date(Date.now()+8*3600e3).toISOString().slice(0,10);}
+function loadMakeup(body){
+ const box=body.querySelector('#muBox');if(!box)return;
+ const fail=()=>{box.innerHTML=emptyState('今明无妆发安排','排班发布后自动出现在这里');};
+ fetch('https://fb.menghualu.com.co/api/anchor/makeup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOK})})
+ .then(r=>r.json()).then(d=>{
+  if(!d||!d.ok)return fail();
+  const rows=(d.rows||[]).slice().sort((a,b)=>String(a.date||'')+String(a.slot||'')>String(b.date||'')+String(b.slot||'')?1:-1);
+  if(!rows.length)return fail();
+  const day=bjToday(),tmr=new Date(Date.now()+8*3600e3+86400e3).toISOString().slice(0,10);
+  box.innerHTML=rows.map(x=>{
+   const dl=x.date===day?'今天':(x.date===tmr?'明天':String(x.date||'').slice(5));
+   const right=[x.artist,x.type,x.venue].filter(Boolean).join(' · ');
+   return `<div class="mrow"><span>${esc(dl+' '+String(x.slot||'').slice(0,5))}</span><b>${esc(right)}</b></div>`;
+  }).join('');
+  const now=new Date();
+  const hit=rows.filter(x=>x.date===day).map(x=>({x,mins:Math.round((new Date(x.date+'T'+String(x.slot).slice(0,5)+':00+08:00')-now)/60000)})).filter(o=>o.mins>=30&&o.mins<=75);
+  if(hit.length){
+   const first=hit.sort((a,b)=>a.mins-b.mins)[0];
+   const seg=[first.x.artist?first.x.artist+' 给你做'+(first.x.type||''):'',first.x.venue,'还有 '+first.mins+' 分钟'].filter(Boolean).join(' · ');
+   const rem=body.querySelector('#muRemind');
+   if(rem)rem.innerHTML=`<div class="murem">${esc(seg)}</div>`;
+  }
+ }).catch(()=>fail());
 }
 /* ===== 申请反馈盘（休息/意向/投诉 · 直通 Worker，提交格式照生产 app.html） ===== */
 const MU_TEACHERS=['小月','小颖','潘潘','阿日','岩岩','娜娜酱','刘媚','张倩','李庆','萍萍','常蕾','徐徐'];
