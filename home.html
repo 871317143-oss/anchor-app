@@ -275,7 +275,7 @@ function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity='1';clearT
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const qs=new URLSearchParams(location.search),TOK=qs.get('t')||'';
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v5.9.0';
+const VER='v6.0.0';
 function track(ev,meta){try{const b=JSON.stringify({token:TOK,ev:ev,meta:String(meta||'')});
  if(navigator.sendBeacon&&navigator.sendBeacon('https://fb.menghualu.com.co/api/track',new Blob([b],{type:'application/json'})))return;
  fetch('https://fb.menghualu.com.co/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:b}).catch(()=>{});}catch(e){}}
