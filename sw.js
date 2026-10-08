@@ -1,9 +1,10 @@
-const CACHE='anchor-v99';
+const CACHE='anchor-v100';
 // 2026-10-04 v58：①SHELL 加入 live.html/radar-probe.js（主持雷达 v0.1 上线）与 ops.html；
 // ②HTML 缓存键修 bug——此前任何 HTML 导航都覆写 'app.html' 键（多页面后离线兜底会串页），改为按 URL 各自缓存、app.html 作最终兜底。
+// 2026-10-08 v100（wo-sw404 缓存投毒 P0）：四处写缓存前一律查 r.ok——404 永缓存会让新资产永久加载失败（2026-10-05 老板手机无动画事故根因）。
 const SHELL=['app.html','ops.html','live.html','home.html','radar-probe.js','manifest.json','assets/icon-192.png','assets/icon-512.png','assets/bg-morandi.jpg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE)
-  .then(c=>Promise.all(SHELL.map(s=>fetch(s,{cache:'reload'}).then(r=>c.put(s,r)))))
+  .then(c=>Promise.all(SHELL.map(s=>fetch(s,{cache:'reload'}).then(r=>{if(r.ok)return c.put(s,r);}))))
   .then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k))))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',e=>{
@@ -12,13 +13,13 @@ self.addEventListener('fetch',e=>{
   const isData=u.pathname.indexOf('/data/')>-1;
   const isHTML=e.request.mode==='navigate'||u.pathname.endsWith('.html');
   if(isHTML){
-    e.respondWith(fetch(e.request,{cache:'no-cache'}).then(r=>{const cr=r.clone();caches.open(CACHE).then(c=>c.put(e.request,cr));return r;})
+    e.respondWith(fetch(e.request,{cache:'no-cache'}).then(r=>{if(r.ok){const cr=r.clone();caches.open(CACHE).then(c=>c.put(e.request,cr));}return r;})
       .catch(()=>caches.match(e.request).then(m=>m||caches.match('app.html'))));
     return;}
   if(isData){
-    e.respondWith(fetch(e.request,{cache:'no-cache'}).then(r=>{const cr=r.clone();caches.open(CACHE).then(c=>c.put(e.request,cr));return r;})
+    e.respondWith(fetch(e.request,{cache:'no-cache'}).then(r=>{if(r.ok){const cr=r.clone();caches.open(CACHE).then(c=>c.put(e.request,cr));}return r;})
       .catch(()=>caches.match(e.request)));
     return;}
   e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request,{cache:'no-cache'}).then(nr=>{
-    const cn=nr.clone();caches.open(CACHE).then(c=>c.put(e.request,cn));return nr;})));
+    if(nr.ok){const cn=nr.clone();caches.open(CACHE).then(c=>c.put(e.request,cn));}return nr;})));
 });
