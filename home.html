@@ -219,7 +219,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 <div id="phone">
  <div id="amb"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="cau c1"></div><div class="cau c2"></div></div>
  <div id="noise"></div>
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.5.1</b> · 梦华录</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.6.0</b> · 梦华录</span></div>
  <div id="vfly"><div class="vwin"><video id="vv" playsinline muted loop preload="auto"></video><div class="dur" id="vdur"></div></div></div>
  <div id="stage">
   <div class="hello"><span class="hi">Hello,</span><div class="av" id="hAv">?</div><span class="nm" id="hNm"></span></div>
@@ -232,7 +232,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
    <div class="dcard" data-act="users"><div class="dk">我的粉丝</div><div class="dv" id="cUsers">…</div><div class="ds" id="cUsersS"></div><div class="go">›</div></div>
    <div class="dcard" data-act="sched"><div class="dk">日程安排</div><div class="dv" id="cTodo">…</div><div class="ds">今日安排 · 每周时间表</div><div class="go">›</div></div>
    <div class="dcard soon" data-soon="妆容相册"><div class="dk">妆容相册</div><div class="dv sm2">往期每日妆容</div><div class="ds">截图回顾</div></div>
-   <div class="dcard soon" data-soon="申请反馈"><div class="dk">申请反馈</div><div class="dv sm2">休息 · 意向 · 直达</div><div class="ds">化妆师优先级</div></div>
+   <div class="dcard" data-act="apply"><div class="dk">申请反馈</div><div class="dv sm2">休息 · 意向 · 直达</div><div class="ds">化妆师优先级</div><div class="go">›</div></div>
    <div class="dcard soon" data-soon="通关打卡"><div class="dk">通关打卡</div><div class="dv sm2">每日作业</div><div class="ds">表管 · 话术 · 资料</div></div>
   </div>
  </div>
@@ -389,7 +389,7 @@ function openModal(kind,ev){
  const pr=$('#phone').getBoundingClientRect();
  const r=sec?sec.getBoundingClientRect():{left:pr.width/2-60,top:pr.height/2-40,width:120,height:80};
  const W=pr.width,H=pr.height,tw=W-28,th=Math.round(H*0.8),tl=14,tt=Math.round(H*0.1);
- const T={perf:['我的荣誉','业绩数据 · 保底口径，永远正语调'],users:['我的粉丝','主归属优先，只看你自己的人'],sched:['日程安排','今日待办 · 本周时间表']}[kind]||['',''];
+ const T={perf:['我的荣誉','业绩数据 · 保底口径，永远正语调'],users:['我的粉丝','主归属优先，只看你自己的人'],sched:['日程安排','今日待办 · 本周时间表'],apply:['申请反馈','休息与意向，直达运营']}[kind]||['',''];
  const dim=document.createElement('div');dim.id='mdim';
  const md=document.createElement('div');md.id='modal';
  md.innerHTML=`<div class="mtop"><div class="xback mback" style="display:none">‹</div><div class="xt"><div class="h">${T[0]}</div><div class="s">${T[1]}</div></div><div class="xback mclose">✕</div></div><div class="xbody"><div class="xtrack"><div class="xpage" id="xList"></div><div class="xpage" id="xProf"></div></div></div>`;
@@ -402,6 +402,7 @@ function openModal(kind,ev){
  if(kind==='users')renderUsers(body);
  else if(kind==='perf')renderPerf(body);
  else if(kind==='sched')renderSched(body);
+ else if(kind==='apply')renderApply(body);
  if(!RM){
   md.style.transformOrigin='top left';
   md.style.transform=`translate(${st.r.left-pr.left-tl}px,${st.r.top-pr.top-tt}px) scale(${st.r.width/tw},${st.r.height/th})`;
@@ -665,6 +666,83 @@ function renderSched(body){
  const mk=`<div class="usec">本周化妆表</div><div class="mkimg" id="mkImg">${emptyState('等组长发表','发群里后丢给我，我挂上来')}</div>`;
  body.innerHTML=today+week+mk;
  const img=new Image();img.onload=()=>{const d=body.querySelector('#mkImg');if(d)d.innerHTML=`<img src="assets/schedule/makeup.jpg" alt="本周化妆表">`;};img.src='assets/schedule/makeup.jpg';
+}
+/* ===== 申请反馈盘（休息/意向/投诉 · 直通 Worker，提交格式照生产 app.html） ===== */
+const MU_TEACHERS=['小月','小颖','潘潘','阿日','岩岩','娜娜酱','刘媚','张倩','李庆','萍萍','常蕾','徐徐'];
+const REST_TYPES=[['事假','事假（无卡）'],['病假','病假（无卡）'],['其他','其他（无卡）']];
+function postSuggest(note,done){
+ const body={token:TOK,sec:'',nick:'',room_id:(DATA.anchor&&DATA.anchor.room_id)||'',kind:'日常维护',actions:[],grade:'',note,contact:'',demand:'',birthday:'',hometown:'',hobby:'',keyevent:'',address:'',job:'',taboo:'',unflags:[]};
+ body.sub_id=TOK+'__'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+ fetch('https://fb.menghualu.com.co/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+ .then(r=>{if(!r.ok)throw 0;return r.json();}).then(()=>done(true)).catch(()=>done(false));
+}
+function renderApply(body){
+ const days=[];for(let i=0;i<7;i++)days.push(new Date(Date.now()+8*3600e3+i*86400e3).toISOString().slice(0,10));
+ body.innerHTML=
+ `<div class="usec">申请休息</div>
+  <div class="usec">日期 · 今起 7 天</div>
+  <div class="xchips" id="restDays">${days.map((d,i)=>`<span class="chip${i===1?' on':''}" data-v="${d}">${i===0?'今天':i===1?'明天':d.slice(5)}</span>`).join('')}</div>
+  <div class="usec">类型</div>
+  <div class="xchips" id="restTypes">${REST_TYPES.map(([n,v],i)=>`<span class="chip${i===0?' on':''}" data-v="${v}">${n}</span>`).join('')}</div>
+  <div class="pnote"><div class="pk">原因（必填，无卡必审）</div><textarea id="restWhy" rows="2" placeholder="说清楚点，运营审批会看"></textarea></div>
+  <div class="pnote"><div class="psub" id="restGo">提交申请</div></div>
+  <div class="usec">意向老师 · 化妆师优先级</div>
+  <div class="usec">第一意向</div>
+  <div class="xchips" id="pref1s">${MU_TEACHERS.map(t=>`<span class="chip" data-v="${t}">${t}</span>`).join('')}</div>
+  <div class="usec">第二意向</div>
+  <div class="xchips" id="pref2s">${MU_TEACHERS.map(t=>`<span class="chip" data-v="${t}">${t}</span>`).join('')}</div>
+  <div class="pnote"><div class="psub" id="prefGo">保存意向</div></div>
+  <div class="usec">投诉与建议</div>
+  <div class="pnote"><div class="pk">写给运营</div><textarea id="sugTxt" rows="3" placeholder="直达运营，不转述"></textarea></div>
+  <div class="pnote"><div class="psub" id="sugGo">直达运营</div></div>
+  <div class="dimrow">提交即待审批 · 意向优先于固定师承</div>`;
+ const $b=s=>body.querySelector(s);
+ const pick=sel=>{const c=$b(sel+' .chip.on');return c?c.dataset.v:'';};
+ const bindSingle=sel=>{const box=$b(sel);box.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{box.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===c));});};
+ const bindPref=sel=>{const box=$b(sel);box.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{const was=c.classList.contains('on');box.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));if(!was)c.classList.add('on');});};
+ bindSingle('#restDays');bindSingle('#restTypes');bindPref('#pref1s');bindPref('#pref2s');
+ const restGo=$b('#restGo'),restWhy=$b('#restWhy');
+ const refreshRest=()=>restGo.classList.toggle('on',!!restWhy.value.trim());
+ restWhy.addEventListener('input',refreshRest);refreshRest();
+ restGo.onclick=async()=>{
+  const date=pick('#restDays'),type=pick('#restTypes'),reason=restWhy.value.trim();
+  if(!reason){toast('请填写原因');return;}
+  restGo.textContent='提交中…';restGo.classList.remove('on');
+  try{
+   const r=await fetch('https://fb.menghualu.com.co/api/anchor/rest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOK,date,type,reason})});
+   const d=await r.json().catch(()=>({}));
+   if(!r.ok||!d.ok)throw 0;
+   toast('已提交，待审批');restGo.textContent='已提交 ✓';
+  }catch(e){toast('网络异常，稍后再试');restGo.textContent='提交申请';refreshRest();}
+ };
+ fetch('https://fb.menghualu.com.co/api/anchor/pref',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOK})})
+  .then(r=>r.json()).then(d=>{if(!d.ok)return;
+   [['#pref1s',d.pref1],['#pref2s',d.pref2]].forEach(([sel,v])=>{if(v)body.querySelectorAll(sel+' .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===v));});
+  }).catch(()=>{});
+ const prefGo=$b('#prefGo');prefGo.classList.add('on');
+ prefGo.onclick=async()=>{
+  const p1=pick('#pref1s'),p2=pick('#pref2s');
+  if(p1&&p2&&p1===p2){toast('第一/第二意向不能是同一位老师');return;}
+  prefGo.textContent='保存中…';prefGo.classList.remove('on');
+  try{
+   const r=await fetch('https://fb.menghualu.com.co/api/anchor/pref',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOK,pref1:p1,pref2:p2})});
+   const d=await r.json().catch(()=>({}));
+   if(!r.ok||!d.ok)throw 0;
+   toast('已保存，排班按志愿优先');prefGo.textContent='已保存 ✓';
+  }catch(e){toast('网络异常，稍后再试');prefGo.textContent='保存意向';}
+  prefGo.classList.add('on');
+ };
+ const sugGo=$b('#sugGo'),sugTxt=$b('#sugTxt');
+ const refreshSug=()=>sugGo.classList.toggle('on',!!sugTxt.value.trim());
+ sugTxt.addEventListener('input',refreshSug);refreshSug();
+ sugGo.onclick=()=>{
+  const note=sugTxt.value.trim();if(!note)return;
+  sugGo.textContent='提交中…';sugGo.classList.remove('on');
+  postSuggest(note,ok=>{
+   if(ok){toast('已直达运营');sugGo.textContent='已直达 ✓';sugTxt.value='';}
+   else{toast('网络异常，稍后再试');sugGo.textContent='直达运营';refreshSug();}
+  });
+ };
 }
 /* ===== 小梦 ===== */
 function bootChips(){
