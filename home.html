@@ -198,7 +198,37 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 .usec.big:first-child{padding-top:12px}
 .murem{margin:2px 18px 10px;padding:10px 14px;border:1px solid var(--gold);border-radius:14px;font-size:12.5px;color:var(--gold);background:rgba(201,163,92,.08)}
 .gthumbs{display:flex;gap:8px;height:56px;margin-bottom:10px}
-.gthumbs img{flex:1;min-width:0;height:56px;object-fit:cover;border-radius:12px}
+.gthumbs img{flex:1;min-width:0;height:56px;object-fit:cover;object-position:center 20%;border-radius:12px}
+.gfload{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.gfload img{width:96px;opacity:0;filter:blur(8px);transform:scale(.86);animation:lem 1s cubic-bezier(.32,.72,.35,1) .12s forwards}
+.gfload .rp,.gfload .rp2{position:absolute;width:96px;height:96px;border-radius:50%;opacity:0;transform:scale(.4)}
+.gfload .rp{border:1.5px solid rgba(143,182,201,.8);animation:lrp 1.1s cubic-bezier(.2,.6,.3,1) .3s forwards}
+.gfload .rp2{border:1px solid rgba(143,182,201,.4);animation:lrp 1.2s cubic-bezier(.2,.6,.3,1) .5s forwards}
+@media (prefers-reduced-motion:reduce){.gfload img{opacity:1;filter:none;transform:none}.gfload .rp,.gfload .rp2{display:none}}
+.gfav{position:absolute;right:10px;bottom:10px;width:36px;height:36px;border-radius:50%;background:rgba(10,16,20,.5);border:1px solid var(--gbrd);display:flex;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);z-index:2;cursor:pointer}
+.gfav svg{width:17px;height:17px;fill:none;stroke:rgba(255,255,255,.8);stroke-width:1.8}
+.gfav.on svg{fill:var(--red);stroke:var(--red)}
+.gbrk{position:absolute;top:10px;right:10px;width:28px;height:28px;z-index:2;pointer-events:none}
+.gcard.broken{filter:grayscale(.9);opacity:.45}
+.gshdim{position:absolute;inset:0;z-index:64;background:rgba(4,8,11,.45)}
+.gsheet{position:absolute;left:10px;right:10px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:65;background:rgba(24,34,40,.96);border:1px solid var(--gbrd);border-radius:24px;-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);box-shadow:0 18px 46px rgba(0,0,0,.5);overflow:hidden}
+.gsh{border-top:1px solid rgba(255,255,255,.06)}
+.gsh:first-child{border-top:0}
+.gsh-h{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer}
+.gsh-h .eb{font-size:10px;color:var(--ink3);letter-spacing:.12em}
+.gsh-h .tt{font-size:15px;font-weight:600}
+.gsh-h .gv{margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid var(--gbrd);display:flex;align-items:center;justify-content:center;flex:none}
+.gsh-h .gv svg{width:15px;height:15px;stroke:var(--ink2);fill:none;stroke-width:2;transition:transform .3s}
+.gsh.on .gv svg{transform:rotate(180deg)}
+.gsh-b{height:0;opacity:0;overflow:hidden;transition:height .3s ease-in-out,opacity .3s}
+.gsh.on .gsh-b{opacity:1}
+.gsh-b .in{padding:2px 14px 14px}
+.gsh-b .bk{font-size:13px;font-weight:600;color:var(--red);padding:2px 0 8px}
+.gsheet textarea{width:100%;resize:none;border-radius:14px;border:1px solid var(--gbrd);background:rgba(255,255,255,.06);color:var(--ink);font-family:inherit;font-size:13px;padding:11px 13px;outline:0;margin-bottom:10px}
+.gsheet .xchips{padding:2px 0 12px}
+#gfN{font-size:11px;color:var(--ink3)}
+#gfull .gn{display:flex;align-items:center;gap:6px}
+#gfull .gn .chip{font-size:11px;padding:5px 10px}
 #gfull{position:absolute;inset:0;z-index:60;background:radial-gradient(120% 70% at 20% 0%,rgba(64,90,104,.35),transparent 55%),linear-gradient(180deg,#101a20,#0c141a);display:flex;flex-direction:column;will-change:transform,opacity}
 #gfull .ghead{flex:none;display:flex;align-items:center;gap:11px;padding:calc(env(safe-area-inset-top) + 14px) 16px 10px}
 #gfull .gt{flex:1;text-align:center;font-size:18px;font-weight:600}
@@ -211,7 +241,8 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 .gcard .gf>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%}
 .gcard .gsnap{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
 .gcard .gsnap::-webkit-scrollbar{display:none}
-.gcard .gsnap img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;object-position:center 20%;scroll-snap-align:start}
+.gcard .gsnap .gs{flex:0 0 100%;width:100%;height:100%;position:relative;scroll-snap-align:start}
+.gcard .gsnap .gs img{width:100%;height:100%;object-fit:cover;object-position:center 20%}
 .gcard .ginfo{display:flex;align-items:center;gap:8px;padding:8px 2px 0;font-size:12px;color:var(--ink2)}
 .gcard .ginfo span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gcard .ginfo i{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid var(--gbrd);display:flex;align-items:center;justify-content:center;font-style:normal;flex:none;color:var(--ink3)}
@@ -290,7 +321,7 @@ function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity='1';clearT
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const qs=new URLSearchParams(location.search),TOK=qs.get('t')||'';
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v6.1.0';
+const VER='v6.2.0';
 function track(ev,meta){try{const b=JSON.stringify({token:TOK,ev:ev,meta:String(meta||'')});
  if(navigator.sendBeacon&&navigator.sendBeacon('https://fb.menghualu.com.co/api/track',new Blob([b],{type:'application/json'})))return;
  fetch('https://fb.menghualu.com.co/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:b}).catch(()=>{});}catch(e){}}
@@ -820,7 +851,7 @@ function peekGallery(){
   const rows=(d&&d.rows)||[],g=rows[0];
   const card=document.querySelector('.dcard[data-act="gallery"]');
   if(!card||!g||!(g.imgs||[]).length)return;
-  card.innerHTML=`<div class="gthumbs" id="gThumbs">${g.imgs.slice(0,3).map(u=>`<img src="${u}" loading="lazy" onerror="this.remove()">`).join('')}</div><div class="dv sm2">共 ${rows.length} 场</div><div class="ds">最新 ${String(g.date).slice(5)}</div><div class="go">›</div>`;
+  card.innerHTML=`<div class="dk">妆容相册</div><div class="gthumbs" id="gThumbs">${g.imgs.slice(0,3).map(u=>`<img src="${u}" loading="lazy" onerror="this.remove()">`).join('')}</div><div class="dv sm2">共 ${rows.length} 场</div><div class="ds">最新 ${String(g.date).slice(5)}</div><div class="go">›</div>`;
  }).catch(()=>{});
 }
 function openGallery(card){
@@ -828,7 +859,7 @@ function openGallery(card){
  const pr=$('#phone').getBoundingClientRect();
  const r=card?card.getBoundingClientRect():null;
  const el=document.createElement('div');el.id='gfull';
- el.innerHTML=`<div class="ghead"><div class="xback" id="gfX">✕</div><div class="gt">妆容相册</div><div class="gn" id="gfN"></div></div><div class="gbody" id="gfBody"><div class="mrow" style="grid-column:1/-1"><span>…</span><b></b></div></div>`;
+ el.innerHTML=`<div class="ghead"><div class="xback" id="gfX">✕</div><div class="gt">妆容相册</div><div class="gn"><span class="chip on" data-f="all">全部</span><span class="chip" data-f="fav">最爱妆造</span><span id="gfN"></span></div></div><div class="gbody" id="gfBody"></div><div class="gfload"><div class="rp"></div><div class="rp2"></div><img src="assets/logo-mark.png" alt="梦华录"></div>`;
  $('#phone').appendChild(el);
  _gf={el,r:{left:(r?r.left:pr.left+pr.width/2-60)-pr.left,top:(r?r.top:pr.top+pr.height/2-40)-pr.top,width:r?r.width:120,height:r?r.height:80}};
  if(!RM){
@@ -841,8 +872,12 @@ function openGallery(card){
   el.style.transform='none';el.style.opacity='1';el.style.borderRadius='0';
  }
  $('#gfX').onclick=()=>closeGallery();
+ el.querySelectorAll('.gn .chip').forEach(ch=>ch.onclick=()=>{
+  el.querySelectorAll('.gn .chip').forEach(x=>x.classList.toggle('on',x===ch));
+  if(_gf){_gf.favOnly=ch.dataset.f==='fav';paintGfull();}
+ });
  fetch('https://fb.menghualu.com.co/api/anchor/gallery',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOK,n:30})})
- .then(r=>r.json()).then(d=>{if(_gf)paintGfull((d&&d.rows)||[]);}).catch(()=>{if(_gf)paintGfull([]);});
+ .then(r=>r.json()).then(d=>{if(_gf){_gf.rows=(d&&d.rows)||[];paintGfull();}}).catch(()=>{if(_gf){_gf.rows=[];paintGfull();}});
 }
 function closeGallery(){
  if(!_gf)return;const {el,r}=_gf;_gf=null;
@@ -853,22 +888,98 @@ function closeGallery(){
  el.style.opacity='0';el.style.borderRadius='26px';
  setTimeout(()=>el.remove(),380);
 }
-function paintGfull(rows){
- const body=$('#gfBody');if(!body)return;
- const ok=rows.filter(g=>(g.imgs||[]).length);
- $('#gfN').textContent='共 '+ok.length+' 场';
- if(!ok.length){body.innerHTML=`<div style="grid-column:1/-1">${emptyState('还没有妆容照片','每日妆容归档后自动出现在这里')}</div>`;return;}
- body.innerHTML=ok.map(g=>{
+const HEART='<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+const BROKEN='<svg viewBox="0 0 24 24"><path d="M11.2 5.9 9.8 4.5a5 5 0 0 0-7 7l7.1 7.1 1.3-1.5" fill="var(--red)"/><path d="M13.6 6.7l1.3-1.3a5 5 0 0 1 7 7l-7.1 7.1-1.2-1.6" fill="var(--red)"/></svg>';
+const gfavK=(d,i)=>'gfav_'+String(d).replace(/-/g,'')+'_'+i;
+const gbrkK=d=>'gbroken_'+String(d).replace(/-/g,'');
+function paintGfull(){
+ const body=$('#gfBody');if(!body||!_gf)return;
+ const ld=_gf.el.querySelector('.gfload');if(ld)ld.remove();
+ const rows=(_gf.rows||[]).filter(g=>(g.imgs||[]).length);
+ $('#gfN').textContent='共 '+rows.length+' 场';
+ const show=_gf.favOnly?rows.filter(g=>g.imgs.some((u,i)=>localStorage.getItem(gfavK(g.date,i)))):rows;
+ if(!rows.length){body.innerHTML=`<div style="grid-column:1/-1">${emptyState('还没有妆容照片','每日妆容归档后自动出现在这里')}</div>`;return;}
+ if(!show.length){body.innerHTML=`<div style="grid-column:1/-1">${emptyState('还没有最爱妆造','点右下角小心心，把最好看的妆收进来')}</div>`;return;}
+ body.innerHTML=show.map(g=>{
   const head=String(g.date||'').slice(5)+' · '+((g.artists||[]).join('、')||'化妆师待补')+(g.venue?' · '+g.venue:'');
+  const broken=localStorage.getItem(gbrkK(g.date));
+  const favBtn=(u,i)=>`<div class="gfav${localStorage.getItem(gfavK(g.date,i))?' on':''}" data-k="${gfavK(g.date,i)}">${HEART}</div>`;
   const imgs=g.imgs.length>1
-   ?`<div class="gsnap">${g.imgs.map(u=>`<img src="${u}" loading="lazy" onerror="this.remove()">`).join('')}</div>`
-   :`<img src="${g.imgs[0]}" loading="lazy" onerror="this.remove()">`;
-  return `<div class="gcard"><div class="gf">${imgs}</div><div class="ginfo"><span>${esc(head)}</span><i>›</i></div></div>`;
+   ?`<div class="gsnap">${g.imgs.map((u,i)=>`<div class="gs"><img src="${u}" loading="lazy" onerror="this.remove()">${favBtn(u,i)}</div>`).join('')}</div>`
+   :`<img src="${g.imgs[0]}" loading="lazy" onerror="this.remove()">${favBtn(g.imgs[0],0)}`;
+  return `<div class="gcard${broken?' broken':''}" data-d="${g.date}"><div class="gf">${imgs}${broken?`<div class="gbrk">${BROKEN}</div>`:''}</div><div class="ginfo"><span>${esc(head)}</span></div></div>`;
  }).join('');
- body.querySelectorAll('.gcard').forEach(c=>c.onclick=e=>{
-  const im=e.target.tagName==='IMG'?e.target:c.querySelector('.gf img');
-  if(im)openPhoto(im.src);
+ body.querySelectorAll('.gcard').forEach(c=>{
+  const g=show.find(x=>x.date===c.dataset.d);
+  c.onclick=e=>{
+   if(e.target.closest('.gfav'))return;
+   const im=e.target.tagName==='IMG'?e.target:c.querySelector('.gf img');
+   if(im)openPhoto(im.src);
+  };
+  c.querySelectorAll('.gfav').forEach(b=>b.onclick=e=>{
+   e.stopPropagation();
+   const on=b.classList.toggle('on');
+   if(on)localStorage.setItem(b.dataset.k,'1');else localStorage.removeItem(b.dataset.k);
+  });
+  const gi=c.querySelector('.ginfo');
+  let tm=null,lp=false;
+  gi.addEventListener('touchstart',()=>{lp=false;clearTimeout(tm);tm=setTimeout(()=>{lp=true;openGsheet(g);},460);},{passive:true});
+  gi.addEventListener('touchmove',()=>clearTimeout(tm),{passive:true});
+  gi.addEventListener('touchend',()=>clearTimeout(tm),{passive:true});
+  gi.addEventListener('click',e=>{if(lp){lp=false;e.stopPropagation();e.preventDefault();}},true);
  });
+}
+function closeGsheet(){
+ if(!_gf)return;
+ const d=_gf.el.querySelector('.gshdim'),s=_gf.el.querySelector('.gsheet');
+ if(d)d.remove();if(s)s.remove();
+}
+function openGsheet(g){
+ if(!_gf)return;
+ closeGsheet();
+ const old=(g.artists||[]).join('、')||'待补';
+ const dim=document.createElement('div');dim.className='gshdim';
+ const sh=document.createElement('div');sh.className='gsheet';
+ const chev='<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
+ sh.innerHTML=
+  [['mu','申请','改妆面老师'],['fa','申请','改发型老师'],['br','申诉','妆造心碎']].map(([k,eb,tt])=>
+  `<div class="gsh" data-k="${k}"><div class="gsh-h"><div><div class="eb">${eb}</div><div class="tt">${tt}</div></div><div class="gv">${chev}</div></div>
+   <div class="gsh-b"><div class="in">${k==='br'
+    ?`<div class="bk">当天妆造心碎了</div><textarea id="gbrWhy" rows="3" placeholder="写清哪里不对，运营会逐条看"></textarea><div class="psub" id="gbrGo">提交申诉</div>`
+    :`<div class="xchips">${MU_TEACHERS.map(t=>`<span class="chip" data-v="${t}">${t}</span>`).join('')}</div><div class="psub" data-go="${k}">确认</div>`}</div></div>`).join('');
+ _gf.el.appendChild(dim);_gf.el.appendChild(sh);
+ dim.onclick=()=>closeGsheet();
+ sh.querySelectorAll('.gsh').forEach(row=>{
+  row.querySelector('.gsh-h').onclick=()=>{
+   const was=row.classList.contains('on');
+   sh.querySelectorAll('.gsh').forEach(x=>{x.classList.remove('on');x.querySelector('.gsh-b').style.height='0';});
+   if(!was){row.classList.add('on');const b=row.querySelector('.gsh-b');b.style.height=b.scrollHeight+'px';}
+  };
+ });
+ sh.querySelectorAll('.xchips').forEach(box=>box.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{box.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===c));}));
+ sh.querySelectorAll('.psub[data-go]').forEach(btn=>btn.onclick=()=>{
+  const row=btn.closest('.gsh'),pick=row.querySelector('.chip.on');
+  if(!pick){toast('先选一位老师');return;}
+  btn.textContent='提交中…';btn.style.pointerEvents='none';
+  const kind=btn.dataset.go==='mu'?'妆面':'发型';
+  postSuggest(`【改妆申请】${g.date} ${kind}:${old}→${pick.dataset.v}`,ok=>{
+   if(ok){toast('已提交，运营可见');closeGsheet();}
+   else{toast('网络异常，稍后再试');btn.textContent='确认';btn.style.pointerEvents='';}
+  });
+ });
+ const brGo=sh.querySelector('#gbrGo'),brWhy=sh.querySelector('#gbrWhy');
+ brGo.onclick=()=>{
+  const reason=brWhy.value.trim();
+  if(!reason){toast('请填写理由');return;}
+  brGo.textContent='提交中…';brGo.style.pointerEvents='none';
+  postSuggest(`【妆造申诉】${g.date}：${reason}`,ok=>{
+   if(ok){
+    localStorage.setItem(gbrkK(g.date),'1');
+    toast('已申诉，运营会看');
+    closeGsheet();paintGfull();
+   }else{toast('网络异常，稍后再试');brGo.textContent='提交申诉';brGo.style.pointerEvents='';}
+  });
+ };
 }
 /* ===== 小梦 ===== */
 function bootChips(){
