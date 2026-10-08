@@ -1,0 +1,299 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0e1519">
+<title>梦华录 · 运营工作台</title><style>
+/* 运营工作台 v0.1.0 · 皮肤同主播版(:root/玻璃 token 复制自 home.html,零漂移) */
+:root{
+ --ink:#eef2f4;--ink2:#a9b8bd;--ink3:#6b7f84;
+ --cyan:#8fb6c9;--gold:#c9a35c;--red:#d64f18;--paper:#0e1519;--night:#0b1215;
+ --glass:rgba(0,0,0,.45);--gbrd:rgba(255,255,255,.12);
+ --row:rgba(255,255,255,.06);
+ --spring:cubic-bezier(.32,.72,.35,1);--ease-in:cubic-bezier(.5,0,.75,0);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overscroll-behavior:none}
+body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;color:var(--ink);background:#0c141a;overflow:hidden}
+#phone{position:relative;height:100%;height:100dvh;max-width:none;margin:0 auto;overflow:hidden;background:var(--paper)}
+#phone::before{content:'';position:absolute;inset:0;background:radial-gradient(120% 70% at 20% 0%,rgba(64,90,104,.35),transparent 55%),radial-gradient(100% 60% at 90% 95%,rgba(46,66,86,.4),transparent 60%),linear-gradient(180deg,#101a20,#0c141a)}
+@media(min-width:560px){
+ body{display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 50% 0%,#16241f 0%,#0a1210 62%)}
+ #phone{width:406px;height:min(880px,94vh);border-radius:46px;border:1px solid rgba(255,255,255,.1);box-shadow:0 46px 120px -30px rgba(0,0,0,.85),0 0 0 10px #141d22}
+}
+.pill{font-size:10px;color:#dce6ea;background:rgba(16,24,30,.5);border:1px solid rgba(255,255,255,.16);padding:5px 11px;border-radius:99px;letter-spacing:.08em;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.pill b{font-weight:600}
+#stbar{position:absolute;top:calc(env(safe-area-inset-top) + 10px);left:14px;right:14px;z-index:20;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+/* ---- 登录(P0) ---- */
+#login{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:0 40px}
+#login img{width:96px;filter:drop-shadow(0 8px 30px rgba(0,0,0,.4))}
+#login .lt{font-size:19px;font-weight:600}
+#login .ls{font-size:12px;color:var(--ink2)}
+#login input{width:100%;border-radius:16px;border:1px solid var(--gbrd);background:rgba(255,255,255,.06);color:var(--ink);font-family:inherit;font-size:15px;padding:13px 15px;outline:0;text-align:center}
+#login .btn{width:100%;text-align:center;font-size:15px;font-weight:600;padding:13px;border-radius:16px;background:var(--ink);color:var(--night);cursor:pointer}
+#login .lerr{font-size:12px;color:#d9704f;min-height:16px}
+/* ---- 主框架 ---- */
+#wmain{position:absolute;inset:0;display:flex;flex-direction:column}
+#wbody{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:calc(env(safe-area-inset-top) + 52px) 0 calc(96px + env(safe-area-inset-bottom));scrollbar-width:none}
+#wbody::-webkit-scrollbar{display:none}
+.hello{display:flex;align-items:center;gap:10px;padding:6px 22px 10px;font-size:20px;color:var(--ink);flex-wrap:wrap}
+.hello .hi{font-weight:400;color:var(--ink2)}
+.hello .av{width:40px;height:40px;border-radius:50%;overflow:hidden;border:1.5px solid rgba(255,255,255,.35);background:#3a4a54;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;position:relative;flex:none}
+.hello .nm{font-size:18px;font-weight:500}
+/* ---- A 区:团卡横滑带 ---- */
+.tbelt{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;padding:8px 16px 14px;scrollbar-width:none}
+.tbelt::-webkit-scrollbar{display:none}
+.tcard{flex:0 0 78%;scroll-snap-align:center;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:16px 16px 14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 10px 30px rgba(0,0,0,.35);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6)}
+.tbelt.one .tcard{flex-basis:100%}
+.tcard .th{display:flex;align-items:baseline;gap:8px}
+.tcard .tn{font-size:17px;font-weight:700}
+.tcard .td{font-size:11px;color:var(--ink3);margin-left:auto}
+.tcard .tst{margin-top:4px;font-size:12px;color:var(--cyan)}
+.tcard .tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.tcard .tg{background:rgba(255,255,255,.06);border:1px solid var(--gbrd);border-radius:14px;padding:9px 12px}
+.tcard .tg .v{font-size:16px;font-weight:700}
+.tcard .tg .v .up{color:#7fb069}.tcard .tg .v .dn{color:#d9704f}
+.tcard .tg .k{font-size:10px;color:var(--ink3);margin-top:2px}
+.tcard .warn{margin-top:10px;font-size:12px}
+.tcard .offbtn{margin-top:12px;text-align:center;font-size:14px;font-weight:600;padding:11px;border-radius:14px;background:linear-gradient(135deg,var(--cyan),#6a8fb5);color:#fff;cursor:pointer}
+/* ---- 下播二次确认卡 ---- */
+#cfmDim{position:absolute;inset:0;z-index:64;background:rgba(4,8,11,.5)}
+#cfm{position:absolute;left:24px;right:24px;top:50%;transform:translateY(-50%);z-index:65;background:rgba(24,34,40,.97);border:1px solid var(--gbrd);border-radius:22px;padding:18px;-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:0 24px 60px rgba(0,0,0,.5)}
+#cfm .ct{font-size:16px;font-weight:700}
+#cfm .cs{font-size:12px;color:var(--ink2);margin-top:6px;line-height:1.7}
+#cfm .cs .early{color:#d9704f;font-weight:600}
+#cfm .cb{display:flex;gap:9px;margin-top:14px}
+#cfm .cb span{flex:1;text-align:center;font-size:13.5px;padding:11px 0;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid var(--gbrd);cursor:pointer}
+#cfm .cb .ok{background:var(--ink);color:var(--night);font-weight:600}
+/* ---- B 区:异常待办行动流 ---- */
+.usec{font-size:11px;color:var(--ink3);padding:12px 18px 6px;letter-spacing:.1em}
+.trow{overflow:hidden;margin:0 16px 9px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid var(--gbrd)}
+.tslide{display:flex;transition:transform .25s var(--spring);will-change:transform}
+.tmain{flex:0 0 100%;min-width:0;display:flex;align-items:center;padding:12px 14px}
+.tmain .l{flex:1;min-width:0;font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tmain .r{font-size:11.5px;color:var(--ink3);flex:none;margin-left:10px}
+.tacts{flex:0 0 192px;display:flex;gap:6px;align-items:center;padding:6px 8px}
+.tacts span{flex:1;text-align:center;font-size:11.5px;padding:8px 0;border-radius:10px;cursor:pointer}
+.tacts .a1{background:var(--cyan);color:var(--night);font-weight:600}
+.tacts .a2{background:rgba(255,255,255,.12);color:var(--ink2)}
+.tacts .a3{background:rgba(255,255,255,.05);color:var(--ink3)}
+/* ---- 底部导航 ---- */
+#wnav{position:absolute;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:21;display:flex;align-items:center;gap:4px;padding:7px;border-radius:30px;background:rgba(10,16,20,.55);border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 12px 40px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4)}
+#wnav span{flex:1;text-align:center;font-size:12px;padding:9px 0;border-radius:22px;color:var(--ink3);cursor:pointer;transition:background .2s}
+#wnav span.on{background:rgba(143,182,201,.18);color:var(--ink);font-weight:600}
+/* ---- 空状态/杂项 ---- */
+.empty2{text-align:center;padding:44px 24px;color:var(--ink3)}
+.empty2 .et{font-size:13.5px;color:var(--ink2)}
+.empty2 .es{font-size:11.5px;margin-top:5px}
+.chip{font-size:12.5px;padding:8px 13px;border-radius:99px;background:rgba(255,255,255,.07);border:1px solid var(--gbrd);color:var(--ink2);cursor:pointer}
+.chip.on{background:var(--cyan);color:var(--night);border-color:transparent}
+.xback{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid var(--gbrd);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;font-size:13px;color:var(--ink2)}
+#toast{position:absolute;left:50%;bottom:110px;transform:translateX(-50%) translateY(16px);background:rgba(8,14,17,.92);color:#fff;font-size:13px;padding:11px 18px;border-radius:10px;max-width:82%;text-align:center;opacity:0;transition:all .25s;pointer-events:none;z-index:90}
+#meOut{margin:24px 18px;text-align:center;font-size:13px;padding:12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--gbrd);color:var(--ink2);cursor:pointer}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<div id="phone">
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.1.0</b> · 运营工作台</span></div>
+ <div id="wmain" style="display:none">
+  <div id="wbody"></div>
+  <div id="wnav"><span data-v="ov" class="on">总览</span><span data-v="anchors">主播</span><span data-v="appr">审批</span><span data-v="me">我的</span></div>
+ </div>
+ <div id="login">
+  <img src="assets/logo-mark.png" alt="梦华录">
+  <div class="lt">运营工作台</div>
+  <div class="ls">输入运营访问码</div>
+  <input id="lcode" type="text" autocapitalize="off" autocomplete="off" placeholder="访问码">
+  <div class="btn" id="lgo">进入</div>
+  <div class="lerr" id="lerr"></div>
+ </div>
+ <div id="toast"></div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity='1';clearTimeout(t._x);t._x=setTimeout(()=>t.style.opacity='0',2200);}
+const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let TOK=localStorage.getItem('wb_tok')||'',ME=null,TEAMS=[],COMPANY=false,CUR='',VIEW='ov';
+/* ===== 接口契约层(契约按 PRD §7 写死;主控交付后启用真实 fetch,视图只消费 API 对象) ===== */
+const API={
+ async teams(tok){
+  /* 契约:POST /api/ops/teams {token} → {ok,name,role:'boss'|'ops',teams:[{tid,name,anchorCount}],company?:bool} */
+  // const r=await fetch('https://fb.menghualu.com.co/api/ops/teams',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok})});return r.json(); // 主控交付后启用
+  await new Promise(r=>setTimeout(r,240));
+  const m=MOCK.teams[tok];
+  return m?{ok:true,...m}:{ok:false,error:'访问码无效或未开通'};
+ },
+ async todo(tok,tid){
+  /* 契约:POST /api/ops/todo {token,tid} → {ok,groups:{icebreak:[],noreply:[],maintain:[],warn:[],approve:[]}} */
+  // const r=await fetch('https://fb.menghualu.com.co/api/ops/todo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok,tid})});return r.json(); // 主控交付后启用
+  await new Promise(r=>setTimeout(r,200));
+  const g=(MOCK.todo[tid]||{}).groups;
+  return g?{ok:true,groups:g}:{ok:true,groups:{icebreak:[],noreply:[],maintain:[],warn:[],approve:[]}};
+ }
+};
+/* ===== P0 登录 ===== */
+async function doLogin(tok){
+ const d=await API.teams(tok);
+ if(!d.ok){$('#lerr').textContent=d.error||'访问码无效或未开通';return;}
+ TOK=tok;localStorage.setItem('wb_tok',tok);
+ enterMain(d);
+}
+function enterMain(d){
+ ME=d.name;TEAMS=d.teams||[];COMPANY=!!d.company;
+ CUR=COMPANY?'all':(TEAMS[0]&&TEAMS[0].tid)||'';
+ $('#login').style.display='none';$('#wmain').style.display='flex';
+ $('#pillDate').textContent=bjDay();
+ renderOv();
+}
+/* ===== P1 总览 ===== */
+function bjDay(){return new Date(Date.now()+8*3600e3).toISOString().slice(0,10);}
+function fmtW(v){return '¥'+v.toLocaleString();}
+function renderOv(){
+ const w=$('#wbody');
+ const teamChips=COMPANY
+  ?`<span class="chip on" id="wTeam">${CUR==='all'?'全部':(TEAMS.find(t=>t.tid===CUR)||{}).name||''}</span>`
+  :(TEAMS.length>1?`<span class="chip" id="wTeam">${(TEAMS.find(t=>t.tid===CUR)||{}).name||''}</span>`:`<span class="chip" style="pointer-events:none">${(TEAMS[0]||{}).name||''}</span>`);
+ const cards=[...TEAMS];
+ if(COMPANY)cards.push({tid:'all',name:'全公司',yday:40300,month:844000,wow:5,showUv:6020,pcu:150,warnR:1,warnY:3,status:{live:false,n:4,since:''}});
+ w.innerHTML=`<div class="hello"><span class="hi">Hello,</span><div class="av">${(ME||'?')[0]}</div><span class="nm">${esc(ME||'')}</span>${teamChips}</div>
+ <div class="tbelt${cards.length===1?' one':''}">${cards.map(t=>tcard(t)).join('')}</div>
+ <div class="usec">今日异常待办 · <span id="wTodoN">…</span></div><div id="wTodo"><div class="trow"><div class="tslide"><div class="tmain"><div class="l">…</div></div></div></div></div>`;
+ const wc=$('#wTeam');
+ if(wc&&COMPANY)wc.onclick=()=>{
+  const seq=['all',...TEAMS.map(t=>t.tid)];
+  CUR=seq[(seq.indexOf(CUR)+1)%seq.length];
+  wc.textContent=CUR==='all'?'全部':(TEAMS.find(t=>t.tid===CUR)||{}).name;
+  loadTodo();
+ };
+ bindTcards();
+ loadTodo();
+}
+function tcard(t){
+ const s=t.status||{};
+ const nums=`<div class="tgrid">
+  <div class="tg"><div class="v">${fmtW(t.yday)}</div><div class="k">昨日流水</div></div>
+  <div class="tg"><div class="v">${fmtW(t.month)}</div><div class="k">本月流水</div></div>
+  <div class="tg"><div class="v">${t.wow<0?`<i class="dn">↓${-t.wow}%</i>`:`<i class="up">↑${t.wow}%</i>`}</div><div class="k">周环比</div></div>
+  <div class="tg"><div class="v">${t.showUv.toLocaleString()}</div><div class="k">曝光</div></div></div>
+  ${t.pcu?`<div class="tgrid" style="margin-top:8px"><div class="tg"><div class="v">${t.pcu}</div><div class="k">PCU 峰值在线</div></div></div>`:''}`;
+ const warn=(t.warnR||t.warnY)?`<div class="warn">${t.warnR?`🔴${t.warnR} `:''}${t.warnY?`🟡${t.warnY}`:''} <span style="color:var(--ink3);font-size:11px">主播预警</span></div>`:'';
+ const live=s.live?`第 ${s.n} 场 · 直播中`:`已结束 ${s.n} 场`;
+ const offBtn=s.live?`<div class="offbtn" data-off="${t.tid}">下播收场</div>`:'';
+ return `<div class="tcard"><div class="th"><span class="tn">${esc(t.name)}</span><span class="td">${bjDay().slice(5)}</span></div>
+ <div class="tst">${live}</div>${nums}${warn}${offBtn}</div>`;
+}
+function bindTcards(){
+ document.querySelectorAll('[data-off]').forEach(b=>b.onclick=()=>{
+  const t=TEAMS.find(x=>x.tid===b.dataset.off);if(!t)return;
+  const s=t.status;
+  const mins=Math.round((Date.now()-new Date(bjDay()+'T'+s.since+':00+08:00'))/60000);
+  const early=mins>=0&&mins<120;
+  const dim=document.createElement('div');dim.id='cfmDim';
+  const cf=document.createElement('div');cf.id='cfm';
+  cf.innerHTML=`<div class="ct">确认下播收场?</div><div class="cs">${esc(t.name)} · 今天第 ${s.n} 场 · ${s.since} 开播${early?`<br><span class="early">偏早警示:开播不足 2 小时</span>`:''}</div>
+  <div class="cb"><span class="no">取消</span><span class="ok">确认下播</span></div>`;
+  $('#phone').appendChild(dim);$('#phone').appendChild(cf);
+  dim.onclick=()=>{dim.remove();cf.remove();};
+  cf.querySelector('.no').onclick=()=>{dim.remove();cf.remove();};
+  cf.querySelector('.ok').onclick=()=>{dim.remove();cf.remove();toast('已记录，一条龙启动');/* TODO(wo-21a):真实触发采集收官流水线,主控接口就绪后接 */};
+ });
+}
+/* ===== B 区待办 ===== */
+const TODO_DEF=[['icebreak','🔴 破冰'],['noreply','🔴 未回复'],['maintain','🟡 该维护'],['warn','🟡 主播预警'],['approve','🔵 待审批']];
+async function loadTodo(){
+ const box=$('#wTodo');if(!box)return;
+ const d=await API.todo(TOK,CUR);
+ const g=(d&&d.groups)||{};
+ let n=0;
+ const html=TODO_DEF.map(([k,name])=>{
+  const list=g[k]||[];
+  if(!list.length)return '';
+  n+=list.length;
+  return `<div class="usec">${name} · ${list.length}</div>`+list.map(r=>trow(r)).join('');
+ }).join('');
+ $('#wTodoN').textContent=n;
+ box.innerHTML=html||emptyState('今日无异常','各团运转正常');
+ bindTrows();
+}
+function trow(r){
+ return `<div class="trow"><div class="tslide"><div class="tmain"><div class="l">${esc(r.l)}</div><div class="r">${esc(r.r)}</div></div>
+ <div class="tacts"><span class="a1" data-a="处理">处理</span><span class="a2" data-a="记一下">记一下</span><span class="a3" data-a="忽略">忽略</span></div></div></div>`;
+}
+function bindTrows(){
+ document.querySelectorAll('#wTodo .trow').forEach(row=>{
+  const sl=row.querySelector('.tslide');
+  let sx=0,moved=false,open=false;
+  const closeOthers=()=>{document.querySelectorAll('#wTodo .tslide').forEach(s2=>{if(s2!==sl)s2.style.transform='';});};
+  row.addEventListener('touchstart',e=>{if(e.touches.length!==1)return;sx=e.touches[0].clientX;moved=false;},{passive:true});
+  row.addEventListener('touchmove',e=>{
+   const dx=sx-e.touches[0].clientX;
+   if(dx>10)moved=true;
+   if(dx>60&&!open){closeOthers();open=true;sl.style.transform='translateX(-192px)';}
+  },{passive:true});
+  row.addEventListener('touchend',()=>{setTimeout(()=>moved=false,50);},{passive:true});
+  row.querySelectorAll('.tacts span').forEach(b=>b.onclick=()=>{
+   sl.style.transform='';open=false;
+   toast(`已留痕:${b.dataset.a}(演示)`); /* TODO(后续单):留痕接口 */
+  });
+  row.querySelector('.tmain').onclick=()=>{
+   if(open){sl.style.transform='';open=false;return;}
+   toast('直达处理位(第 #008 单接通)');
+  };
+ });
+}
+/* 行外点击/触摸收起所有滑开的待办钮 */
+document.addEventListener('touchstart',e=>{
+ const open=[...document.querySelectorAll('#wTodo .tslide')].filter(s=>s.style.transform);
+ if(!open.length)return;
+ if(e.target.closest&&e.target.closest('.trow'))return;
+ open.forEach(s=>s.style.transform='');
+},{passive:true});
+/* ===== 底部导航/占位页 ===== */
+function switchView(v){
+ VIEW=v;
+ document.querySelectorAll('#wnav span').forEach(s=>s.classList.toggle('on',s.dataset.v===v));
+ if(v==='ov'){renderOv();return;}
+ const ph={anchors:'第 #002 单就到',appr:'第 #003 单就到',me:'第 #005 单就到'}[v]||'';
+ $('#wbody').innerHTML=emptyState('建设中',ph)+(v==='me'?'<div id="meOut">退出切换</div>':'');
+ const out=$('#meOut');
+ if(out)out.onclick=()=>{localStorage.removeItem('wb_tok');TOK='';location.reload();};
+}
+function emptyState(t,s){return `<div class="empty2"><div class="et">${t}</div><div class="es">${s||''}</div></div>`;}
+document.querySelectorAll('#wnav span').forEach(s=>s.onclick=()=>switchView(s.dataset.v));
+$('#lgo').onclick=()=>{const v=$('#lcode').value.trim();if(!v){$('#lerr').textContent='请输入访问码';return;}$('#lerr').textContent='';doLogin(v);};
+$('#lcode').addEventListener('keydown',e=>{if(e.key==='Enter')$('#lgo').click();});
+(async()=>{if(TOK){const d=await API.teams(TOK);if(d.ok){enterMain(d);return;}localStorage.removeItem('wb_tok');}})();
+/* ===== mock(结构=契约;主控交付后删) ===== */
+const hmAgo=m=>{const d=new Date(Date.now()-m*60000);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
+const MOCK={
+ teams:{
+  boss:{name:'老板',role:'boss',company:true,teams:[
+   {tid:'sy',name:'水月团',anchorCount:6,yday:21400,month:483000,wow:12,showUv:3240,pcu:86,warnR:1,warnY:2,status:{live:true,n:2,since:hmAgo(40)}},
+   {tid:'xz',name:'行舟团',anchorCount:4,yday:18900,month:361000,wow:-5,showUv:2780,pcu:64,warnR:0,warnY:1,status:{live:false,n:2,since:''}},
+  ]},
+  ops:{name:'运营小赵',role:'ops',teams:[
+   {tid:'sy',name:'水月团',anchorCount:6,yday:21400,month:483000,wow:12,showUv:3240,pcu:86,warnR:1,warnY:2,status:{live:true,n:2,since:hmAgo(40)}},
+  ]}
+ },
+ todo:{
+  sy:{groups:{
+   icebreak:[{l:'小鱼 · TT',r:'24h+ 未私信'},{l:'蕣华 · 老周',r:'24h+ 未私信'}],
+   noreply:[{l:'千羽 · 阿果',r:'48h+ 未回复'}],
+   maintain:[{l:'小鱼 · 阿豪',r:'3 天未维护'},{l:'小鱼 · 老白',r:'5 天未维护'}],
+   warn:[{l:'涟漪',r:'🔴 红档'}],
+   approve:[{l:'水月团',r:'3 件'}],
+  }},
+  xz:{groups:{
+   icebreak:[],noreply:[],
+   maintain:[{l:'行舟 · 阿灿',r:'4 天未维护'}],
+   warn:[],approve:[{l:'行舟团',r:'1 件'}],
+  }},
+  all:{groups:{
+   icebreak:[{l:'小鱼 · TT',r:'24h+ 未私信'},{l:'蕣华 · 老周',r:'24h+ 未私信'}],
+   noreply:[{l:'千羽 · 阿果',r:'48h+ 未回复'}],
+   maintain:[{l:'小鱼 · 阿豪',r:'3 天未维护'},{l:'小鱼 · 老白',r:'5 天未维护'},{l:'行舟 · 阿灿',r:'4 天未维护'}],
+   warn:[{l:'涟漪',r:'🔴 红档'}],
+   approve:[{l:'水月团',r:'3 件'},{l:'行舟团',r:'1 件'}],
+  }},
+ }
+};
+</script></body></html>
