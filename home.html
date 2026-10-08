@@ -68,7 +68,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 /* ---- 画框（骑行层 · 56vh） ---- */
 #vfly{position:absolute;top:calc(env(safe-area-inset-top) + 46px);left:16px;right:16px;height:56vh;min-height:430px;z-index:12;will-change:transform,opacity}
 .vwin{position:absolute;inset:0;border-radius:26px;overflow:hidden;background:#16221f;border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 18px 46px rgba(0,0,0,.5)}
-.vwin video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;will-change:transform}
+.vwin video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;will-change:transform;transition:opacity .3s ease}
 .vwin .dur{position:absolute;right:14px;bottom:12px;font-size:10px;color:rgba(255,255,255,.8);letter-spacing:.08em;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 /* ---- 工作台（Hello 置顶 + 六盘厚玻璃 · 深色配方） ---- */
 #work{position:absolute;inset:0;z-index:11;padding-top:calc(env(safe-area-inset-top) + 50px);opacity:0;pointer-events:none;display:flex;flex-direction:column}
@@ -219,8 +219,8 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 <div id="phone">
  <div id="amb"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="cau c1"></div><div class="cau c2"></div></div>
  <div id="noise"></div>
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.5.0</b> · 梦华录</span></div>
- <div id="vfly"><div class="vwin"><video id="vv" playsinline muted loop autoplay preload="auto"></video><div class="dur" id="vdur"></div></div></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.5.1</b> · 梦华录</span></div>
+ <div id="vfly"><div class="vwin"><video id="vv" playsinline muted loop preload="auto"></video><div class="dur" id="vdur"></div></div></div>
  <div id="stage">
   <div class="hello"><span class="hi">Hello,</span><div class="av" id="hAv">?</div><span class="nm" id="hNm"></span></div>
   <div class="hint"><b></b>上滑，进入今日</div>
@@ -266,7 +266,7 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;',
 function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity='1';clearTimeout(t._x);t._x=setTimeout(()=>t.style.opacity='0',2200);}
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const qs=new URLSearchParams(location.search),TOK=qs.get('t')||'';
-let DATA=null,PERF=null,VIDEOS=[],_md=null,_curTier='S',_p=0,_sg=null,_aiBooted=false,PH=0;
+let DATA=null,PERF=null,VIDEOS=[],_md=null,_curTier='S',_p=0,_sg=null,_aiBooted=false,PH=0,_vcur=0,_vt=0;
 const ICO={
  spark:'<svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>'};
 const yuan=v=>'¥'+Math.round((v||0)/10).toLocaleString();
@@ -285,6 +285,20 @@ async function boot(){
  await ready;
  $('#loader').classList.add('done');$('#vfly').classList.add('enter');$('#stage').classList.add('enter');setTimeout(()=>$('#loader').remove(),RM?60:500);
 }
+/* ===== 戏台轮播：多片 hold 轮转 + 0.6s 淡切（单片静默，不挂定时器） ===== */
+function applyVid(i){
+ _vcur=i;const v=VIDEOS[i],vv=$('#vv');
+ vv.poster=v.poster||'';vv.src=v.src;
+ $('#vdur').textContent=(VIDEOS.length>1&&v.title?v.title+' · ':'')+(v.dur||'');
+ if(!document.hidden&&_p<0.98)vv.play().catch(()=>{});
+}
+function armV(){_vt=setTimeout(tickV,(VIDEOS[_vcur].hold>0?VIDEOS[_vcur].hold:8)*1000);}
+function tickV(){
+ if(_p>=0.98||document.hidden){armV();return;}
+ const ni=(_vcur+1)%VIDEOS.length,vv=$('#vv');
+ if(RM){applyVid(ni);armV();return;}
+ vv.style.opacity='0';setTimeout(()=>{applyVid(ni);vv.style.opacity='1';armV();},320);
+}
 function render(){
  const a=DATA.anchor,c=DATA.counts||{},total=Object.keys(DATA.users||{}).length;
  const pending=(c.l3||0)+(c.l2||0)+(c.greet||0);
@@ -293,7 +307,7 @@ function render(){
  $('#hAv').innerHTML=avHtml;$('#hNm').textContent=a.name||'';
  $('#wAv').innerHTML=avHtml;$('#wNm').textContent=a.name||'';
  $('#wSub').textContent=`今日 ${pending} 件事待办${c.bday?` · 🎂 ×${c.bday}`:''}`;
- const v=VIDEOS[0];if(v){const vv=$('#vv');vv.poster=v.poster||'';vv.src=v.src;$('#vdur').textContent=v.dur||'';vv.play().catch(()=>{});}
+ if(VIDEOS.length){applyVid(0);if(VIDEOS.length>1)armV();}
  $('#cTodo').textContent=pending;
  $('#cUsers').textContent=total;
  $('#cUsersS').textContent=`待维护 ${pending} · L3 ×${c.l3||0}`;
