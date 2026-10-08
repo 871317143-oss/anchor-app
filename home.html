@@ -26,12 +26,14 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 .wload{position:absolute;inset:0}
 .wload canvas{position:absolute;inset:0;width:100%;height:100%}
 .wload .wrock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
-.wload .wrock.rock{animation:wrock .5s ease}
 .wload .wpan{position:relative;animation:wfloat 3s ease-in-out infinite}
-.wload .wpb{position:absolute;inset:0;border-radius:28px;background:rgba(255,255,255,.02);transform:translate(6px,6px)}
-.wload .wpf{position:relative;width:100%;height:100%;border-radius:28px;background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(10px) saturate(1.2);backdrop-filter:blur(10px) saturate(1.2);display:flex;align-items:center;justify-content:center}
+.wload .wpf{position:relative;width:100%;height:100%;border-radius:28px;background:linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.04));box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 18px 50px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.wload .wd{position:absolute;top:-30%;width:2px;height:38%;background:linear-gradient(180deg,transparent,rgba(255,255,255,.18),transparent);filter:blur(1px);opacity:.18;animation:wdrip 11s linear infinite}
+.wload .wd.d2{left:34%;animation-duration:9s}
+.wload .wd.d3{left:52%;animation-duration:12.5s}
+.wload .wd.d1{left:66%;animation-duration:14s}
 @keyframes wfloat{50%{transform:translateY(-8px)}}
-@keyframes wrock{25%{transform:translateX(3px)}75%{transform:translateX(-3px)}}
+@keyframes wdrip{from{transform:translateY(-20%)}to{transform:translateY(320%)}}
 /* ---- 氛围层（暗底青黛液滴+微光+噪点） ---- */
 #amb{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
 .blob{position:absolute;border-radius:48% 52% 55% 45%/50% 46% 54% 50%;filter:blur(72px);opacity:.32;will-change:transform}
@@ -238,7 +240,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 .gcard .gsnap{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
 .gcard .gsnap::-webkit-scrollbar{display:none}
 .gcard .gsnap img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;object-position:center 20%;scroll-snap-align:start}
-.gcard .ginfo{display:flex;align-items:center;gap:8px;padding:8px 2px 0;overflow:hidden}
+.gcard .ginfo{display:flex;align-items:center;gap:8px;padding:8px 12px 0;overflow:hidden}
 .gcard .ginfo .gl{flex:1;min-width:0}
 .gcard .ginfo .gd{font-size:13px;font-weight:600;color:var(--ink)}
 .gcard .ginfo .gs{font-size:11px;color:var(--ink3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -317,37 +319,77 @@ function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity='1';clearT
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const qs=new URLSearchParams(location.search),TOK=qs.get('t')||'';
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v6.3.0';
+const VER='v6.4.0';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
-/* ===== 水波玻璃加载（自研 · #loader 与 #gfWater 双挂同一实现） ===== */
+/* ===== 水波玻璃加载（自研 · #loader 与 #gfWater 双挂同一实现 · 高度场折射真水面） ===== */
 function waterLoad(mount,{panelW=150,logoW=84}={}){
  const el=document.createElement('div');el.className='wload';
- el.innerHTML=`<canvas></canvas><div class="wrock"><div class="wpan" style="width:${panelW}px;height:${Math.round(panelW*190/150)}px"><div class="wpb"></div><div class="wpf"><img src="assets/logo-mark.png" style="width:${logoW}px" alt=""></div></div></div>`;
+ el.innerHTML=`<canvas></canvas><div class="wrock"><div class="wpan" style="width:${panelW}px;height:${Math.round(panelW*190/150)}px"><div class="wpf"><i class="wd d1"></i><i class="wd d2"></i><i class="wd d3"></i><img src="assets/logo-mark.png" style="width:${logoW}px" alt=""></div></div></div>`;
  mount.appendChild(el);
  const cv=el.querySelector('canvas'),ctx=cv.getContext('2d'),rock=el.querySelector('.wrock');
- let W=0,H=0,rips=[],run=true,raf=0,autoT=0;
- const size=()=>{W=cv.width=el.clientWidth||mount.clientWidth||402;H=cv.height=el.clientHeight||mount.clientHeight||700;};
- size();
- const drop=(x,y)=>{rips.push({x,y,t0:performance.now()});if(!RM){rock.classList.remove('rock');void rock.offsetWidth;rock.classList.add('rock');}};
- el.addEventListener('touchstart',e=>{const rc=el.getBoundingClientRect();drop(e.touches[0].clientX-rc.left,e.touches[0].clientY-rc.top);},{passive:true});
- const paint=now=>{
-  ctx.clearRect(0,0,W,H);
-  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0e1a22');g.addColorStop(1,'#0a141a');
-  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  const br=0.12+0.08*Math.sin(now/1400);
-  const rg=ctx.createRadialGradient(W/2,H*0.62,10,W/2,H*0.62,Math.max(W,H)*0.6);
-  rg.addColorStop(0,'rgba(143,182,201,'+br.toFixed(3)+')');rg.addColorStop(1,'rgba(143,182,201,0)');
-  ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
-  rips=rips.filter(r=>now-r.t0<1600);
-  rips.forEach(r=>{
-   const p=(now-r.t0)/1600;
-   ctx.beginPath();ctx.arc(r.x,r.y,p*160,0,6.3);
-   ctx.strokeStyle='rgba(143,182,201,'+(0.5*(1-p)).toFixed(3)+')';ctx.lineWidth=1.5;ctx.stroke();
-  });
+ let W=0,H=0,bw=0,bh=0,b1=null,b2=null,scratch=null,sctx=null,imgData=null,bgData=null,run=true,raf=0,autoT=0,lastF=0;
+ const size=()=>{
+  W=cv.width=el.clientWidth||mount.clientWidth||402;H=cv.height=el.clientHeight||mount.clientHeight||700;
+  bw=Math.max(8,Math.round(W/4));bh=Math.max(8,Math.round(H/4));
+  b1=new Float32Array(bw*bh);b2=new Float32Array(bw*bh);
+  scratch=document.createElement('canvas');scratch.width=bw;scratch.height=bh;sctx=scratch.getContext('2d');
+  imgData=new ImageData(bw,bh);
+  const bg=document.createElement('canvas');bg.width=bw;bg.height=bh;
+  const bc=bg.getContext('2d');
+  const g=bc.createLinearGradient(0,0,0,bh);g.addColorStop(0,'#0e1a22');g.addColorStop(1,'#0a141a');
+  bc.fillStyle=g;bc.fillRect(0,0,bw,bh);
+  const rg=bc.createRadialGradient(bw/2,bh*0.62,2,bw/2,bh*0.62,Math.max(bw,bh)*0.6);
+  rg.addColorStop(0,'rgba(143,182,201,.2)');rg.addColorStop(1,'rgba(143,182,201,0)');
+  bc.fillStyle=rg;bc.fillRect(0,0,bw,bh);
+  bc.save();bc.translate(bw/2,bh*0.62);bc.scale(1,0.42);
+  const eg=bc.createRadialGradient(0,0,2,0,0,bw*0.3);
+  eg.addColorStop(0,'rgba(143,182,201,.16)');eg.addColorStop(1,'rgba(143,182,201,0)');
+  bc.fillStyle=eg;bc.beginPath();bc.arc(0,0,bw*0.3,0,6.3);bc.fill();bc.restore();
+  bgData=bc.getImageData(0,0,bw,bh);
  };
- const frame=now=>{if(!run||!el.isConnected){run=false;return;}paint(now);raf=requestAnimationFrame(frame);};
- if(RM){paint(performance.now());drop(W/2,H*0.62);paint(performance.now()+900);}
- else{raf=requestAnimationFrame(frame);drop(W/2,H*0.62);autoT=setInterval(()=>{if(run&&el.isConnected)drop(W/2,H*0.62);else clearInterval(autoT);},2400);}
+ size();
+ const press=(x,y)=>{
+  const bx=Math.round(x/4),by=Math.round(y/4);
+  for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){
+   const d=Math.sqrt(dx*dx+dy*dy);if(d>3.5)continue;
+   const px=bx+dx,py=by+dy;
+   if(px<1||py<1||px>=bw-1||py>=bh-1)continue;
+   b1[py*bw+px]+=-600*(1-d/3.5);
+  }
+  if(!RM)rock.animate([{transform:'translateX(0)'},{transform:'translateX(3px)'},{transform:'translateX(-3px)'},{transform:'translateX(0)'}],{duration:500,easing:'ease'});
+ };
+ el.addEventListener('touchstart',e=>{const rc=el.getBoundingClientRect();press(e.touches[0].clientX-rc.left,e.touches[0].clientY-rc.top);},{passive:true});
+ const step=()=>{
+  for(let y=1;y<bh-1;y++){const row=y*bw;
+   for(let x=1;x<bw-1;x++){const i=row+x;
+    b2[i]=((b1[i-1]+b1[i+1]+b1[i-bw]+b1[i+bw])/2-b2[i])*0.985;
+   }}
+  const t=b1;b1=b2;b2=t;
+ };
+ const render=()=>{
+  step();
+  const od=imgData.data,bd=bgData.data;
+  for(let y=1;y<bh-1;y++)for(let x=1;x<bw-1;x++){
+   const i=y*bw+x;
+   const gx=b1[i+1]-b1[i-1],gy=b1[i+bw]-b1[i-bw];
+   let sx=Math.round(x-gx*0.35),sy=Math.round(y-gy*0.35);
+   if(sx<0)sx=0;else if(sx>=bw)sx=bw-1;
+   if(sy<0)sy=0;else if(sy>=bh)sy=bh-1;
+   const si=(sy*bw+sx)*4,di=i*4;
+   od[di]=bd[si];od[di+1]=bd[si+1];od[di+2]=bd[si+2];od[di+3]=255;
+   const hl=Math.abs(gx)>Math.abs(gy)?Math.abs(gx):Math.abs(gy);
+   if(hl>60){
+    const k=Math.min(0.14,0.08+(hl-60)/600*0.14);
+    od[di]+=(255-od[di])*k;od[di+1]+=(255-od[di+1])*k;od[di+2]+=(255-od[di+2])*k;
+   }
+  }
+  sctx.putImageData(imgData,0,0);
+  ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(scratch,0,0,W,H);
+ };
+ const frame=now=>{if(!run||!el.isConnected){run=false;return;}if(now-lastF>=33){lastF=now;render();}raf=requestAnimationFrame(frame);};
+ if(RM){press(W/2,H*0.62);step();step();render();}
+ else{raf=requestAnimationFrame(frame);press(W/2,H*0.62);autoT=setInterval(()=>{if(run&&el.isConnected)press(W/2,H*0.62);else clearInterval(autoT);},2400);}
  return {el,done(fade){run=false;cancelAnimationFrame(raf);clearInterval(autoT);if(fade===false)return;el.style.transition='opacity .4s';el.style.opacity='0';setTimeout(()=>el.remove(),400);}};
 }
 /* ===== 右滑返回上一层（全站约定：dx>60、|dy|<40、横向主导1.5倍；触发即走不跟手） ===== */
