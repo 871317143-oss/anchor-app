@@ -194,6 +194,8 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 .mrow b{font-weight:600}
 .dimrow{margin:12px 18px 4px;padding:11px 14px;border:1px dashed rgba(143,182,201,.3);border-radius:14px;font-size:11px;color:var(--ink3);text-align:center}
 .usec{font-size:11px;color:var(--ink3);padding:12px 18px 6px;letter-spacing:.1em}
+.usec.big{font-size:13px;color:var(--ink);font-weight:600;letter-spacing:.06em;padding:20px 18px 8px}
+.usec.big:first-child{padding-top:12px}
 .pacts{padding:12px 18px 0}
 .pacts .pk{font-size:11px;color:var(--ink3);padding-bottom:8px}
 .pchips{display:flex;gap:7px;flex-wrap:wrap}
@@ -219,7 +221,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 <div id="phone">
  <div id="amb"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="cau c1"></div><div class="cau c2"></div></div>
  <div id="noise"></div>
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.6.0</b> · 梦华录</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v5.6.1</b> · 梦华录</span></div>
  <div id="vfly"><div class="vwin"><video id="vv" playsinline muted loop preload="auto"></video><div class="dur" id="vdur"></div></div></div>
  <div id="stage">
   <div class="hello"><span class="hi">Hello,</span><div class="av" id="hAv">?</div><span class="nm" id="hNm"></span></div>
@@ -679,20 +681,20 @@ function postSuggest(note,done){
 function renderApply(body){
  const days=[];for(let i=0;i<7;i++)days.push(new Date(Date.now()+8*3600e3+i*86400e3).toISOString().slice(0,10));
  body.innerHTML=
- `<div class="usec">申请休息</div>
+ `<div class="usec big">申请休息</div>
   <div class="usec">日期 · 今起 7 天</div>
   <div class="xchips" id="restDays">${days.map((d,i)=>`<span class="chip${i===1?' on':''}" data-v="${d}">${i===0?'今天':i===1?'明天':d.slice(5)}</span>`).join('')}</div>
   <div class="usec">类型</div>
   <div class="xchips" id="restTypes">${REST_TYPES.map(([n,v],i)=>`<span class="chip${i===0?' on':''}" data-v="${v}">${n}</span>`).join('')}</div>
   <div class="pnote"><div class="pk">原因（必填，无卡必审）</div><textarea id="restWhy" rows="2" placeholder="说清楚点，运营审批会看"></textarea></div>
   <div class="pnote"><div class="psub" id="restGo">提交申请</div></div>
-  <div class="usec">意向老师 · 化妆师优先级</div>
+  <div class="usec big">意向老师 · 化妆师优先级</div>
   <div class="usec">第一意向</div>
   <div class="xchips" id="pref1s">${MU_TEACHERS.map(t=>`<span class="chip" data-v="${t}">${t}</span>`).join('')}</div>
   <div class="usec">第二意向</div>
   <div class="xchips" id="pref2s">${MU_TEACHERS.map(t=>`<span class="chip" data-v="${t}">${t}</span>`).join('')}</div>
   <div class="pnote"><div class="psub" id="prefGo">保存意向</div></div>
-  <div class="usec">投诉与建议</div>
+  <div class="usec big">投诉与建议</div>
   <div class="pnote"><div class="pk">写给运营</div><textarea id="sugTxt" rows="3" placeholder="直达运营，不转述"></textarea></div>
   <div class="pnote"><div class="psub" id="sugGo">直达运营</div></div>
   <div class="dimrow">提交即待审批 · 意向优先于固定师承</div>`;
