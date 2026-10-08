@@ -1138,9 +1138,14 @@ function showLogin(err){
 function track(ev,meta){try{const b=JSON.stringify({token:storedToken(),ev:ev,meta:meta||''});
  if(navigator.sendBeacon&&navigator.sendBeacon('https://fb.menghualu.com.co/api/track',new Blob([b],{type:'application/json'})))return;
  fetch('https://fb.menghualu.com.co/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:b}).catch(()=>{});}catch(e){}}
+/* wo-24a 错误自动上报：去重节流（同 meta 10 分钟只报一次），上报自身抛错静默 */
+const _errSeen=new Map();
+function reportErr(m){try{m=String(m||'').slice(0,180);const n=Date.now();if(_errSeen.has(m)&&n-_errSeen.get(m)<600000)return;_errSeen.set(m,n);track('js_error',m);}catch(e){}}
+window.addEventListener('error',e=>{try{reportErr((e.message||'err')+'@'+String(e.filename||'').split('/').pop()+':'+(e.lineno||0));}catch(_){}});
+window.addEventListener('unhandledrejection',e=>{try{reportErr('rej:'+String((e.reason&&e.reason.message)||e.reason||'').slice(0,150));}catch(_){}});
 function loadData(tok){
  fetch(`data/${tok}.json`).then(r=>{if(!r.ok)throw 0;_dataMod=r.headers.get('Last-Modified')||'';return r.json();}).then(d=>{DATA=d;
-  document.title='画像·'+d.anchor.name;root.insertAdjacentHTML('afterend',TABBAR+BELLF);render();loadLiveFollow();loadD1Notifs();loadMakeup();track('open');})
+  document.title='画像·'+d.anchor.name;root.insertAdjacentHTML('afterend',TABBAR+BELLF);render();loadLiveFollow();loadD1Notifs();loadMakeup();track('open',APP_VERSION);})
  .catch(()=>{localStorage.removeItem('anchor_token');
    showLogin('访问码无效或已失效，请重新输入或找运营补发');});
  setupSW();}
