@@ -314,21 +314,22 @@ function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity='1';clearT
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const qs=new URLSearchParams(location.search),TOK=qs.get('t')||'';
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v6.5.2';
+const VER='v6.6.0';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
 /* ===== 水波场景加载（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ===== */
 function waterScene(mount){
  const el=document.createElement('div');el.className='wscene';
+ let ifr=null;
  if(RM){
   el.innerHTML=`<div class="wrm"><img src="assets/logo-mark.png" alt="梦华录"><div>加载中</div></div>`;
  }else{
-  const ifr=document.createElement('iframe');
+  ifr=document.createElement('iframe');
   ifr.src='assets/water.html';
   ifr.setAttribute('allowtransparency','true');
   el.appendChild(ifr);
  }
  mount.appendChild(el);
- return {el,done(fade){if(fade===false){return;}el.style.transition='opacity .4s';el.style.opacity='0';setTimeout(()=>el.remove(),400);}};
+ return {el,ifr,done(fade){if(fade===false){return;}el.style.transition='opacity .4s';el.style.opacity='0';setTimeout(()=>el.remove(),400);}};
 }
 /* ===== 右滑返回上一层（全站约定：dx>60、|dy|<40、横向主导1.5倍；触发即走不跟手） ===== */
 function bindSwipeBack(el,onBack,allow){
@@ -370,7 +371,25 @@ async function boot(){
  const vv=$('#vv');
  const ready=new Promise(res=>{let done=false;const ok=()=>{if(!done){done=true;res();}};vv.addEventListener('loadeddata',ok,{once:true});setTimeout(ok,RM?300:2400);});
  await ready;
- $('#loader').classList.add('done');$('#vfly').classList.add('enter');$('#stage').classList.add('enter');setTimeout(()=>{const l=$('#loader');if(l)l.remove();_wl0.done(false);},RM?60:500);
+ /* ===== 进场闸门：加载完成 → 状态行改写进场提示 → 点按水面进主场（RM 直进） ===== */
+ let entered=false;
+ const enterStage=()=>{if(entered)return;entered=true;
+  $('#loader').classList.add('done');$('#vfly').classList.add('enter');$('#stage').classList.add('enter');
+  setTimeout(()=>{const l=$('#loader');if(l)l.remove();_wl0.done(false);},RM?60:500);};
+ if(RM){enterStage();return;}
+ const setGate=()=>{try{const d=_wl0.ifr&&_wl0.ifr.contentDocument;if(!d)return false;
+  const st=d.querySelector('#status-text');if(!st)return false;
+  if(st.textContent!=='加载完成，点击进入')st.textContent='加载完成，点击进入';
+  const dd=d.querySelector('#status .dots');if(dd)dd.textContent='';
+  const se=d.querySelector('#status');if(se)se.classList.remove('gone');
+  return true;}catch(e){return false;}};
+ /* 轮询断言闸门文案：水面自身 700ms 会写「轻触水面」，须压过它直到进场 */
+ const gateTimer=setInterval(()=>{if(entered){clearInterval(gateTimer);return;}setGate();},400);
+ setGate();
+ /* 点按进场：iframe 吞触摸事件，须进同源 document 里听；loader 自身兜底（iframe 加载失败时） */
+ const armTap=()=>{try{_wl0.ifr.contentDocument.addEventListener('pointerdown',enterStage);return true;}catch(e){return false;}};
+ if(!armTap()){const t2=setInterval(()=>{if(entered||armTap())clearInterval(t2);},300);}
+ $('#loader').addEventListener('pointerdown',enterStage);
 }
 /* ===== 戏台轮播：多片 hold 轮转 + 0.6s 淡切（单片静默，不挂定时器） ===== */
 function applyVid(i){
