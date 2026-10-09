@@ -208,7 +208,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="phone">
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.5.1</b> · 运营工作台</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.5.2</b> · 运营工作台</span></div>
  <div id="wmain" style="display:none">
   <div id="wbody"></div>
   <div id="wnav"><span data-v="ov" class="on">总览</span><span data-v="anchors">主播</span><span data-v="plan">规划</span><span data-v="appr">审批</span><span data-v="me">我的</span></div>
@@ -918,16 +918,17 @@ const ROLE_ICO={运镜:'🎬',灯光:'💡',舞蹈:'💃',主持:'🎤',其他:'
 const TYPE_CLR={直播:'#d9704f',舞蹈:'#c97fa8',会议:'#7d9fc4',其他:'#6b7f84'};
 const PLAN_TYPES=['直播','舞蹈','会议','其他'];
 const PLAY_CHIPS=['起流','人气王','连败王','复盘'];
-let PLAN={date:'',tid:'all',rows:null,staff:[],venues:[],edit:null};
+let PLAN={date:'',tid:'',rows:null,staff:[],venues:[],edit:null};
 function planDay(off){return new Date(Date.now()+8*3600e3+off*86400e3).toISOString().slice(0,10);}
 async function renderPlan(){
  if(!PLAN.date)PLAN.date=planDay(1); /* 默认明天 */
+ if(!PLAN.tid)PLAN.tid=(TEAMS[0]||{}).tid||'all'; /* 默认第一个团（老板：混团不清晰），「全部」可点=按团分区 */
  const w=$('#wbody');
  const canWrite=TEAMS.length>0;
  const multiTeam=TEAMS.length>1||COMPANY;
  w.innerHTML=`<div class="planTop"><span class="pt">规划 · 排期</span><div class="planAdd" id="planAdd">+</div></div>
  <div class="dchips" id="planDays"><span class="chip" data-d="${planDay(0)}">今天</span><span class="chip on" data-d="${planDay(1)}">明天</span><span class="chip" data-d="${planDay(2)}">后天</span><span class="chip" id="planPick">📅 选日</span><input type="date" id="planDateIn"></div>
- ${multiTeam?`<div class="dchips" id="planTeams"><span class="chip on" data-t="all">全部</span>${TEAMS.map(t=>`<span class="chip" data-t="${t.tid}">${esc(t.name)}</span>`).join('')}</div>`:''}
+ ${multiTeam?`<div class="dchips" id="planTeams">${TEAMS.map(t=>`<span class="chip${PLAN.tid===t.tid?' on':''}" data-t="${t.tid}">${esc(TID_NAME[t.tid]||t.name)}</span>`).join('')}<span class="chip${PLAN.tid==='all'?' on':''}" data-t="all">全部</span></div>`:''}
  <div id="planList"><div class="sk">…</div><div class="sk">…</div></div>`;
  $('#planAdd').onclick=()=>openPlanSheet(null);
  document.querySelectorAll('#planDays .chip[data-d]').forEach(c=>c.onclick=()=>{
@@ -956,7 +957,13 @@ async function loadPlan(){
  let rows=PLAN.rows.filter(r=>r.date===PLAN.date);
  if(PLAN.tid!=='all')rows=rows.filter(r=>r.tid===PLAN.tid);
  rows.sort((a,b)=>String(a.start).localeCompare(String(b.start)));
- box.innerHTML=rows.length?rows.map(planCard).join(''):emptyState('暂无安排','点右上角 + 排第一条');
+ let html;
+ if(PLAN.tid==='all'){ /* 全部视图按团分区，不再混排 */
+  const byT={};rows.forEach(r=>{const k=r.tid||'';(byT[k]=byT[k]||[]).push(r)});
+  const ord=TEAMS.map(t=>t.tid);
+  html=Object.keys(byT).sort((a,b)=>ord.indexOf(a)-ord.indexOf(b)).map(tid=>`<div class="usec">${esc(TID_NAME[tid]||'未分团')} · ${byT[tid].length}</div>`+byT[tid].map(planCard).join('')).join('');
+ }else html=rows.map(planCard).join('');
+ box.innerHTML=rows.length?html:emptyState('暂无安排','点右上角 + 排第一条');
  box.querySelectorAll('.planCard').forEach(c=>c.onclick=()=>{
   const r=rows.find(x=>x.id===c.dataset.id);if(r)openPlanSheet(r);
  });
@@ -993,10 +1000,9 @@ function openPlanSheet(row){
  const multiTeam=TEAMS.length>1||COMPANY;
  el.innerHTML=`<div class="psh"><div class="xback" id="psX">✕</div><div class="pst">${edit?'编辑安排':'新建安排'}</div><span style="width:32px"></span></div>
  <div class="psb">
-  <div class="flb">团</div><div class="dchips" id="psTeams">${TEAMS.map(t=>`<span class="chip${t.tid===st.tid?' on':''}" data-v="${t.tid}">${esc(t.name)}</span>`).join('')}</div>
+  <div class="flb">团</div><div class="dchips" id="psTeams">${TEAMS.map(t=>`<span class="chip${t.tid===st.tid?' on':''}" data-v="${t.tid}">${esc(TID_NAME[t.tid]||t.name)}</span>`).join('')}</div>
   <div class="flb">类型</div><div class="dchips" id="psType">${PLAN_TYPES.map(t=>`<span class="chip${t===st.type?' on':''}" data-v="${t}">${t}</span>`).join('')}</div>
-  <div class="flb">日期</div><div class="dchips" id="psDays"><span class="chip${st.date===planDay(0)?' on':''}" data-v="${planDay(0)}">今天</span><span class="chip${st.date===planDay(1)?' on':''}" data-v="${planDay(1)}">明天</span><span class="chip${st.date===planDay(2)?' on':''}" data-v="${planDay(2)}">后天</span><input type="date" id="psDate" value="${st.date}"></div>
-  <div class="flb">开始 / 结束(任意分钟)</div><div class="timeRow"><input type="time" id="psStart" value="${st.start}"><input type="time" id="psEnd" value="${st.end}"></div>
+  <div class="flb">日期 · 开始 · 结束（任意分钟）</div><div class="timeRow"><input type="date" id="psDate" value="${st.date}" style="flex:1.5"><input type="time" id="psStart" value="${st.start}"><input type="time" id="psEnd" value="${st.end}"></div>
   <div class="flb">人员(按类型出名单)</div><div class="dchips" id="psStaff"></div>
   <div class="dchips" style="padding-top:0"><input id="psTemp" placeholder="临时加人(逗号分隔)" style="flex:1;border-radius:12px;border:1px solid var(--gbrd);background:rgba(255,255,255,.06);color:var(--ink);font-family:inherit;font-size:13px;padding:9px 12px;outline:0"></div>
   <div class="flb">场地</div><div class="dchips" id="psVenue"></div>
@@ -1016,8 +1022,7 @@ function openPlanSheet(row){
  });};
  bindChips('#psTeams',()=>{st.tid=el.querySelector('#psTeams .chip.on').dataset.v;});
  bindChips('#psType',()=>{st.type=el.querySelector('#psType .chip.on').dataset.v;paintStaff();el.querySelector('#psPlay').style.display=st.type==='直播'?'':'none';el.querySelector('#psNote').placeholder=st.type==='直播'?'玩法:起流/人气王/连败王/复盘':'备注';});
- bindChips('#psDays',()=>{st.date=el.querySelector('#psDays .chip.on').dataset.v;});
- el.querySelector('#psDate').onchange=e=>{if(e.target.value){st.date=e.target.value;el.querySelectorAll('#psDays .chip').forEach(x=>x.classList.remove('on'));}};
+ el.querySelector('#psDate').onchange=e=>{if(e.target.value)st.date=e.target.value;};
  el.querySelector('#psPlay')&&el.querySelectorAll('#psPlay .chip').forEach(c=>c.onclick=()=>{const n=el.querySelector('#psNote');n.value=(n.value?n.value+' ':'')+c.dataset.v;});
  function paintStaff(){
   const roles=st.type==='直播'?['运镜','灯光']:st.type==='舞蹈'?['舞蹈']:null;
