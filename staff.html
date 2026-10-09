@@ -199,7 +199,7 @@ function planCardR(r){
 }
 /* ===== 填报弹层(全屏 sheet,右滑返回) ===== */
 const GROUPS=['企宣组','运镜组','舞美组','教培组','化妆组','服搭组','多组共同','不是职能问题'];
-const REASONS=['人手不足','人员迟到','物料进场延迟','设备故障','方案变更','工作量预估不足','场地限制','外部因素','临时加需求','其他'];
+const REASONS=['准时/无偏差','人手不足','人员迟到','物料进场延迟','设备故障','方案变更','工作量预估不足','场地限制','外部因素','临时加需求','其他']; /* 与真库 11 选项一致（wo-33a⑦） */
 function openDevSheet(r){
  if($('#dvSheet'))return;
  const el=document.createElement('div');el.id='dvSheet';
@@ -223,9 +223,9 @@ function openDevSheet(r){
  bindSingle('#dvGroup',v=>st.group=v);
  bindSingle('#dvReason',v=>st.reason=v);
  $('#dvQuick').onclick=()=>{
-  st.reason='其他';
-  el.querySelectorAll('#dvReason .chip').forEach(x=>x.classList.toggle('on',x.dataset.v==='其他'));
-  el.querySelector('#dvNote').value='准时';
+  st.reason='准时/无偏差';
+  el.querySelectorAll('#dvReason .chip').forEach(x=>x.classList.toggle('on',x.dataset.v==='准时/无偏差'));
+  el.querySelector('#dvNote').value='';
   toast('已按「准时完成」预填,直接提交');
  };
  $('#dvGo').onclick=async()=>{

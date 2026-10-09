@@ -208,7 +208,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="phone">
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.5.2</b> · 运营工作台</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.5.3</b> · 运营工作台</span></div>
  <div id="wmain" style="display:none">
   <div id="wbody"></div>
   <div id="wnav"><span data-v="ov" class="on">总览</span><span data-v="anchors">主播</span><span data-v="plan">规划</span><span data-v="appr">审批</span><span data-v="me">我的</span></div>
@@ -415,6 +415,14 @@ const API={
   /* 契约:POST /api/ops/staff {token} → {ok,staff:[{name,role}],anchors:[...],venues:[...]} 人员名单以 Notion 人员档案库为准 */
   if(USE_MOCK)return MOCK.staff;
   const d=await apiPost('/api/ops/staff',{token:tok});
+  return d.ok?d:{ok:false};
+ },
+ async deviations(tok,date){
+  /* 契约:POST /api/ops/deviations {token,date} → {ok,rows:[{title,group,reason,work,ts}]}（wo-33a 已交付；接口异常静默不显条） */
+  if(USE_MOCK)return MOCK.deviations;
+  const d=await apiPost('/api/ops/deviations',{token:tok,date});
+  /* 真接口返今日全部行（含预建未提交）——提示条只认已提交 */
+  if(d.ok)d.rows=(d.rows||[]).filter(r=>r.status==='已提交');
   return d.ok?d:{ok:false};
  }
 };
@@ -830,7 +838,7 @@ function renderMe(){
  <div class="sub">名下 ${TEAMS.length} 团:${TEAMS.map(t=>esc(t.name)).join('/')||'—'}${ROLE?` · ${ROLE_LABEL[ROLE]||ROLE}`:''}</div></div></div>
  <div class="meRow" id="meMsg">通知中心<span class="r">›</span></div>
  <div class="meRow" id="meCal">活动日历<span class="r">›</span></div>
- <div class="verLine">v0.5.0 · 运营工作台</div>
+ <div class="verLine">v0.5.3 · 运营工作台</div>
  <div id="meOut">退出切换账号</div>`;
  $('#meOut').onclick=()=>{localStorage.removeItem('wb_tok');TOK='';location.reload();};
  $('#meMsg').onclick=()=>openMsgCenter();
@@ -927,6 +935,7 @@ async function renderPlan(){
  const canWrite=TEAMS.length>0;
  const multiTeam=TEAMS.length>1||COMPANY;
  w.innerHTML=`<div class="planTop"><span class="pt">规划 · 排期</span><div class="planAdd" id="planAdd">+</div></div>
+ <div id="devBar"></div>
  <div class="dchips" id="planDays"><span class="chip" data-d="${planDay(0)}">今天</span><span class="chip on" data-d="${planDay(1)}">明天</span><span class="chip" data-d="${planDay(2)}">后天</span><span class="chip" id="planPick">📅 选日</span><input type="date" id="planDateIn"></div>
  ${multiTeam?`<div class="dchips" id="planTeams">${TEAMS.map(t=>`<span class="chip${PLAN.tid===t.tid?' on':''}" data-t="${t.tid}">${esc(TID_NAME[t.tid]||t.name)}</span>`).join('')}<span class="chip${PLAN.tid==='all'?' on':''}" data-t="all">全部</span></div>`:''}
  <div id="planList"><div class="sk">…</div><div class="sk">…</div></div>`;
@@ -948,6 +957,25 @@ async function renderPlan(){
  });
  if(!PLAN.staff.length){API.staff(TOK).then(d=>{if(d&&d.ok){PLAN.staff=d.staff||[];PLAN.venues=d.venues||[];}}).catch(()=>{});}
  loadPlan();
+ loadDevBar();
+}
+/* v0.5.3 偏差提示条（wo-33a 已交付；只统计已提交，预建未提交行不算偏差） */
+async function loadDevBar(){
+ const bar=$('#devBar');if(!bar)return;
+ let d=null;try{d=await API.deviations(TOK,planDay(0));}catch(e){}
+ if(!d||!d.ok||!(d.rows||[]).length){bar.innerHTML='';return;}
+ const rows=d.rows;
+ bar.innerHTML=`<div class="confWarn" style="margin:8px 16px 0;cursor:pointer" id="devBarIn">⚠️ 今日 ${rows.length} 条偏差已报</div>`;
+ $('#devBarIn').onclick=()=>{
+  const dim=document.createElement('div');dim.id='cfmDim';
+  const cf=document.createElement('div');cf.id='cfm';
+  cf.innerHTML=`<div class="ct">今日偏差 ${rows.length} 条</div><div class="cs" style="max-height:50vh;overflow-y:auto">${rows.map(r=>
+   `<div style="padding:8px 0;border-bottom:1px dashed rgba(255,255,255,.08)"><b>${esc(r.title||'')}</b><br>${esc(r.group||'')} · ${esc(r.reason||'')}<br><span style="color:var(--ink3)">${esc(r.work||'')} · ${esc(r.ts||'')}</span></div>`).join('')}</div>
+  <div class="cb"><span class="ok" style="flex:1">知道了</span></div>`;
+  $('#phone').appendChild(dim);$('#phone').appendChild(cf);
+  const off=()=>{dim.remove();cf.remove();};
+  dim.onclick=off;cf.querySelector('.ok').onclick=off;
+ };
 }
 async function loadPlan(){
  const box=$('#planList');if(!box)return;
@@ -1192,6 +1220,8 @@ const MOCK={
   {id:'pl6',date:dayAgo(-1),tid:'xy',type:'直播',start:'21:00',end:'23:59',staff:[{name:'老周',role:'运镜'}],venue:'棚C',note:'人气王'},
  ]},
  staff:{ok:true,staff:[{name:'阿豪',role:'运镜'},{name:'老白',role:'灯光'},{name:'小也',role:'舞蹈'},{name:'娜娜',role:'舞蹈'},{name:'阿灿',role:'主持'},{name:'小K',role:'运镜'},{name:'老M',role:'灯光'}],venues:['棚A','棚B','棚C','会议室']},
+ /* v0.5.3 mock:今日偏差 2 条(真接口 0 条不显条) */
+ deviations:{ok:true,rows:[{title:'💃 10/10 • 梦华录·水月',group:'教培组',reason:'人员迟到',work:'实际 19:20 开始，晚了 20 分钟',ts:'22:41'},{title:'💃 10/10 • 梦华录·水月(加练)',group:'舞美组',reason:'物料进场延迟',work:'灯架 21:40 才到',ts:'23:05'}]},
  evidence:{ok:true,
   subs:[{kind:'日常维护',anchor_name:'小鱼',created_at:dayAgo(1)+' 22:10'},{kind:'已私信',anchor_name:'小鱼',created_at:dayAgo(2)+' 21:40'},{kind:'日常维护',anchor_name:'小鱼',created_at:dayAgo(3)+' 23:05'},{kind:'已拉群',anchor_name:'小鱼',created_at:dayAgo(5)+' 20:11'},{kind:'日常维护',anchor_name:'小鱼',created_at:dayAgo(6)+' 22:30'}],
   msgs:[{msg_ts:dayAgo(1)+' 21:00',role:'user',kind:'image',excerpt:'[截图]'},{msg_ts:dayAgo(2)+' 20:00',role:'anchor',kind:'image',excerpt:'[截图]'},{msg_ts:dayAgo(3)+' 19:00',role:'user',kind:'text',excerpt:'好的'}]},
