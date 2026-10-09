@@ -44,8 +44,6 @@
   .g-sheen{position:fixed;inset:0;z-index:4;pointer-events:none;mix-blend-mode:screen;opacity:.5;
     background:linear-gradient(118deg,rgba(143,182,201,.08) 0%,rgba(143,182,201,.025) 22%,rgba(143,182,201,0) 40%)}
 
-  /* —— 蝴蝶（玻璃内侧，雾之下；擦雾不掉，雾散更清晰）—— */
-  #butterfly{position:fixed;inset:0;width:100%;height:100%;z-index:7;display:block;pointer-events:none;filter:hue-rotate(-13deg) saturate(.82) brightness(.96)}
 
   /* —— 玻璃表面的凝雾（可擦除；含静态小珠与持久水痕）—— */
   #fog{position:fixed;inset:0;width:100%;height:100%;z-index:8;display:block;touch-action:none}
@@ -89,15 +87,12 @@
 <div class="g-depth"></div>
 <div class="g-sheen"></div>
 <canvas id="glowdust"></canvas>
-<canvas id="butterfly"></canvas>
 <canvas id="fog"></canvas>
 <canvas id="beads"></canvas>
 <button id="refog" aria-label="重新起雾" title="重新起雾">
   <svg viewBox="0 0 24 24"><path d="M5 19a2 2 0 0 1-.9-3.8 4 4 0 0 1 7.6-1.3A3.5 3.5 0 0 1 18 17.5"/><path d="M3.5 13.5h.01M7 9l.6-1M16 12l.7-1.2M19 15.5l.8-.9"/></svg>
 </button>
 <div id="status"><span id="status-text">加载中</span><span class="dots">..</span></div>
-
-
 <script>
 (function(){
 'use strict';
@@ -110,8 +105,6 @@ var LOGO_SRC="water/logo.png";
 
 var waterCv=document.getElementById('water');
 var ctx=waterCv.getContext('2d');
-var bfCv=document.getElementById('butterfly');
-var bctx=bfCv.getContext('2d');
 var fogCv=document.getElementById('fog');
 var fog=fogCv.getContext('2d');
 var beadsCv=document.getElementById('beads');
@@ -134,7 +127,7 @@ function gauss(){var u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();
 var W=0,H=0,SW=0,SH=0;
 var h1=null,h2=null;
 var DAMP=0.9855,STEP=1/30;
-var REFRACT=2.2,LIGHT=11;
+var REFRACT=2.7,LIGHT=8;
 var swT=0,stepAcc=0,logoReady=false,loaded=false;
 
 /* ============ 高分辨率场景/渲染层（消除 LOGO 锯齿） ============ */
@@ -215,7 +208,7 @@ function computeField(){
 }
 function renderWater(){
   computeField();
-  var GAIN=96,CAP=72;
+  var GAIN=48,CAP=42;
   var dst=outImg.data,src=sceneData.data;
   var fx2=SW/RW,fy2=SH/RH;
   for(var py=0;py<RH;py++){
@@ -278,7 +271,7 @@ function rhythm(dt){
   rainT-=dt;
   if(rainT<=0){rainT=R(.55,1.7);spawnDrop(R(.8,1.5));if(Math.random()<.26)spawnDrop(R(.5,.9))}
   ambT-=dt;
-  if(ambT<=0){ambT=R(2.5,5.5);poke(R(2,SW-2),R(2,SH-2),R(.25,.55),3)}
+  if(ambT<=0){ambT=R(2.5,5.5);poke(R(2,SW-2),R(2,SH-2),R(.12,.28),3)}
 }
 function spawnDrop(str){
   var sx=R(2,SW-2),sy=R(2,SH-2),px=sx/SW*W,py=sy/SH*SH;
@@ -312,49 +305,6 @@ function updateDrops(dt){
   }
 }
 
-/* ============ 蝴蝶（玻璃内侧，原版 bg-canvas 抠图 sprite；雾之下，擦雾不掉） ============ */
-var BF_SRCS={
-  A:"water/bf-A.png",
-  F:"water/bf-F.png",
-  D:"water/bf-D.png"
-};
-var BF_IMG={};
-(function(){
-  for(var k in BF_SRCS){var im=new Image();im.onload=function(){drawButterflies()};im.src=BF_SRCS[k];BF_IMG[k]=im}
-})();
-/* 竖屏布局：sp=sprite, x/y=中心相对比例, w=显示宽(px), rot=弧度, flip=镜像 */
-var BF_LAYOUT=[
-  {sp:'A',x:.20,y:.81,w:80,rot:-.12,flip:1},
-  {sp:'A',x:.81,y:.15,w:66,rot:.14},
-  {sp:'F',x:.86,y:.73,w:48,rot:.10},
-  {sp:'F',x:.15,y:.27,w:44,rot:-.16,flip:1},
-  {sp:'D',x:.75,y:.40,w:60,rot:.08},
-  {sp:'D',x:.25,y:.57,w:55,rot:-.10,flip:1}
-];
-var butterflies=[];
-function genButterflies(){
-  butterflies=[];
-  for(var i=0;i<BF_LAYOUT.length;i++){
-    var L=BF_LAYOUT[i];
-    butterflies.push({sp:L.sp,x:L.x*W,y:L.y*H,w:L.w,rot:L.rot,flip:L.flip?-1:1});
-  }
-  drawButterflies();
-}
-function updateButterflies(dt){ /* 栖息蝴蝶保持静止，不逐帧重绘（省电） */ }
-function drawButterflies(){
-  bctx.setTransform(dpr,0,0,dpr,0,0);
-  bctx.globalCompositeOperation='source-over';
-  bctx.clearRect(0,0,W,H);
-  for(var i=0;i<butterflies.length;i++){
-    var b=butterflies[i],im=BF_IMG[b.sp];
-    if(!im||!im.complete||im.naturalWidth===0)continue;
-    var sc=b.w/im.naturalWidth,dw=im.naturalWidth*sc,dh=im.naturalHeight*sc;
-    bctx.save();
-    bctx.translate(b.x,b.y);bctx.rotate(b.rot);bctx.scale(b.flip,1);
-    bctx.drawImage(im,-dw/2,-dh/2,dw,dh);
-    bctx.restore();
-  }
-}
 /* ============ 凝雾 + 静态小珠 ============ */
 var WIPE_R=24;
 var softEraser=document.createElement('canvas');
@@ -377,6 +327,19 @@ wetSheen.width=wetSheen.height=96;
   g.addColorStop(0,'rgba(150,192,208,.06)');
   g.addColorStop(.5,'rgba(130,168,186,.03)');
   g.addColorStop(1,'rgba(110,145,162,0)');
+  c.fillStyle=g;c.fillRect(0,0,96,96);
+})();
+/* 连续湿膜笔刷（平顶软边、低 alpha）：沿擦痕路径密集盖印，叠加后形成均匀亮带，
+   不逐段 stroke，避免 round 圆头在转弯/快速拖动时暴露成「圆盘/鳞片」断层 */
+var wetBrush=document.createElement('canvas');
+wetBrush.width=wetBrush.height=96;
+(function(){
+  var c=wetBrush.getContext('2d');
+  var g=c.createRadialGradient(48,48,0,48,48,48);
+  g.addColorStop(0,'rgba(150,192,208,.07)');
+  g.addColorStop(.55,'rgba(150,192,208,.07)');
+  g.addColorStop(.8,'rgba(140,180,200,.022)');
+  g.addColorStop(1,'rgba(140,180,200,0)');
   c.fillStyle=g;c.fillRect(0,0,96,96);
 })();
 var beadsSmall=[];
@@ -460,7 +423,7 @@ function paintFog(){
   fog.setTransform(dpr,0,0,dpr,0,0);
   fog.globalCompositeOperation='source-over';
   fog.clearRect(0,0,W,H);
-  fog.fillStyle='rgba(143,182,201,.11)';fog.fillRect(0,0,W,H);          /* 青黛薄雾（白度克制，擦前擦后明度差小）*/
+  fog.fillStyle='rgba(143,182,201,.16)';fog.fillRect(0,0,W,H);          /* 青黛薄雾（白度克制，擦前擦后明度差小）*/
   /* 中央天光处擦薄（透出亮） */
   fog.globalCompositeOperation='destination-out';
   var cx=W*.5,cy=H*.285;
@@ -492,9 +455,20 @@ function paintFog(){
    厚雾区几乎不增厚）；手擦区约半分钟才轻微重新凝雾，不影响当下观看 */
 var healAcc=0;
 function healFog(){
-  fog.setTransform(dpr,0,0,dpr,0,0);
-  fog.globalCompositeOperation='source-over';
-  fog.fillStyle='rgba(143,182,201,.016)';fog.fillRect(0,0,W,H);
+  /* 像素级向「初始雾厚度」双向收敛：擦薄区补回、堆厚区削薄，天光区保持更薄；
+     雾有稳定上限，不再随运行时间无限增厚（否则擦痕会因厚雾被擦掉而发暗）*/
+  var Wp=fogCv.width,Hp=fogCv.height;
+  var img=fog.getImageData(0,0,Wp,Hp),d=img.data;
+  var gx=W*.5*dpr,gy=H*.285*dpr,rg=Math.min(W,H)*.40*dpr,k=.06;
+  for(var p=0;p<Wp*Hp;p++){
+    var px=p%Wp,py=(p/Wp)|0;
+    var hx=(px-gx)/rg,hy=(py-gy)/rg,rr=Math.sqrt(hx*hx+hy*hy);
+    var tA=.16;
+    if(rr<1)tA*=.42+.58*rr;                 /* 天光中心更薄 */
+    var idx=p*4,a=d[idx+3];
+    d[idx+3]=a+(tA*255-a)*k;
+  }
+  fog.putImageData(img,0,0);
 }
 
 /* ============ 动态大水滴 ============ */
@@ -509,7 +483,7 @@ function makeDrop(top){
   var p=dropPos();
   var r=R(4.2,8.6);
   var slide=!top&&Math.random()<.5;
-  var d={x:top?R(0,W):p[0],y:top?R(-24,30):p[1],r:top?R(3.6,5.2):r,
+  var d={x:p[0],y:top?R(-.02*H,H*.82):p[1],r:top?R(3.8,6.2):r,
     vy:slide?R(28,60):0,state:top?'idle':(slide?'slide':'idle'),
     idleT:R(0,3),wob:R(0,6.28),pauseT:0,dead:false,
     seed:R(0,6.28),sway:0,swayTarget:0,swayT:0,
@@ -541,10 +515,10 @@ function trailOnFog(x1,y1,x2,y2,r,sway){
     fog.beginPath();fog.moveTo(px,py);fog.lineTo(nx,ny);fog.stroke();
     /* 亮芯（细，湿润反光）*/
     fog.globalCompositeOperation='source-over';
-    fog.strokeStyle='rgba(150,190,207,.14)';fog.lineWidth=Math.max(.5,w*.46);
+    fog.strokeStyle='rgba(150,190,207,.11)';fog.lineWidth=Math.max(.5,w*.46);
     fog.beginPath();fog.moveTo(px-w*.12,py);fog.lineTo(nx-w*.12,ny);fog.stroke();
     /* 串珠：沿途偶尔镶嵌一颗小凝珠 */
-    if(Math.random()<.16){
+    if(Math.random()<.12){
       var br=R(.8,2.1);
       fog.globalCompositeOperation='destination-out';
       fog.fillStyle='rgba(0,0,0,.6)';fog.beginPath();fog.arc(nx,ny,br,0,6.2832);fog.fill();
@@ -694,20 +668,16 @@ function eraseSeg(a,b){
     c.globalCompositeOperation='source-over';
   }
   killDropsSeg(a,b,WIPE_R);
-  /* 湿膜：沿擦痕连续 stroke（每段一次、不逐点叠加），宽柔晕→中亮带→细高光，湿润通透不死黑 */
+  /* 湿膜：与擦除同点、同步距连续盖印平顶亮斑，整条擦痕均匀、边缘羽化，无圆头/断层 */
   fog.setTransform(dpr,0,0,dpr,0,0);fog.globalCompositeOperation='source-over';
-  fog.lineCap='round';fog.lineJoin='round';
-  fog.strokeStyle='rgba(140,180,200,.06)';fog.lineWidth=WIPE_R*2.0;
-  fog.beginPath();fog.moveTo(a.x,a.y);fog.lineTo(b.x,b.y);fog.stroke();
-  fog.strokeStyle='rgba(150,192,208,.12)';fog.lineWidth=WIPE_R*1.25;
-  fog.beginPath();fog.moveTo(a.x,a.y);fog.lineTo(b.x,b.y);fog.stroke();
+  for(var k=0;k<=n;k++){var t=k/n;fog.drawImage(wetBrush,a.x+dx*t-WIPE_R,a.y+dy*t-WIPE_R,WIPE_R*2,WIPE_R*2)}
 }
 beadsCv.addEventListener('pointerdown',function(e){
   if(!loaded)return;
   try{beadsCv.setPointerCapture(e.pointerId)}catch(_){}
   var p=cssPt(e);down[e.pointerId]=true;lastPt[e.pointerId]=p;
   eraseAt(p.x,p.y);
-  var s=simPt(p);poke(s.x,s.y,2.0,2.8);
+  var s=simPt(p);poke(s.x,s.y,2.6,3.2);
   if(!statusEl.classList.contains('gone'))statusEl.classList.add('gone');
   e.preventDefault();
 });
@@ -717,7 +687,7 @@ beadsCv.addEventListener('pointermove',function(e){
   var dx=p.x-lp.x,dy=p.y-lp.y,d=Math.hypot(dx,dy);
   if(d<1.2)return;
   eraseSeg(lp,p);
-  var a=simPt(lp),b=simPt(p),steps=Math.min(6,Math.ceil(d/1.5)),str=Math.min(.38,.08+d*.03);
+  var a=simPt(lp),b=simPt(p),steps=Math.min(6,Math.ceil(d/1.5)),str=Math.min(.62,.12+d*.04);
   for(var i=1;i<=steps;i++)poke(a.x+(b.x-a.x)*i/steps,a.y+(b.y-a.y)*i/steps,str,1.7);
   lastPt[e.pointerId]=p;
   e.preventDefault();
@@ -734,6 +704,8 @@ refogBtn.addEventListener('pointerdown',function(e){
   statusEl.classList.remove('gone');
 });
 
+/* 对接面板：收起 / 展开（拦截，不触发擦雾）*/
+/* 色调规范面板仅作静态展示（默认收起），无悬浮入口 */
 
 /* ============ 天光光尘微粒 ============ */
 function genDust(){
@@ -780,7 +752,6 @@ function updateDust(dt){
 function resize(){
   W=window.innerWidth;H=window.innerHeight;
   waterCv.width=Math.round(W*dpr);waterCv.height=Math.round(H*dpr);
-  bfCv.width=Math.round(W*dpr);bfCv.height=Math.round(H*dpr);
   fogCv.width=Math.round(W*dpr);fogCv.height=Math.round(H*dpr);
   beadsCv.width=Math.round(W*dpr);beadsCv.height=Math.round(H*dpr);
   dustCv.width=Math.round(W*dpr);dustCv.height=Math.round(H*dpr);
@@ -794,9 +765,8 @@ function resize(){
   renderCv.width=RW;renderCv.height=RH;renderCtx=renderCv.getContext('2d');
   stepAcc=0;down={};lastPt={};
   drops.length=0;plips.length=0;
-  genButterflies();
-  for(var k2=0;k2<3;k2++)poke(R(2,SW-2),R(2,SH-2),R(.5,1.1),2);
-  if(logoReady){buildScene();paintFog();resetBeads();drawButterflies()}
+  for(var k2=0;k2<3;k2++)poke(R(2,SW-2),R(2,SH-2),R(.2,.4),2);
+  if(logoReady){buildScene();paintFog();resetBeads()}
 }
 window.addEventListener('resize',resize);
 window.addEventListener('orientationchange',function(){setTimeout(resize,200)});
@@ -815,7 +785,6 @@ function loop(ts){
   renderWater();
   updateDrops(dt);
   updateBeads(dt);
-  updateButterflies(dt);
   updateDust(dt);
   healAcc+=dt;if(healAcc>=.5){healFog();healAcc=0}
 }
@@ -831,8 +800,7 @@ function finishBoot(){
     statusText.textContent='轻触水面';
   },700);
 }
-if(LOGO_SRC.indexOf('data:')===0){logoImg.src=LOGO_SRC}
-else{finishBoot()}
+logoImg.src=LOGO_SRC
 
 if(REDUCED){
   resize();
