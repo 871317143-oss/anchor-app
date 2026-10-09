@@ -315,7 +315,7 @@ function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity='1';clearT
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const qs=new URLSearchParams(location.search),TOK=qs.get('t')||'';
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v6.6.2';
+const VER='v6.7.0';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
 /* ===== 水波场景加载（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ===== */
 function waterScene(mount){
@@ -781,10 +781,28 @@ function renderSched(body){
  const rows=[['L3 重点维护',c.l3],['L2 拉群',c.l2],['L1 本场支持',c.l1],['主动问候',c.greet],['生日提醒',c.bday]].filter(x=>x[1]>0);
  const today=`<div class="usec">今日待办</div><div id="muRemind"></div>`+(rows.length?rows.map(([k,v])=>`<div class="mrow"><span>${k}</span><b>${v} 人</b></div>`).join(''):emptyState('今日清爽','没有待办，好好休息'));
  const week=`<div class="usec">今明妆发</div><div id="muBox"><div class="mrow"><span>…</span><b></b></div></div>`;
+ const plan=`<div class="usec">本团排期</div><div id="tmPlan"><div class="mrow"><span>…</span><b></b></div></div>`;
  const mk=`<div class="usec">本周化妆表</div><div class="mkimg" id="mkImg">${emptyState('等组长发表','发群里后丢给我，我挂上来')}</div>`;
- body.innerHTML=today+week+mk;
+ body.innerHTML=today+week+plan+mk;
  const img=new Image();img.onload=()=>{const d=body.querySelector('#mkImg');if(d)d.innerHTML=`<img src="assets/schedule/makeup.jpg" alt="本周化妆表">`;};img.src='assets/schedule/makeup.jpg';
  loadMakeup(body);
+ loadTeamPlan(body);
+}
+/* 本团排期(今明两天,E05 红线:只出本团;wo-32a 在途) */
+function loadTeamPlan(body){
+ const box=body.querySelector('#tmPlan');if(!box)return;
+ fetch('https://fb.menghualu.com.co/api/anchor/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOK})})
+ .then(r=>r.json()).then(d=>{
+  if(!d||!d.ok){box.innerHTML=emptyState('排期在途 · wo-32a','接口交付后自动出现在这里');return;}
+  const day=bjToday(),tmr=new Date(Date.now()+8*3600e3+86400e3).toISOString().slice(0,10);
+  const rows=(d.rows||[]).filter(r=>r.date===day||r.date===tmr).sort((a,b)=>String(a.date+a.start).localeCompare(String(b.date+b.start)));
+  if(!rows.length){box.innerHTML=emptyState('今明暂无安排','排班发布后自动出现在这里');return;}
+  box.innerHTML=rows.map(r=>{
+   const dl=r.date===day?'今天':'明天';
+   const right=[(r.staff||[]).map(s=>s.name).join('、'),r.venue].filter(Boolean).join(' · ');
+   return `<div class="mrow"><span>${esc(dl+' '+r.type+' '+r.start+'-'+r.end)}</span><b>${esc(right)}</b></div>`;
+  }).join('');
+ }).catch(()=>{box.innerHTML=emptyState('排期在途 · wo-32a','接口交付后自动出现在这里');});
 }
 function bjToday(){return new Date(Date.now()+8*3600e3).toISOString().slice(0,10);}
 function loadMakeup(body){
