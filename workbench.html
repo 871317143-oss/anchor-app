@@ -3,7 +3,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0e1519">
 <title>梦华录 · 运营工作台</title><style>
-/* 运营工作台 v0.2.0 · 皮肤同主播版(:root/玻璃 token 复制自 home.html,零漂移) · v0.2.0 真接口联调 */
+/* 运营工作台 v0.3.0 · 皮肤同主播版(:root/玻璃 token 复制自 home.html,零漂移) · v0.2.0 真接口联调 */
 :root{
  --ink:#eef2f4;--ink2:#a9b8bd;--ink3:#6b7f84;
  --cyan:#8fb6c9;--gold:#c9a35c;--red:#d64f18;--paper:#0e1519;--night:#0b1215;
@@ -89,10 +89,59 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 .xback{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid var(--gbrd);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;font-size:13px;color:var(--ink2)}
 #toast{position:absolute;left:50%;bottom:110px;transform:translateX(-50%) translateY(16px);background:rgba(8,14,17,.92);color:#fff;font-size:13px;padding:11px 18px;border-radius:10px;max-width:82%;text-align:center;opacity:0;transition:all .25s;pointer-events:none;z-index:90}
 #meOut{margin:24px 18px;text-align:center;font-size:13px;padding:12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--gbrd);color:var(--ink2);cursor:pointer}
+/* ---- P2 主播全员页 ---- */
+.sk{padding:40px 20px;text-align:center;color:var(--ink3);font-size:13px}
+.arow{display:flex;align-items:center;gap:11px;margin:0 16px 9px;padding:12px 14px;background:rgba(255,255,255,.06);border:1px solid var(--gbrd);border-radius:16px;cursor:pointer}
+.arow .av{width:40px;height:40px;border-radius:50%;background:#3a4a54;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;position:relative;overflow:hidden;flex:none}
+.arow .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.arow .nm{font-size:14px;font-weight:600}
+.arow .sub{font-size:10px;color:var(--ink3);margin-top:3px;display:flex;align-items:center;gap:5px}
+.arow .stDot{width:7px;height:7px;border-radius:50%;display:inline-block;flex:none}
+.arow .r2{margin-left:auto;text-align:right;flex:none}
+.arow .mi{font-size:16px;font-weight:700}
+.arow .bp{font-size:10px;color:var(--ink3);margin-top:2px;letter-spacing:.04em}
+.arow .tail{display:flex;flex-direction:column;align-items:flex-end;gap:4px;margin-left:8px;flex:none}
+.arow .ov{font-size:10px;padding:2px 8px;border-radius:99px;border:1px solid var(--gbrd);color:var(--ink2)}
+.arow .ov.bad{color:#d9704f}.arow .ov.mid{color:var(--gold)}.arow .ov.good{color:#7fb069}
+/* 详情下钻面板(FLIP 居中面板 · 深色厚玻璃) */
+#apDim{position:absolute;inset:0;z-index:64;background:rgba(4,8,11,.5);opacity:0;transition:opacity .3s}
+#apanel{position:absolute;z-index:65;border-radius:24px;display:flex;flex-direction:column;overflow:hidden;background:rgba(18,26,32,.94);-webkit-backdrop-filter:blur(26px) saturate(1.3);backdrop-filter:blur(26px) saturate(1.3);border:1px solid var(--gbrd);box-shadow:0 24px 60px rgba(0,0,0,.5)}
+#apanel .abody{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+#apanel .abody::-webkit-scrollbar{display:none}
+.aphead{display:flex;align-items:center;gap:12px;padding:16px 16px 6px}
+.aphead .av{width:64px;height:64px;border-radius:50%;background:#3a4a54;color:#fff;font-size:24px;font-weight:700;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;flex:none}
+.aphead .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.aphead .nm{font-size:20px;font-weight:700}
+.aphead .sub{font-size:11px;color:var(--ink3);margin-top:3px;display:flex;align-items:center;gap:5px}
+.apst{margin-left:auto;font-size:12px;padding:8px 13px;border-radius:99px;background:rgba(255,255,255,.08);border:1px solid var(--gbrd);cursor:pointer;flex:none}
+.apst.off{opacity:.4;pointer-events:none}
+.stats4{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:8px 16px 4px}
+.st4{background:rgba(255,255,255,.06);border:1px solid var(--gbrd);border-radius:16px;padding:12px 14px}
+.st4 .v{font-size:18px;font-weight:700}
+.st4 .k{font-size:10.5px;color:var(--ink3);margin-top:3px}
+.rbar{display:flex;align-items:center;gap:10px;padding:6px 16px;font-size:12px}
+.rbar .rk{width:44px;color:var(--ink2);flex:none}
+.rbar .rb{flex:1;height:4px;border-radius:99px;background:rgba(143,182,201,.18);overflow:hidden}
+.rbar .rb i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--cyan),var(--gold))}
+.rbar .rv{width:26px;text-align:right;color:var(--ink3);flex:none}
+.rread{margin:10px 16px 2px;padding:11px 14px;border:1px dashed rgba(143,182,201,.3);border-radius:14px;font-size:11.5px;color:var(--ink2)}
+.gbox{margin:8px 16px 4px;padding:16px 14px;border:1px dashed var(--gbrd);border-radius:14px;font-size:11.5px;color:var(--ink3);text-align:center}
+.tcapRow{display:flex;gap:7px;padding:4px 16px;flex-wrap:wrap}
+.tcap{font-size:11px;padding:5px 10px;border-radius:99px;background:rgba(255,255,255,.07);border:1px solid var(--gbrd);color:var(--ink2)}
+.r10{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;margin:0 16px 7px;background:rgba(255,255,255,.06);border:1px solid var(--gbrd);border-radius:12px;font-size:12px}
+.r10 .rr{color:var(--ink3)}
+/* 改状态弹层 */
+#stDim{position:absolute;inset:0;z-index:66;background:rgba(4,8,11,.45)}
+#stSheet{position:absolute;left:20px;right:20px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:67;background:rgba(24,34,40,.97);border:1px solid var(--gbrd);border-radius:22px;padding:16px;-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:0 18px 46px rgba(0,0,0,.5)}
+#stSheet .st-tt{font-size:14px;font-weight:600;margin-bottom:10px}
+#stSheet .cb{display:flex;gap:9px;margin-top:12px}
+#stSheet .cb span{flex:1;text-align:center;font-size:13.5px;padding:11px 0;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid var(--gbrd);cursor:pointer}
+#stSheet .cb .ok{background:var(--ink);color:var(--night);font-weight:600}
+#stSheet .xchips{display:flex;gap:7px;flex-wrap:wrap;padding:2px 0}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="phone">
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.2.0</b> · 运营工作台</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.3.0</b> · 运营工作台</span></div>
  <div id="wmain" style="display:none">
   <div id="wbody"></div>
   <div id="wnav"><span data-v="ov" class="on">总览</span><span data-v="anchors">主播</span><span data-v="appr">审批</span><span data-v="me">我的</span></div>
@@ -119,6 +168,17 @@ async function apiPost(path,body){
  const r=await fetch('https://fb.menghualu.com.co'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
  return r.json();
 }
+/* v0.3.0 适配层:与 adTeams/adTodo 并列(缺口字段=null 灰态,tid/pid 待 wo-30a) */
+function adPerf(d){
+ const list=(d.list||[]).map(r=>({name:r.name||'?',tid:r.tid||null,pid:r.anchor_pid||null,st:r.st||r.status||'',
+  month_income:r.month_income||0,month_days:r.month_days==null?null:r.month_days,base_progress:r.base_progress==null?null:r.base_progress,
+  last_income:r.last_income||'',last_live:r.last_live||'',warn:r.warn||''}));
+ return {ok:d.ok,list};
+}
+/* 保底进度：真接口是 0-1 小数（非字符串），渲染一律走 fmtBp 转百分比（字符串兼容原样） */
+const fmtBp=v=>v==null?'':(typeof v==='string'?v:Math.round(v*100)+'%');
+function adRadar(d){return (d&&d.anchors)||{};}
+function adDetail(d){return d&&d.ok?{ok:true,recent10:d.recent10||[],tiers:d.tiers||{}}:{ok:false,error:'wo-30a'};}
 /* 真接口→视图模型适配（缺口字段=null 灰态，工单 wo-29a 跟进：name/本月/PCU/开播时刻/记一下动作） */
 function adTeams(d){
  const ts=(d.teams||[]).map(t=>{
@@ -136,11 +196,11 @@ function adTeams(d){
 function adTodo(d){
  const g=d.groups||{};
  const mp={
-  icebreak:(g.ice||[]).map(r=>({l:`${r.anchor} · ${r.nick||'?'}`,r:`${r.hours}h 未私信`,ref:r.ref,tid:r.tid})),
-  noreply:(g.noreply||[]).map(r=>({l:`${r.anchor} · ${r.nick||'?'}`,r:'超 48h 未回复',ref:r.ref,tid:r.tid})),
-  maintain:(g.maintain||[]).map(r=>({l:`${r.anchor} · ${r.nick||'?'}`,r:r.lastAction==='从未'?'从未维护':`${r.lastAction.slice(5)} 后未维护`,ref:r.ref,tid:r.tid})),
-  warn:(g.warn||[]).map(r=>({l:r.anchor,r:r.text||(r.level==='red'?'🔴 红档':'🟡 黄档'),ref:r.ref,tid:r.tid})),
-  approve:(g.rest||[]).map(r=>({l:r.anchor,r:`${r.kind||'休息'} ${String(r.date||'').slice(5)}`,ref:r.ref,tid:r.tid})),
+  icebreak:(g.ice||[]).map(r=>({l:`${r.anchor} · ${r.nick||'?'}`,r:`${r.hours}h 未私信`,ref:r.ref,tid:r.tid,anchor:r.anchor})),
+  noreply:(g.noreply||[]).map(r=>({l:`${r.anchor} · ${r.nick||'?'}`,r:'超 48h 未回复',ref:r.ref,tid:r.tid,anchor:r.anchor})),
+  maintain:(g.maintain||[]).map(r=>({l:`${r.anchor} · ${r.nick||'?'}`,r:r.lastAction==='从未'?'从未维护':`${r.lastAction.slice(5)} 后未维护`,ref:r.ref,tid:r.tid,anchor:r.anchor})),
+  warn:(g.warn||[]).map(r=>({l:r.anchor,r:r.text||(r.level==='red'?'🔴 红档':'🟡 黄档'),ref:r.ref,tid:r.tid,anchor:r.anchor})),
+  approve:(g.rest||[]).map(r=>({l:r.anchor,r:`${r.kind||'休息'} ${String(r.date||'').slice(5)}`,ref:r.ref,tid:r.tid,anchor:r.anchor})),
  };
  const c=d.counts||{};
  return {ok:d.ok,groups:mp,counts:{icebreak:c.ice,noreply:c.noreply,maintain:c.maintain,warn:c.warn,approve:c.rest}};
@@ -166,6 +226,32 @@ const API={
  async offair(tok,tid){ /* 下播收场:真实触发采集一条龙（服务端 dedup 兜底） */
   if(USE_MOCK)return {ok:true,dedup:false};
   return apiPost('/api/ops/offair',{token:tok,tid});
+ },
+ async perf(tok){
+  /* 契约:POST /api/anchor/perf {token} → {ok,list}(行缺 tid/pid 待 wo-30a,过渡口径 tid=null) */
+  if(USE_MOCK){await new Promise(r=>setTimeout(r,240));return {ok:true,list:MOCK.anchors.list};}
+  const d=await apiPost('/api/anchor/perf',{token:tok});
+  return d.ok?adPerf(d):{ok:false};
+ },
+ async radar(tid){
+  /* 契约:GET data/radar_<tid>.json 静态直取(404 容忍返 {}) */
+  if(USE_MOCK)return MOCK.anchors.radar[tid]||{};
+  try{const r=await fetch('data/radar_'+tid+'.json');return r.ok?await r.json():{};}catch(e){return {};}
+ },
+ async anchorStatus(tok,pid,st){
+  /* 契约:POST /api/ops/anchor-status {token,anchor_pid,status} status∈上播中/休假中/停播中/已淘汰(ro 码 403) */
+  if(USE_MOCK)return {ok:true};
+  return apiPost('/api/ops/anchor-status',{token:tok,anchor_pid:pid,status:st});
+ },
+ async anchorDetail(tok,pid){
+  /* 契约:POST /api/ops/anchor-detail {token,anchor_pid} → {ok,recent10,tiers}(wo-30a 在途) */
+  if(USE_MOCK)return MOCK.anchors.detail;
+  return {ok:false,error:'wo-30a'}; // 主控交付后启用:return apiPost('/api/ops/anchor-detail',{token:tok,anchor_pid:pid}).then(adDetail);
+ },
+ async nudge(tok,pid,text){
+  /* 契约:POST /api/ops/nudge {token,anchor_pid,text} → {ok} / 4h 防重 {ok:false,msg:'该主播 4 小时内已催过,缓缓'}(业务态非错误,原文透传) */
+  if(USE_MOCK)return {ok:true};
+  return apiPost('/api/ops/nudge',{token:tok,anchor_pid:pid,text});
  }
 };
 /* ===== P0 登录 ===== */
@@ -306,12 +392,206 @@ document.addEventListener('touchstart',e=>{
  if(e.target.closest&&e.target.closest('.trow'))return;
  open.forEach(s=>s.style.transform='');
 },{passive:true});
+/* ===== P2 主播全员页(列表+详情下钻) ===== */
+const TID_NAME={sy:'水月',xz:'行舟',xy:'寻音',test:'测试'};
+const STC={'上播中':'#7fb069','休假中':'#c9a35c','停播中':'#6b7f84','已淘汰':'#8a3a2a'};
+const ST_ORD=['上播中','休假中','停播中','已淘汰'];
+let ANCHORS=[],RD={},ATID='all',APANEL=null;
+function radarOf(name){for(const tid in RD){const a=(RD[tid]||{}).anchors||{};if(a[name])return a[name];}return {};}
+async function renderAnchors(){
+ const w=$('#wbody');
+ const chips=TEAMS.length>1||COMPANY;
+ w.innerHTML=`<div class="usec">主播全员 · <span id="anN">…</span></div>
+ ${chips?`<div class="xchips" id="anChips" style="display:flex"><span class="chip on" data-t="all">全部</span>${TEAMS.map(t=>`<span class="chip" data-t="${t.tid}">${esc(t.name)}</span>`).join('')}</div>`:''}
+ <div id="anList"><div class="sk">…</div><div class="sk">…</div><div class="sk">…</div></div>`;
+ let d=null;try{d=await API.perf(TOK);}catch(e){}
+ const box=$('#anList');if(!box)return;
+ if(!d||!d.ok){
+  box.innerHTML=emptyState('主播列表加载失败',new Date().toTimeString().slice(0,8)+' · 点按重试');
+  box.onclick=()=>{box.onclick=null;renderAnchors();};return;
+ }
+ ANCHORS=d.list||[];
+ RD={};await Promise.all(TEAMS.map(async t=>{try{RD[t.tid]=await API.radar(t.tid);}catch(e){RD[t.tid]={};}}));
+ paintAnchors();
+ const noTid=ANCHORS.every(a=>!a.tid);
+ document.querySelectorAll('#anChips .chip').forEach(c=>{
+  if(noTid&&c.dataset.t!=='all'){c.style.opacity='.4';c.style.pointerEvents='none';}
+  else c.onclick=()=>{ATID=c.dataset.t;document.querySelectorAll('#anChips .chip').forEach(x=>x.classList.toggle('on',x===c));paintAnchors();};
+ });
+}
+function paintAnchors(){
+ const box=$('#anList');if(!box)return;
+ let list=ANCHORS.slice();
+ if(ATID!=='all')list=list.filter(a=>a.tid===ATID);
+ const wk=a=>{const w=a.warn||'';return w.startsWith('🔴')?0:w.startsWith('🟡')?1:2;};
+ list.sort((a,b)=>wk(a)-wk(b)||(b.month_income||0)-(a.month_income||0));
+ $('#anN').textContent=list.length;
+ box.innerHTML=list.length?list.map(arow).join(''):emptyState('当前范围没有主播','');
+ bindArows();
+}
+function arow(a){
+ const rd=radarOf(a.name);
+ return `<div class="arow" data-n="${esc(a.name)}">
+ <div class="av">${(a.name||'?')[0]}${rd.av?`<img src="${rd.av}" onerror="this.remove()">`:''}</div>
+ <div style="flex:1;min-width:0"><div class="nm">${esc(a.name)}</div>
+ <div class="sub">${a.tid?esc(TID_NAME[a.tid]||a.tid):'·'}${a.st?` <span class="stDot" style="background:${STC[a.st]||'#6b7f84'}"></span>${a.st}`:''}</div></div>
+ <div class="r2"><div class="mi">${a.month_income?'¥'+a.month_income.toLocaleString():'<span style="opacity:.35">—</span>'}</div><div class="bp">${a.base_progress==null?'<span style="opacity:.4">—</span>':fmtBp(a.base_progress)}</div></div>
+ <div class="tail">${(a.warn.startsWith('🔴')||a.warn.startsWith('🟡'))?`<span>${esc([...a.warn][0])}</span>`:''}${rd.overall!=null?`<span class="ov ${rd.overall<60?'bad':rd.overall<=80?'mid':'good'}">${rd.overall}</span>`:''}</div>
+ </div>`;
+}
+function bindArows(){
+ document.querySelectorAll('#anList .arow').forEach(row=>{
+  row.onclick=()=>{const a=ANCHORS.find(x=>x.name===row.dataset.n);if(a)openAnchorPanel(a,row);};
+ });
+}
+/* 详情面板(FLIP 行位→居中面板;关闭缩回;右滑返回) */
+function openAnchorPanel(a,row){
+ if(APANEL)return;
+ const pr=$('#phone').getBoundingClientRect();
+ const r=row?row.getBoundingClientRect():null;
+ const dim=document.createElement('div');dim.id='apDim';
+ const p=document.createElement('div');p.id='apanel';
+ const W=Math.round(pr.width*0.92),H=Math.round(pr.height*0.8),L=Math.round(pr.width*0.04),T=Math.round(pr.height*0.09);
+ p.style.left=L+'px';p.style.top=T+'px';p.style.width=W+'px';p.style.height=H+'px';
+ const rd=radarOf(a.name);
+ const hasRadar=rd.overall!=null;
+ const DIMS=[['稳定度','stability','开播节奏不稳'],['趋势','trend','近期流水下滑'],['配合度','coop','回传配合偏弱'],['留存','retention','老粉留存在掉'],['流水','income','流水产出偏低']];
+ let read='';
+ if(hasRadar){
+  const mn=DIMS.reduce((m,d)=>((rd[d[1]]==null?100:rd[d[1]])<(rd[m[1]]==null?100:rd[m[1]])?d:m),DIMS[0]);
+  read=`最凹：${mn[0]} ${rd[mn[1]]}——${mn[2]}`;
+ }
+ p.innerHTML=`<div class="aphead"><div class="av">${(a.name||'?')[0]}${rd.av?`<img src="${rd.av}" onerror="this.remove()">`:''}</div>
+  <div><div class="nm">${esc(a.name)}</div><div class="sub">${a.tid?esc(TID_NAME[a.tid]||a.tid):'·'}${a.st?` <span class="stDot" style="background:${STC[a.st]||'#6b7f84'}"></span>${a.st}`:''}</div></div>
+  <div class="apst${a.pid?'':' off'}" id="apSt">${a.pid?'改状态':'待 wo-30a'}</div></div>
+ <div class="abody">
+  <div class="usec">业绩</div>
+  <div class="stats4">
+   <div class="st4"><div class="v">${a.month_income?'¥'+a.month_income.toLocaleString():'—'}</div><div class="k">本月流水</div></div>
+   <div class="st4"><div class="v">${a.month_days==null?'—':a.month_days+' 天'}</div><div class="k">本月开播</div></div>
+   <div class="st4"><div class="v" style="font-size:14px">${a.base_progress==null?'—':fmtBp(a.base_progress)}</div><div class="k">保底进度</div></div>
+   <div class="st4"><div class="v" style="font-size:14px">${a.last_income||'—'}</div><div class="k">最近一场${a.last_live?' · '+a.last_live:''}</div></div>
+  </div>
+  <div class="usec">雷达五维</div>
+  ${hasRadar?DIMS.map(d=>{const v=rd[d[1]]==null?0:rd[d[1]];return `<div class="rbar"><span class="rk">${d[0]}</span><div class="rb"><i style="width:${Math.max(0,Math.min(100,v))}%"></i></div><span class="rv">${v}</span></div>`;}).join('')+`<div class="rbar"><span class="rk">综合</span><div class="rb"><i style="width:${rd.overall}%"></i></div><span class="rv" style="color:var(--ink)">${rd.overall}</span></div>`+(read?`<div class="rread">${read}</div>`:''):'<div class="gbox">雷达在途</div>'}
+  <div class="usec">近 10 场</div>
+  <div id="apRecent"><div class="gbox">接口在途 · wo-30a</div></div>
+  <div class="usec">用户分层</div>
+  <div id="apTiers"><div class="gbox">接口在途 · wo-30a</div></div>
+  <div class="gbox" style="border:0;padding:6px">明细走画像助手</div>
+  <div id="apTodo"></div>
+  <div class="usec">今日维护</div>
+  <div style="padding:2px 16px 0"><span class="apst${a.pid?'':' off'}" id="apNudge">催回传</span></div>
+ </div>`;
+ $('#phone').appendChild(dim);$('#phone').appendChild(p);
+ APANEL={p,dim,a};
+ if(!RM){
+  p.style.transformOrigin='top left';
+  const rr=r?{left:r.left-pr.left-L,top:r.top-pr.top-T,w:r.width/W,h:r.height/H}:{left:W/2,top:H/2,w:0.2,h:0.05};
+  p.style.transform=`translate(${rr.left}px,${rr.top}px) scale(${rr.w},${rr.h})`;
+  p.style.opacity='0';p.getBoundingClientRect();
+  dim.style.opacity='1';
+  p.style.transition='transform .44s cubic-bezier(.32,.72,.35,1),opacity .22s';
+  p.style.opacity='1';p.style.transform='none';
+ }else{dim.style.opacity='1';}
+ dim.onclick=()=>closeAnchorPanel();
+ bindSwipeBackWb(p,()=>closeAnchorPanel(),t=>!t.closest('textarea,input,select'));
+ if(a.pid)$('#apSt').onclick=()=>openStSheet(a);
+ if(a.pid)$('#apNudge').onclick=()=>openNudge(a);
+ API.todo(TOK,a.tid||CUR).then(d=>{
+  if(!APANEL||APANEL.a!==a)return;
+  const g=(d&&d.groups)||{};
+  const rows=[...(g.icebreak||[]),...(g.noreply||[]),...(g.maintain||[])].filter(r=>r.anchor===a.name);
+  if(!rows.length)return;
+  const box=$('#apTodo');if(!box)return;
+  box.innerHTML=`<div class="usec">异常用户 · ${rows.length}</div>`+rows.map(r=>`<div class="r10"><span>${esc(r.l.split(' · ')[1]||r.l)}</span><span class="rr">${esc(r.r)}</span></div>`).join('');
+  box.querySelectorAll('.r10').forEach(x=>x.onclick=()=>toast('用户异常卡第 #013 单就到'));
+ }).catch(()=>{});
+ API.anchorDetail(TOK,a.pid||'').then(d=>{
+  if(!APANEL||APANEL.a!==a)return;
+  if(d&&d.ok){
+   $('#apRecent').innerHTML=d.recent10.length?d.recent10.map(x=>`<div class="r10"><span>${esc(x.date)}</span><span class="rr">${esc(x.income)} · ACU ${x.acu}${x.giftMiss?' ⚠️':''}</span></div>`).join(''):'<div class="gbox">近期无场次</div>';
+   const T=d.tiers||{};$('#apTiers').innerHTML=`<div class="tcapRow">${['S','A','B','C','D','L3'].map(k=>`<span class="tcap">${k} ×${T[k]||0}</span>`).join('')}</div>`;
+  }
+ }).catch(()=>{});
+}
+function closeAnchorPanel(){
+ if(!APANEL)return;const {p,dim}=APANEL;APANEL=null;
+ if(RM){p.remove();dim.remove();return;}
+ dim.style.opacity='0';
+ p.style.transition='transform .34s cubic-bezier(.5,0,.75,0),opacity .24s';
+ p.style.opacity='0';
+ setTimeout(()=>{p.remove();dim.remove();},360);
+}
+/* 改状态弹层 */
+function openStSheet(a){
+ const dim=document.createElement('div');dim.id='stDim';
+ const sh=document.createElement('div');sh.id='stSheet';
+ sh.innerHTML=`<div class="st-tt">改状态 · ${esc(a.name)}</div>
+ <div class="xchips">${ST_ORD.map(s=>`<span class="chip${s===a.st?' on':''}" data-v="${s}">${s}</span>`).join('')}</div>
+ <div class="cb"><span class="no">取消</span><span class="ok">确认</span></div>`;
+ $('#phone').appendChild(dim);$('#phone').appendChild(sh);
+ dim.onclick=()=>{dim.remove();sh.remove();};
+ sh.querySelector('.no').onclick=()=>{dim.remove();sh.remove();};
+ sh.querySelectorAll('.chip').forEach(c=>c.onclick=()=>sh.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===c)));
+ sh.querySelector('.ok').onclick=async()=>{
+  const pick=sh.querySelector('.chip.on');
+  if(!pick){toast('先选状态');return;}
+  const st=pick.dataset.v;
+  const d=await API.anchorStatus(TOK,a.pid,st).catch(()=>null);
+  dim.remove();sh.remove();
+  if(d&&d.ok){a.st=st;toast(`${a.name} → ${st}`);paintAnchors();
+   if(APANEL)closeAnchorPanel();}
+  else if(d&&/只读/.test(d.error||''))toast('只读码不可改');
+  else toast((d&&d.error)||'网络异常,稍后再试');
+ };
+}
+/* 催回传弹层(文案可改 ≤60 字;4h 防重原文透传) */
+function openNudge(a){
+ const dim=document.createElement('div');dim.id='stDim';
+ const sh=document.createElement('div');sh.id='stSheet';
+ sh.innerHTML=`<div class="st-tt">催回传 · ${esc(a.name)}</div>
+ <textarea id="ngTxt" maxlength="60" rows="2" style="width:100%;resize:none;border-radius:12px;border:1px solid var(--gbrd);background:rgba(255,255,255,.06);color:var(--ink);font-family:inherit;font-size:13px;padding:10px 12px;outline:0">运营提醒你今日维护还没回传</textarea>
+ <div id="ngCnt" style="font-size:10px;color:var(--ink3);text-align:right;margin-top:4px">15/60</div>
+ <div class="cb"><span class="no">取消</span><span class="ok">发送</span></div>`;
+ $('#phone').appendChild(dim);$('#phone').appendChild(sh);
+ const close=()=>{dim.remove();sh.remove();};
+ dim.onclick=close;sh.querySelector('.no').onclick=close;
+ const txt=sh.querySelector('#ngTxt'),cnt=sh.querySelector('#ngCnt');
+ cnt.textContent=txt.value.length+'/60';
+ txt.addEventListener('input',()=>{cnt.textContent=txt.value.length+'/60';});
+ sh.querySelector('.ok').onclick=async()=>{
+  const text=txt.value.trim();
+  if(!text){toast('文案不能为空');return;}
+  sh.querySelector('.ok').style.pointerEvents='none';
+  const d=await API.nudge(TOK,a.pid,text).catch(()=>null);
+  close();
+  if(d&&d.ok)toast('已催 '+a.name);
+  else if(d&&d.msg)toast(d.msg);
+  else toast((d&&d.error)||'网络异常,稍后再试');
+ };
+}
+/* 右滑返回(与主播版 bindSwipeBack 同族:dx>60、|dy|<40、横向主导1.5倍;白名单防输入区误触) */
+function bindSwipeBackWb(el,onBack,allow){
+ let sw=null;
+ el.addEventListener('touchstart',e=>{
+  if(e.touches.length!==1){sw=null;return;}
+  if(allow&&!allow(e.target)){sw=null;return;}
+  sw={x:e.touches[0].clientX,y:e.touches[0].clientY};
+ },{passive:true});
+ el.addEventListener('touchend',e=>{
+  if(!sw)return;
+  const t=e.changedTouches[0],dx=t.clientX-sw.x,dy=t.clientY-sw.y;sw=null;
+  if(dx>60&&Math.abs(dy)<40&&dx>1.5*Math.abs(dy))onBack();
+ },{passive:true});
+}
 /* ===== 底部导航/占位页 ===== */
 function switchView(v){
  VIEW=v;
  document.querySelectorAll('#wnav span').forEach(s=>s.classList.toggle('on',s.dataset.v===v));
  if(v==='ov'){renderOv();return;}
- const ph={anchors:'第 #002 单就到',appr:'第 #003 单就到',me:'第 #005 单就到'}[v]||'';
+ if(v==='anchors'){renderAnchors();return;}
+ const ph={appr:'第 #003 单就到',me:'第 #005 单就到'}[v]||'';
  $('#wbody').innerHTML=emptyState('建设中',ph)+(v==='me'?'<div id="meOut">退出切换</div>':'');
  const out=$('#meOut');
  if(out)out.onclick=()=>{localStorage.removeItem('wb_tok');TOK='';location.reload();};
@@ -328,6 +608,7 @@ const MOCK={
   boss:{name:'老板',role:'boss',company:true,teams:[
    {tid:'sy',name:'水月团',anchorCount:6,yday:21400,month:483000,wow:12,showUv:3240,pcu:86,warnR:1,warnY:2,status:{live:true,n:2,since:hmAgo(40),step:'',canOff:true}},
    {tid:'xz',name:'行舟团',anchorCount:4,yday:18900,month:361000,wow:-5,showUv:2780,pcu:64,warnR:0,warnY:1,status:{live:false,n:2,since:'',step:'',canOff:false}},
+   {tid:'xy',name:'寻音团',anchorCount:2,yday:9800,month:156000,wow:3,showUv:1520,pcu:30,warnR:0,warnY:1,status:{live:false,n:1,since:'',step:'',canOff:false}},
   ]},
   ops:{name:'运营小赵',role:'ops',teams:[
    {tid:'sy',name:'水月团',anchorCount:6,yday:21400,month:483000,wow:12,showUv:3240,pcu:86,warnR:1,warnY:2,status:{live:true,n:2,since:hmAgo(40),step:'',canOff:true}},
@@ -335,24 +616,42 @@ const MOCK={
  },
  todo:{
   sy:{groups:{
-   icebreak:[{l:'小鱼 · TT',r:'24h+ 未私信'},{l:'蕣华 · 老周',r:'24h+ 未私信'}],
-   noreply:[{l:'千羽 · 阿果',r:'48h+ 未回复'}],
-   maintain:[{l:'小鱼 · 阿豪',r:'3 天未维护'},{l:'小鱼 · 老白',r:'5 天未维护'}],
-   warn:[{l:'涟漪',r:'🔴 红档'}],
-   approve:[{l:'水月团',r:'3 件'}],
+   icebreak:[{l:'小鱼 · TT',r:'24h+ 未私信',anchor:'小鱼',nick:'TT'},{l:'蕣华 · 老周',r:'24h+ 未私信',anchor:'蕣华',nick:'老周'}],
+   noreply:[{l:'千羽 · 阿果',r:'48h+ 未回复',anchor:'千羽',nick:'阿果'}],
+   maintain:[{l:'小鱼 · 阿豪',r:'3 天未维护',anchor:'小鱼',nick:'阿豪'},{l:'小鱼 · 老白',r:'5 天未维护',anchor:'小鱼',nick:'老白'}],
+   warn:[{l:'涟漪',r:'🔴 红档',anchor:'涟漪'}],
+   approve:[{l:'水月团',r:'3 件',anchor:''}],
   }},
   xz:{groups:{
    icebreak:[],noreply:[],
-   maintain:[{l:'行舟 · 阿灿',r:'4 天未维护'}],
-   warn:[],approve:[{l:'行舟团',r:'1 件'}],
+   maintain:[{l:'行舟 · 阿灿',r:'4 天未维护',anchor:'阿灿',nick:'阿灿'}],
+   warn:[],approve:[{l:'行舟团',r:'1 件',anchor:''}],
   }},
+  xy:{groups:{icebreak:[],noreply:[],maintain:[],warn:[],approve:[]}},
   all:{groups:{
-   icebreak:[{l:'小鱼 · TT',r:'24h+ 未私信'},{l:'蕣华 · 老周',r:'24h+ 未私信'}],
-   noreply:[{l:'千羽 · 阿果',r:'48h+ 未回复'}],
-   maintain:[{l:'小鱼 · 阿豪',r:'3 天未维护'},{l:'小鱼 · 老白',r:'5 天未维护'},{l:'行舟 · 阿灿',r:'4 天未维护'}],
-   warn:[{l:'涟漪',r:'🔴 红档'}],
-   approve:[{l:'水月团',r:'3 件'},{l:'行舟团',r:'1 件'}],
+   icebreak:[{l:'小鱼 · TT',r:'24h+ 未私信',anchor:'小鱼',nick:'TT'},{l:'蕣华 · 老周',r:'24h+ 未私信',anchor:'蕣华',nick:'老周'}],
+   noreply:[{l:'千羽 · 阿果',r:'48h+ 未回复',anchor:'千羽',nick:'阿果'}],
+   maintain:[{l:'小鱼 · 阿豪',r:'3 天未维护',anchor:'小鱼',nick:'阿豪'},{l:'小鱼 · 老白',r:'5 天未维护',anchor:'小鱼',nick:'老白'},{l:'行舟 · 阿灿',r:'4 天未维护',anchor:'阿灿',nick:'阿灿'}],
+   warn:[{l:'涟漪',r:'🔴 红档',anchor:'涟漪'}],
+   approve:[{l:'水月团',r:'3 件',anchor:''},{l:'行舟团',r:'1 件',anchor:''}],
   }},
+ },
+ /* mock 主播页(3 团 6 人:🔴🟡各一/保底各形态/蕣华 radar 缺失/涟漪已淘汰) */
+ anchors:{
+  list:[
+   {name:'小鱼',tid:'sy',pid:'p1',st:'上播中',month_income:52300,month_days:12,base_progress:'▰▰▰▱ 62%',last_income:'¥4,200',last_live:'10-08',warn:'🔴 红档'},
+   {name:'千羽',tid:'sy',pid:'p2',st:'休假中',month_income:31800,month_days:9,base_progress:'▰▰▱▱ 41%',last_income:'¥2,100',last_live:'10-07',warn:'🟡 黄档'},
+   {name:'涟漪',tid:'sy',pid:'p3',st:'已淘汰',month_income:4200,month_days:2,base_progress:'',last_income:'',last_live:'09-28',warn:''},
+   {name:'阿灿',tid:'xz',pid:'p4',st:'上播中',month_income:38900,month_days:11,base_progress:'▰▰▰▰ 80%',last_income:'¥3,800',last_live:'10-08',warn:''},
+   {name:'蕣华',tid:'xy',pid:'p5',st:'停播中',month_income:12600,month_days:4,base_progress:'▰▱▱▱ 18%',last_income:'¥900',last_live:'10-05',warn:'🟡 黄档'},
+   {name:'老周',tid:'xy',pid:'p6',st:'上播中',month_income:8900,month_days:8,base_progress:'▰▰▱▱ 33%',last_income:'¥1,100',last_live:'10-08',warn:''},
+  ],
+  radar:{
+   sy:{anchors:{'小鱼':{av:'',stability:55,trend:48,coop:90,retention:72,income:88,overall:71},'千羽':{av:'',stability:70,trend:52,coop:64,retention:58,income:66,overall:67},'涟漪':{av:'',stability:30,trend:22,coop:40,retention:35,income:12,overall:45}}},
+   xz:{anchors:{'阿灿':{av:'',stability:88,trend:82,coop:91,retention:80,income:84,overall:88}}},
+   xy:{anchors:{'老周':{av:'',stability:66,trend:70,coop:72,retention:60,income:58,overall:73}}},
+  },
+  detail:{ok:true,recent10:[{date:'10-08',income:'¥4,200',acu:312,giftMiss:0},{date:'10-07',income:'¥3,900',acu:288,giftMiss:1},{date:'10-06',income:'¥4,800',acu:340,giftMiss:0}],tiers:{S:2,A:5,B:12,C:20,D:8,L3:3}},
  }
 };
 </script></body></html>
