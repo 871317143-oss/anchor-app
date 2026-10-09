@@ -23,20 +23,12 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 /* ---- 加载动画（雾蝶水面 iframe + 品牌面板叠加 · #loader 与 #gfWater 双挂） ---- */
 #loader{position:absolute;inset:0;z-index:95;background:linear-gradient(175deg,#101e22,#0c171a);transition:opacity .45s}
 #loader.done{opacity:0;pointer-events:none}
-/* ---- 加载动画（老板亲制雾蝶水面 iframe + 梦华录玻璃面板叠加 · #loader 与 #gfWater 双挂） ---- */
-#loader{position:absolute;inset:0;z-index:95;background:linear-gradient(175deg,#101e22,#0c171a);transition:opacity .45s}
-#loader.done{opacity:0;pointer-events:none}
+/* ---- 加载动画（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ---- */
 .wscene{position:absolute;inset:0}
 .wscene iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent}
-.wpan2{position:absolute;left:50%;transform:translateX(-50%);animation:wfloat2 3s ease-in-out infinite}
-.wpf{position:relative;width:100%;height:100%;border-radius:28px;background:linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.04));box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 18px 50px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
-.wload-txt{margin-top:10px;font-size:11px;color:var(--ink2);letter-spacing:.2em}
-.wd{position:absolute;top:-30%;width:2px;height:38%;background:linear-gradient(180deg,transparent,rgba(255,255,255,.18),transparent);filter:blur(1px);opacity:.18;animation:wdrip 11s linear infinite}
-.wd.d2{left:34%;animation-duration:9s}
-.wd.d3{left:52%;animation-duration:12.5s}
-.wd.d1{left:66%;animation-duration:14s}
-@keyframes wfloat2{50%{transform:translate(-50%,-8px)}}
-@keyframes wdrip{from{transform:translateY(-20%)}to{transform:translateY(320%)}}
+.wrm{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.wrm img{width:110px}
+.wrm div{font-size:11px;color:var(--ink2);letter-spacing:.2em}
 /* ---- 氛围层（暗底青黛液滴+微光+噪点） ---- */
 #amb{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
 .blob{position:absolute;border-radius:48% 52% 55% 45%/50% 46% 54% 50%;filter:blur(72px);opacity:.32;will-change:transform}
@@ -322,25 +314,19 @@ function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity='1';clearT
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const qs=new URLSearchParams(location.search),TOK=qs.get('t')||'';
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v6.5.0';
+const VER='v6.5.1';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
-/* ===== 水波场景加载（老板亲制雾蝶水面 iframe 挂载 + 梦华录玻璃面板叠加 · #loader 与 #gfWater 双挂） ===== */
-function waterScene(mount,{panelW=150,logoW=84,top='38%'}={}){
+/* ===== 水波场景加载（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ===== */
+function waterScene(mount){
  const el=document.createElement('div');el.className='wscene';
- if(!RM){
+ if(RM){
+  el.innerHTML=`<div class="wrm"><img src="assets/logo-mark.png" alt="梦华录"><div>加载中</div></div>`;
+ }else{
   const ifr=document.createElement('iframe');
   ifr.src='assets/water.html';
   ifr.setAttribute('allowtransparency','true');
   el.appendChild(ifr);
-  ifr.onload=()=>{try{
-   const d=ifr.contentDocument;if(!d)return;
-   ['#p-fab','#p-close','#refog','#status-text'].forEach(s=>{const n=d.querySelector(s);if(n)n.style.display='none';});
-   d.querySelectorAll('.p-note').forEach(n=>n.style.display='none');
-  }catch(e){}};
  }
- const pan=document.createElement('div');pan.className='wpan2';pan.style.top=top;
- pan.innerHTML=`<div class="wpf" style="width:${panelW}px;height:${Math.round(panelW*190/150)}px"><i class="wd d1"></i><i class="wd d2"></i><i class="wd d3"></i><img src="assets/logo-mark.png" style="width:${logoW}px" alt=""><div class="wload-txt">加载中</div></div>`;
- el.appendChild(pan);
  mount.appendChild(el);
  return {el,done(fade){if(fade===false){return;}el.style.transition='opacity .4s';el.style.opacity='0';setTimeout(()=>el.remove(),400);}};
 }
