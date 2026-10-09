@@ -138,10 +138,49 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 #stSheet .cb span{flex:1;text-align:center;font-size:13.5px;padding:11px 0;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid var(--gbrd);cursor:pointer}
 #stSheet .cb .ok{background:var(--ink);color:var(--night);font-weight:600}
 #stSheet .xchips{display:flex;gap:7px;flex-wrap:wrap;padding:2px 0}
+/* ---- P3 审批中心 ---- */
+.mrowb{display:flex;align-items:center;gap:10px;margin:0 16px 9px;padding:12px 14px;background:rgba(255,255,255,.06);border:1px solid var(--gbrd);border-radius:16px}
+.mrowb .l{flex:1;min-width:0}
+.mrowb .t1{font-size:13.5px;font-weight:600}
+.mrowb .t2{font-size:11px;color:var(--ink3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mrowb .abts{display:flex;gap:7px;flex:none}
+.mrowb .abts span{font-size:12px;padding:7px 12px;border-radius:10px;cursor:pointer}
+.approveBtn{background:var(--cyan);color:var(--night);font-weight:600}
+.rejectBtn{background:rgba(255,255,255,.08);color:var(--ink2);border:1px solid var(--gbrd)}
+.rdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#d9704f;margin-left:5px;vertical-align:middle}
+/* ---- P4 活动日历 ---- */
+.calRow{display:flex;align-items:center;gap:10px;margin:0 16px 9px;padding:13px 14px;background:rgba(255,255,255,.06);border:1px solid var(--gbrd);border-radius:16px}
+.calRow .cd{flex:1;min-width:0;font-size:13.5px;font-weight:600}
+.calRow .cd small{display:block;font-weight:400;font-size:10.5px;color:var(--ink3);margin-top:2px}
+.calRow .cd2{font-size:12px;color:var(--gold);flex:none}
+/* ---- P5 我的 ---- */
+.idcard{margin:12px 16px;padding:16px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.08);border-radius:24px;display:flex;align-items:center;gap:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.idcard .av{width:52px;height:52px;border-radius:50%;background:#3a4a54;color:#fff;font-size:21px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.idcard .nm{font-size:18px;font-weight:700}
+.idcard .sub{font-size:11px;color:var(--ink3);margin-top:3px}
+.meRow{display:flex;align-items:center;margin:0 16px 9px;padding:13px 14px;background:rgba(255,255,255,.06);border:1px solid var(--gbrd);border-radius:16px;font-size:13.5px;cursor:pointer}
+.meRow .r{margin-left:auto;color:var(--ink3)}
+.verLine{text-align:center;font-size:10px;color:var(--ink3);padding:18px 0 4px}
+/* ---- P5 二级消息中心/P6 用户异常卡(复用 #apanel 壳) ---- */
+.msgRow{display:flex;gap:10px;margin:0 16px 9px;padding:12px 14px;background:rgba(255,255,255,.06);border:1px solid var(--gbrd);border-radius:16px;cursor:pointer}
+.msgRow.unread{border-color:rgba(143,182,201,.4);background:rgba(143,182,201,.08)}
+.msgRow .ic{font-size:16px;flex:none}
+.msgRow .l{flex:1;min-width:0}
+.msgRow .t1{font-size:13px;font-weight:600}
+.msgRow .t2{font-size:11px;color:var(--ink3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msgRow.read{opacity:.45}
+.evRow{display:flex;align-items:center;margin:0 16px 7px;padding:10px 14px;background:rgba(255,255,255,.06);border:1px solid var(--gbrd);border-radius:12px;font-size:12px}
+.evRow .r{margin-left:auto;color:var(--ink3);font-size:10.5px}
+.evRow .self{font-size:10px;color:var(--ink3);margin-left:8px}
+.uhead{display:flex;align-items:center;gap:12px;padding:16px 16px 6px}
+.uhead .av{width:56px;height:56px;border-radius:50%;background:#3a4a54;color:#fff;font-size:21px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.uhead .nm{font-size:19px;font-weight:700}
+.uhead .sub{font-size:11px;color:var(--ink3);margin-top:3px}
+.upBtn{display:block;margin:8px 16px;text-align:center;font-size:13px;padding:11px;border-radius:12px;background:rgba(255,255,255,.08);border:1px dashed var(--gbrd);color:var(--ink2);cursor:pointer}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="phone">
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.3.0</b> · 运营工作台</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.4.0</b> · 运营工作台</span></div>
  <div id="wmain" style="display:none">
   <div id="wbody"></div>
   <div id="wnav"><span data-v="ov" class="on">总览</span><span data-v="anchors">主播</span><span data-v="appr">审批</span><span data-v="me">我的</span></div>
@@ -189,16 +228,16 @@ function adTeams(d){
   const status=o?(o.status==='done'?{live:false,n,since:'',step:'',canOff:false}:{live:false,n,since:'',step:o.step||'收场采集中',canOff:false}):{live:true,n,since:'',step:'',canOff:true};
   return {tid:t.tid,name:t.name,yday:t.yesterday?t.yesterday.income:null,month:null,wow,
    showUv:t.today?t.today.show_uv:null,pcu:null,warnR:(t.warn&&t.warn.red)||0,warnY:(t.warn&&t.warn.yellow)||0,status,
-   wkIncome:w.income||0,pwkIncome:p.income||0};
+   wkIncome:w.income||0,pwkIncome:p.income||0,founded:t.founded||null};
  });
  return {ok:d.ok,name:'运营',company:ts.length>1,teams:ts};
 }
 function adTodo(d){
  const g=d.groups||{};
  const mp={
-  icebreak:(g.ice||[]).map(r=>({l:`${r.anchor} · ${r.nick||'?'}`,r:`${r.hours}h 未私信`,ref:r.ref,tid:r.tid,anchor:r.anchor})),
-  noreply:(g.noreply||[]).map(r=>({l:`${r.anchor} · ${r.nick||'?'}`,r:'超 48h 未回复',ref:r.ref,tid:r.tid,anchor:r.anchor})),
-  maintain:(g.maintain||[]).map(r=>({l:`${r.anchor} · ${r.nick||'?'}`,r:r.lastAction==='从未'?'从未维护':`${r.lastAction.slice(5)} 后未维护`,ref:r.ref,tid:r.tid,anchor:r.anchor})),
+  icebreak:(g.ice||[]).map(r=>({l:`${r.anchor} · ${r.nick||'?'}`,r:`${r.hours}h 未私信`,ref:r.ref,tid:r.tid,anchor:r.anchor,sec:r.sec||'',sv:r.sv,tier:r.t,hours:r.hours})),
+  noreply:(g.noreply||[]).map(r=>({l:`${r.anchor} · ${r.nick||'?'}`,r:'超 48h 未回复',ref:r.ref,tid:r.tid,anchor:r.anchor,sec:r.sec||'',sv:r.sv,tier:r.t,hours:r.hours})),
+  maintain:(g.maintain||[]).map(r=>({l:`${r.anchor} · ${r.nick||'?'}`,r:r.lastAction==='从未'?'从未维护':`${r.lastAction.slice(5)} 后未维护`,ref:r.ref,tid:r.tid,anchor:r.anchor,sec:r.sec||'',sv:r.sv,tier:r.t,lastAction:r.lastAction})),
   warn:(g.warn||[]).map(r=>({l:r.anchor,r:r.text||(r.level==='red'?'🔴 红档':'🟡 黄档'),ref:r.ref,tid:r.tid,anchor:r.anchor})),
   approve:(g.rest||[]).map(r=>({l:r.anchor,r:`${r.kind||'休息'} ${String(r.date||'').slice(5)}`,ref:r.ref,tid:r.tid,anchor:r.anchor})),
  };
@@ -252,6 +291,47 @@ const API={
   /* 契约:POST /api/ops/nudge {token,anchor_pid,text} → {ok} / 4h 防重 {ok:false,msg:'该主播 4 小时内已催过,缓缓'}(业务态非错误,原文透传) */
   if(USE_MOCK)return {ok:true};
   return apiPost('/api/ops/nudge',{token:tok,anchor_pid:pid,text});
+ },
+ /* ===== v0.4.0 P3-P6 契约(注释挂起范式) ===== */
+ async restRead(tok){
+  /* 契约:POST /api/ops/rest {token} → {ok,groups:{待审批:[],已批准:[],已拒绝:[]}} 行 {page_id,name,date,type,reason,status,by,reviewed} */
+  if(USE_MOCK)return MOCK.rest;
+  const d=await apiPost('/api/ops/rest',{token:tok});
+  return d.ok?d:{ok:false};
+ },
+ async restReview(tok,pageId,decision){
+  /* 契约:POST /api/ops/rest {token,action:'review',page_id,decision:'approve'|'reject'}(幂等 dedup/ro 403/越团 400) */
+  if(USE_MOCK)return {ok:true};
+  return apiPost('/api/ops/rest',{token:tok,action:'review',page_id:pageId,decision});
+ },
+ async nudgeLog(tok){
+  /* 契约:POST /api/ops/nudge-log {token} → {ok,rows:[{ts,anchor,text}]}(wo-31a 在途) */
+  if(USE_MOCK)return MOCK.nudgeLog;
+  return {ok:false,error:'wo-31a'}; // 主控交付后启用:return apiPost('/api/ops/nudge-log',{token:tok});
+ },
+ async messages(tok){
+  /* 契约:POST /api/messages {token,include_read:true} → 真接口返 {ok,messages:[...]}（适配归一到 list） */
+  if(USE_MOCK)return MOCK.messages;
+  const d=await apiPost('/api/messages',{token:tok,include_read:true});
+  return d.ok?{ok:true,list:d.list||d.messages||[]}:{ok:false};
+ },
+ async msgRead(tok,id){
+  /* 契约:POST /api/messages/read {token,id} → {ok} */
+  if(USE_MOCK)return {ok:true};
+  return apiPost('/api/messages/read',{token:tok,id});
+ },
+ async evidence(tok,sec){
+  /* 契约:POST /api/ops/evidence {token,sec} → {ok,subs:[{kind,anchor_name,created_at}],msgs:[{msg_ts,role,kind,excerpt}]}(behavior 字段 wo-31a 在途) */
+  if(USE_MOCK)return MOCK.evidence;
+  const d=await apiPost('/api/ops/evidence',{token:tok,sec});
+  return d.ok?d:{ok:false};
+ },
+ async uploadImg(tok,file){
+  /* 契约:POST /api/ai/extract 复用主播版上传链路(截图存证留档) */
+  if(USE_MOCK)return {ok:true};
+  const fd=new FormData();fd.append('token',tok);fd.append('file',file);
+  const r=await fetch('https://fb.menghualu.com.co/api/ai/extract',{method:'POST',body:fd});
+  return r.json();
  }
 };
 /* ===== P0 登录 ===== */
@@ -348,14 +428,14 @@ async function loadTodo(){
   const list=g[k]||[];
   if(!list.length)return '';
   n+=list.length;
-  return `<div class="usec">${name} · ${cnt[k]||list.length}</div>`+list.map(r=>trow(r)).join('');
+  return `<div class="usec">${name} · ${cnt[k]||list.length}</div>`+list.map(r=>trow(r,k)).join('');
  }).join('');
  $('#wTodoN').textContent=n;
  box.innerHTML=html||emptyState('今日无异常','各团运转正常');
  bindTrows();
 }
-function trow(r){
- return `<div class="trow" data-ref="${esc(r.ref||'')}" data-tid="${esc(r.tid||'')}"><div class="tslide"><div class="tmain"><div class="l">${esc(r.l)}</div><div class="r">${esc(r.r)}</div></div>
+function trow(r,grp){
+ return `<div class="trow" data-grp="${grp||''}" data-sec="${esc(r.sec||'')}" data-ref="${esc(r.ref||'')}" data-tid="${esc(r.tid||'')}" data-anchor="${esc(r.anchor||'')}" data-nick="${esc((r.l||'').split(' · ')[1]||'')}" data-sv="${r.sv||''}" data-tier="${esc(r.tier||'')}" data-hours="${r.hours||''}" data-la="${esc(r.lastAction||'')}"><div class="tslide"><div class="tmain"><div class="l">${esc(r.l)}</div><div class="r">${esc(r.r)}</div></div>
  <div class="tacts"><span class="a1" data-a="done">处理</span><span class="a2" data-a="note">记一下</span><span class="a3" data-a="ignore">忽略</span></div></div></div>`;
 }
 function bindTrows(){
@@ -381,7 +461,11 @@ function bindTrows(){
   });
   row.querySelector('.tmain').onclick=()=>{
    if(open){sl.style.transform='';open=false;return;}
-   toast('直达处理位(第 #008 单接通)');
+   const grp=row.dataset.grp;
+   if(grp==='warn'){switchView('anchors');return;} /* 预警行直达主播页（深链面板待 wo-30a pid） */
+   if(grp==='approve'){switchView('appr');return;} /* 待审批行直达审批中心 */
+   if(!row.dataset.sec){toast('该行无用户级明细');return;}
+   openUserCard({sec:row.dataset.sec,anchor:row.dataset.anchor,nick:row.dataset.nick,sv:+row.dataset.sv||0,tier:row.dataset.tier||'',hours:+row.dataset.hours||0,lastAction:row.dataset.la||''},row);
   };
  });
 }
@@ -504,8 +588,9 @@ function openAnchorPanel(a,row){
   const rows=[...(g.icebreak||[]),...(g.noreply||[]),...(g.maintain||[])].filter(r=>r.anchor===a.name);
   if(!rows.length)return;
   const box=$('#apTodo');if(!box)return;
-  box.innerHTML=`<div class="usec">异常用户 · ${rows.length}</div>`+rows.map(r=>`<div class="r10"><span>${esc(r.l.split(' · ')[1]||r.l)}</span><span class="rr">${esc(r.r)}</span></div>`).join('');
-  box.querySelectorAll('.r10').forEach(x=>x.onclick=()=>toast('用户异常卡第 #013 单就到'));
+  box.innerHTML=`<div class="usec">异常用户 · ${rows.length}</div>`+rows.map((r,i)=>`<div class="r10" data-i="${i}"><span>${esc(r.l.split(' · ')[1]||r.l)}</span><span class="rr">${esc(r.r)}</span></div>`).join('');
+  box.querySelectorAll('.r10').forEach(x=>x.onclick=()=>{const r=rows[+x.dataset.i];
+   openUserCard({sec:r.sec||'',anchor:r.anchor||a.name,nick:(r.l||'').split(' · ')[1]||'',sv:r.sv||0,tier:r.tier||'',hours:r.hours||0,lastAction:r.lastAction||''},x);});
  }).catch(()=>{});
  API.anchorDetail(TOK,a.pid||'').then(d=>{
   if(!APANEL||APANEL.a!==a)return;
@@ -585,16 +670,165 @@ function bindSwipeBackWb(el,onBack,allow){
   if(dx>60&&Math.abs(dy)<40&&dx>1.5*Math.abs(dy))onBack();
  },{passive:true});
 }
+/* ===== P3 审批中心 ===== */
+async function renderAppr(){
+ const w=$('#wbody');
+ w.innerHTML=`<div class="usec">审批中心</div><div id="apprList"><div class="sk">…</div><div class="sk">…</div></div><div id="nudgeBox"></div>`;
+ let d=null;try{d=await API.restRead(TOK);}catch(e){}
+ const box=$('#apprList');if(!box)return;
+ if(!d||!d.ok){box.innerHTML=emptyState('审批列表加载失败',new Date().toTimeString().slice(0,8)+' · 点按重试');box.onclick=()=>{box.onclick=null;renderAppr();};return;}
+ const g=d.groups||{};
+ const pend=g['待审批']||[];
+ const grp=(name,list,acts)=>list.length?`<div class="usec">${name}${name==='待审批'&&list.length?`<span class="rdot"></span>`:''} · ${list.length}</div>`+list.map(r=>apprRow(r,acts)).join(''):'';
+ box.innerHTML=(grp('待审批',pend,true)+grp('已批准',(g['已批准']||[]),false)+grp('已拒绝',(g['已拒绝']||[]),false))||emptyState('没有审批事项','');
+ bindApprRows();
+ loadNudgeLog();
+}
+function apprRow(r,acts){
+ return `<div class="mrowb" data-pid="${esc(r.page_id||'')}" data-name="${esc(r.name||'')}"><div class="l"><div class="t1">${esc(r.name||'?')}</div>
+ <div class="t2">${esc(r.type||'休息')} ${String(r.date||'').slice(5)}${r.reason?' · '+esc(r.reason):''}</div></div>
+ ${acts?`<div class="abts"><span class="approveBtn" data-d="approve">批准</span><span class="rejectBtn" data-d="reject">驳回</span></div>`:''}</div>`;
+}
+function bindApprRows(){
+ document.querySelectorAll('#apprList .abts span').forEach(b=>b.onclick=()=>{
+  const row=b.closest('.mrowb'),name=row.dataset.name,pid=row.dataset.pid;
+  const decision=b.dataset.d,verb=decision==='approve'?'批准':'驳回';
+  const dim=document.createElement('div');dim.id='cfmDim';
+  const cf=document.createElement('div');cf.id='cfm';
+  cf.innerHTML=`<div class="ct">确认${verb}?</div><div class="cs">${esc(name)} 的休息申请 · ${verb}后运营系统留痕</div>
+  <div class="cb"><span class="no">取消</span><span class="ok">确认${verb}</span></div>`;
+  $('#phone').appendChild(dim);$('#phone').appendChild(cf);
+  const off=()=>{dim.remove();cf.remove();};
+  dim.onclick=off;cf.querySelector('.no').onclick=off;
+  cf.querySelector('.ok').onclick=async()=>{off();
+   const d=await API.restReview(TOK,pid,decision).catch(()=>null);
+   if(d&&d.ok){toast(`已${verb} · ${name}`);row.remove();
+    const nEl=[...document.querySelectorAll('#apprList .usec')][0]; /* 待审批计数-1 */
+    if(nEl){const m=nEl.textContent.match(/(\d+)\s*$/);if(m){const n=+m[1]-1;if(n>0)nEl.textContent=nEl.textContent.replace(/\d+\s*$/,String(n));else nEl.remove();}}
+   }
+   else if(d&&d.dedup){toast('已被处理过');renderAppr();}
+   else if(d&&/只读/.test(d.error||''))toast('只读码不可批');
+   else toast((d&&d.error)||'网络异常,稍后再试');
+  };
+ });
+}
+async function loadNudgeLog(){
+ const box=$('#nudgeBox');if(!box)return;
+ let d=null;try{d=await API.nudgeLog(TOK);}catch(e){}
+ if(!d||!d.ok){box.innerHTML=`<div class="usec">催办记录</div><div class="gbox">接口在途 · wo-31a</div>`;return;}
+ const rows=d.rows||[];
+ box.innerHTML=`<div class="usec">催办记录</div>`+(rows.length?rows.map(r=>`<div class="evRow"><span>${String(r.ts||'').slice(5,16)} · ${esc(r.anchor||'')}</span><span class="r">${esc(String(r.text||'').slice(0,18))}</span></div>`).join(''):emptyState('暂无催办',''));
+}
+/* ===== P4 活动日历(只读) ===== */
+function renderCal(back){
+ const w=$('#wbody');
+ const foot=`<div class="gbox" style="border:0">活动赛事框架(周赛/日赛)后续建库,本页仅节点提醒</div>`;
+ const backRow=back?`<div class="meRow" id="calBack">‹ 返回<span class="r"></span></div>`:'';
+ const has=TEAMS.some(t=>t.founded);
+ if(!has){w.innerHTML=backRow+`<div class="usec">活动日历</div>${emptyState('节点数据在途 · wo-31a','团成立日期字段交付后自动点亮')}`+foot;
+  if(back)$('#calBack').onclick=()=>renderMe();return;}
+ const today=new Date(bjDay()+'T00:00:00+08:00');
+ const nodes=[];
+ TEAMS.forEach(t=>{if(!t.founded)return;const f=new Date(t.founded+'T00:00:00+08:00');
+  [['满月',30],['百天',100]].forEach(([k,d])=>{const dt=new Date(f.getTime()+d*86400000);const left=Math.round((dt-today)/86400000);
+   if(left>=0&&left<=90)nodes.push({team:t.name,kind:k,date:dt.toISOString().slice(0,10),left});});});
+ nodes.sort((a,b)=>a.left-b.left);
+ w.innerHTML=backRow+`<div class="usec">活动日历</div>`+(nodes.length?nodes.map(n=>
+  `<div class="calRow"><div class="cd">${esc(n.team)} · ${n.kind}<small>${n.date}</small></div><div class="cd2">${n.left===0?'就是今天 🎉':'还有 '+n.left+' 天'}</div></div>`).join(''):emptyState('未来 90 天没有节点',''))+foot;
+ if(back)$('#calBack').onclick=()=>renderMe();
+}
+/* ===== P5 我的 ===== */
+function renderMe(){
+ const w=$('#wbody');
+ w.innerHTML=`<div class="idcard"><div class="av">${(ME||'?')[0]}</div><div><div class="nm">${esc(ME||'')}</div>
+ <div class="sub">名下 ${TEAMS.length} 团:${TEAMS.map(t=>esc(t.name)).join('/')||'—'}</div></div></div>
+ <div class="meRow" id="meMsg">通知中心<span class="r">›</span></div>
+ <div class="meRow" id="meCal">活动日历<span class="r">›</span></div>
+ <div class="verLine">v0.4.0 · 运营工作台</div>
+ <div id="meOut">退出切换账号</div>`;
+ $('#meOut').onclick=()=>{localStorage.removeItem('wb_tok');TOK='';location.reload();};
+ $('#meMsg').onclick=()=>openMsgCenter();
+ $('#meCal').onclick=()=>renderCal(true);
+}
+const NICO={review_result:'✅',appeal_result:'🧭',nr_alert:'🔴',offair_done:'📦',data_updated:'🔄',bday:'🎂',cross:'🌐',returned:'💫',ops_note:'📝',nudge:'📣',watchdog:'🐶'};
+async function openMsgCenter(){
+ const w=$('#wbody');
+ w.innerHTML=`<div class="meRow" id="msgBack">‹ 返回<span class="r"></span></div><div class="usec">通知中心</div><div id="msgList"><div class="sk">…</div></div>`;
+ $('#msgBack').onclick=()=>renderMe();
+ let d=null;try{d=await API.messages(TOK);}catch(e){}
+ const box=$('#msgList');if(!box)return;
+ if(!d||!d.ok){box.innerHTML=emptyState('通知加载失败',new Date().toTimeString().slice(0,8)+' · 点按重试');box.onclick=()=>{box.onclick=null;openMsgCenter();};return;}
+ const list=d.list||[];
+ box.innerHTML=list.length?list.map(m=>`<div class="msgRow${m.read?' read':' unread'}" data-id="${esc(m.id||'')}"><div class="ic">${NICO[m.kind]||'📩'}</div>
+  <div class="l"><div class="t1">${esc(m.title||'')}</div><div class="t2">${esc(m.body||'')}</div></div></div>`).join(''):emptyState('暂无通知','');
+ box.querySelectorAll('.msgRow').forEach(row=>row.onclick=()=>{
+  if(!row.classList.contains('read')){row.classList.remove('unread');row.classList.add('read');API.msgRead(TOK,row.dataset.id).catch(()=>{});}
+ });
+}
+/* ===== P6 用户异常卡(下钻层,非导航项) ===== */
+function openUserCard(u,row){
+ if(APANEL)closeAnchorPanel(); /* 主播面板在→缩回,用户卡接力打开 */
+ const pr=$('#phone').getBoundingClientRect();
+ const r=row?row.getBoundingClientRect():null;
+ const dim=document.createElement('div');dim.id='apDim';
+ const p=document.createElement('div');p.id='apanel';
+ const W=Math.round(pr.width*0.92),H=Math.round(pr.height*0.8),L=Math.round(pr.width*0.04),T=Math.round(pr.height*0.09);
+ p.style.left=L+'px';p.style.top=T+'px';p.style.width=W+'px';p.style.height=H+'px';
+ const svYuan=u.sv!=null?'¥'+Math.round(u.sv/10).toLocaleString():'—';
+ const advice=(u.hours>=48&&(u.sv||0)>=5000)?'高价值用户超 48h 未破冰，今天必撩':(u.lastAction==='从未'?'从未维护过，建议从点赞作品破冰':'按维护节奏跟进即可');
+ p.innerHTML=`<div class="uhead"><div class="av">${(u.nick||'?')[0]}</div><div><div class="nm">${esc(u.nick||'?')}</div>
+ <div class="sub">归属 ${esc(u.anchor||'?')} · ${u.tier||'未评级'} · 累计消费 ${svYuan}</div></div></div>
+ <div class="abody">
+  <div class="usec">客观行为</div>
+  <div class="gbox">行为数据在途 · wo-31a</div>
+  <div class="usec">回传时间线</div>
+  <div id="ucSubs"><div class="sk">…</div></div>
+  <div class="usec">截图存证</div>
+  <div id="ucMsgs"></div>
+  <div class="upBtn" id="ucUp">+ 上传截图存证</div>
+  <input type="file" id="ucFile" accept="image/*" style="display:none">
+  <div class="usec">系统建议</div>
+  <div class="rread">${advice}</div>
+ </div>`;
+ $('#phone').appendChild(dim);$('#phone').appendChild(p);
+ APANEL={p,dim,a:u};
+ if(!RM){
+  p.style.transformOrigin='top left';
+  const rr=r?{left:r.left-pr.left-L,top:r.top-pr.top-T,w:r.width/W,h:r.height/H}:{left:W/2,top:H/2,w:0.2,h:0.05};
+  p.style.transform=`translate(${rr.left}px,${rr.top}px) scale(${rr.w},${rr.h})`;
+  p.style.opacity='0';p.getBoundingClientRect();
+  dim.style.opacity='1';
+  p.style.transition='transform .44s cubic-bezier(.32,.72,.35,1),opacity .22s';
+  p.style.opacity='1';p.style.transform='none';
+ }else{dim.style.opacity='1';}
+ dim.onclick=()=>closeAnchorPanel();
+ bindSwipeBackWb(p,()=>closeAnchorPanel(),t=>!t.closest('textarea,input,select'));
+ API.evidence(TOK,u.sec||'').then(d=>{
+  if(!APANEL||APANEL.a!==u)return;
+  const box=$('#ucSubs');if(!box)return;
+  if(!d||!d.ok){box.innerHTML='<div class="gbox">时间线加载失败</div>';return;}
+  const subs=(d.subs||[]).slice().sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
+  box.innerHTML=subs.length?subs.map(s=>`<div class="evRow"><span>${esc(s.kind||'回传')} · ${String(s.created_at||'').slice(0,16)}<span class="self">自报</span></span><span class="r">${esc(s.anchor_name||'')}</span></div>`).join(''):emptyState('暂无回传','');
+  const msgs=(d.msgs||[]).filter(m=>m.kind==='image'||m.excerpt==='[截图]');
+  $('#ucMsgs').innerHTML=msgs.length?msgs.map(m=>`<div class="evRow"><span>🖼 ${String(m.msg_ts||'').slice(0,16)}</span><span class="r">${esc(m.role==='anchor'?'主播':'用户')}</span></div>`).join(''):'<div class="gbox">暂无存证</div>';
+ }).catch(()=>{const box=$('#ucSubs');if(box)box.innerHTML='<div class="gbox">时间线加载失败</div>';});
+ const fileIn=p.querySelector('#ucFile');
+ p.querySelector('#ucUp').onclick=()=>fileIn.click();
+ fileIn.onchange=async()=>{
+  const f=fileIn.files&&fileIn.files[0];if(!f)return;
+  toast('上传中…');
+  const d=await API.uploadImg(TOK,f).catch(()=>null);
+  if(d&&d.ok)toast('已存证');else toast('上传失败，稍后再试');
+ };
+}
 /* ===== 底部导航/占位页 ===== */
 function switchView(v){
  VIEW=v;
  document.querySelectorAll('#wnav span').forEach(s=>s.classList.toggle('on',s.dataset.v===v));
  if(v==='ov'){renderOv();return;}
  if(v==='anchors'){renderAnchors();return;}
- const ph={appr:'第 #003 单就到',me:'第 #005 单就到'}[v]||'';
- $('#wbody').innerHTML=emptyState('建设中',ph)+(v==='me'?'<div id="meOut">退出切换</div>':'');
- const out=$('#meOut');
- if(out)out.onclick=()=>{localStorage.removeItem('wb_tok');TOK='';location.reload();};
+ if(v==='appr'){renderAppr();return;}
+ if(v==='me'){renderMe();return;}
 }
 function emptyState(t,s){return `<div class="empty2"><div class="et">${t}</div><div class="es">${s||''}</div></div>`;}
 document.querySelectorAll('#wnav span').forEach(s=>s.onclick=()=>switchView(s.dataset.v));
@@ -603,22 +837,23 @@ $('#lcode').addEventListener('keydown',e=>{if(e.key==='Enter')$('#lgo').click();
 (async()=>{if(TOK){let d=null;try{d=await API.teams(TOK);}catch(e){}if(d&&d.ok){enterMain(d);return;}if(d&&!d.ok)localStorage.removeItem('wb_tok');}})();
 /* ===== mock(结构=契约;主控交付后删) ===== */
 const hmAgo=m=>{const d=new Date(Date.now()-m*60000);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
+const dayAgo=n=>new Date(Date.now()+8*3600e3-n*86400e3).toISOString().slice(0,10);
 const MOCK={
  teams:{
   boss:{name:'老板',role:'boss',company:true,teams:[
-   {tid:'sy',name:'水月团',anchorCount:6,yday:21400,month:483000,wow:12,showUv:3240,pcu:86,warnR:1,warnY:2,status:{live:true,n:2,since:hmAgo(40),step:'',canOff:true}},
-   {tid:'xz',name:'行舟团',anchorCount:4,yday:18900,month:361000,wow:-5,showUv:2780,pcu:64,warnR:0,warnY:1,status:{live:false,n:2,since:'',step:'',canOff:false}},
-   {tid:'xy',name:'寻音团',anchorCount:2,yday:9800,month:156000,wow:3,showUv:1520,pcu:30,warnR:0,warnY:1,status:{live:false,n:1,since:'',step:'',canOff:false}},
+   {tid:'sy',name:'水月团',anchorCount:6,yday:21400,month:483000,wow:12,showUv:3240,pcu:86,warnR:1,warnY:2,status:{live:true,n:2,since:hmAgo(40),step:'',canOff:true},founded:dayAgo(10)},
+   {tid:'xz',name:'行舟团',anchorCount:4,yday:18900,month:361000,wow:-5,showUv:2780,pcu:64,warnR:0,warnY:1,status:{live:false,n:2,since:'',step:'',canOff:false},founded:dayAgo(80)},
+   {tid:'xy',name:'寻音团',anchorCount:2,yday:9800,month:156000,wow:3,showUv:1520,pcu:30,warnR:0,warnY:1,status:{live:false,n:1,since:'',step:'',canOff:false},founded:dayAgo(95)},
   ]},
   ops:{name:'运营小赵',role:'ops',teams:[
-   {tid:'sy',name:'水月团',anchorCount:6,yday:21400,month:483000,wow:12,showUv:3240,pcu:86,warnR:1,warnY:2,status:{live:true,n:2,since:hmAgo(40),step:'',canOff:true}},
+   {tid:'sy',name:'水月团',anchorCount:6,yday:21400,month:483000,wow:12,showUv:3240,pcu:86,warnR:1,warnY:2,status:{live:true,n:2,since:hmAgo(40),step:'',canOff:true},founded:dayAgo(10)},
   ]}
  },
  todo:{
   sy:{groups:{
-   icebreak:[{l:'小鱼 · TT',r:'24h+ 未私信',anchor:'小鱼',nick:'TT'},{l:'蕣华 · 老周',r:'24h+ 未私信',anchor:'蕣华',nick:'老周'}],
-   noreply:[{l:'千羽 · 阿果',r:'48h+ 未回复',anchor:'千羽',nick:'阿果'}],
-   maintain:[{l:'小鱼 · 阿豪',r:'3 天未维护',anchor:'小鱼',nick:'阿豪'},{l:'小鱼 · 老白',r:'5 天未维护',anchor:'小鱼',nick:'老白'}],
+   icebreak:[{l:'小鱼 · TT',r:'24h+ 未私信',anchor:'小鱼',nick:'TT',ref:'u_tt',sv:8200,tier:'A',hours:24,lastAction:'已私信'},{l:'蕣华 · 老周',r:'24h+ 未私信',anchor:'蕣华',nick:'老周',ref:'u_lz',sv:1200,tier:'B',hours:24,lastAction:'从未'}],
+   noreply:[{l:'千羽 · 阿果',r:'48h+ 未回复',anchor:'千羽',nick:'阿果',ref:'u_ag',sv:600,tier:'C',hours:52,lastAction:'已回复'}],
+   maintain:[{l:'小鱼 · 阿豪',r:'3 天未维护',anchor:'小鱼',nick:'阿豪',ref:'u_ah',sv:21000,tier:'S',hours:80,lastAction:'10-05'},{l:'小鱼 · 老白',r:'5 天未维护',anchor:'小鱼',nick:'老白',ref:'u_lb',sv:3000,tier:'B',hours:120,lastAction:'从未'}],
    warn:[{l:'涟漪',r:'🔴 红档',anchor:'涟漪'}],
    approve:[{l:'水月团',r:'3 件',anchor:''}],
   }},
@@ -652,6 +887,22 @@ const MOCK={
    xy:{anchors:{'老周':{av:'',stability:66,trend:70,coop:72,retention:60,income:58,overall:73}}},
   },
   detail:{ok:true,recent10:[{date:'10-08',income:'¥4,200',acu:312,giftMiss:0},{date:'10-07',income:'¥3,900',acu:288,giftMiss:1},{date:'10-06',income:'¥4,800',acu:340,giftMiss:0}],tiers:{S:2,A:5,B:12,C:20,D:8,L3:3}},
- }
+ },
+ /* v0.4.0 mock:rest 三组各 2/messages 4(未读 2)/evidence 一用户/nudgeLog 一条 */
+ rest:{ok:true,groups:{
+  '待审批':[{page_id:'pg1',name:'小鱼',date:dayAgo(-1),type:'事假（无卡）',reason:'家里有事，回老家一趟',status:'待审批'},{page_id:'pg2',name:'千羽',date:dayAgo(-2),type:'病假（无卡）',reason:'感冒发烧',status:'待审批'}],
+  '已批准':[{page_id:'pg3',name:'涟漪',date:dayAgo(3),type:'事假（无卡）',reason:'拔牙',status:'已批准',by:'老板',reviewed:dayAgo(2)},{page_id:'pg4',name:'阿灿',date:dayAgo(6),type:'其他（无卡）',reason:'搬家',status:'已批准',by:'老板',reviewed:dayAgo(5)}],
+  '已拒绝':[{page_id:'pg5',name:'老周',date:dayAgo(8),type:'事假（无卡）',reason:'想歇',status:'已拒绝',by:'老板',reviewed:dayAgo(7)},{page_id:'pg6',name:'蕣华',date:dayAgo(10),type:'病假（无卡）',reason:'不舒服',status:'已拒绝',by:'老板',reviewed:dayAgo(9)}],
+ }},
+ messages:{ok:true,list:[
+  {id:'m1',kind:'nudge',title:'催办已送达',body:'已提醒小鱼今日维护还没回传',created_at:dayAgo(0)+' 21:10',read:0},
+  {id:'m2',kind:'offair_done',title:'收场完成',body:'水月团第 2 场采集已收官',created_at:dayAgo(0)+' 20:02',read:0},
+  {id:'m3',kind:'bday',title:'生日提醒',body:'老周今天生日，开场提一句',created_at:dayAgo(1)+' 09:00',read:1},
+  {id:'m4',kind:'watchdog',title:'巡检正常',body:'兜底巡检无异常',created_at:dayAgo(1)+' 08:00',read:1},
+ ]},
+ nudgeLog:{ok:true,rows:[{ts:dayAgo(0)+' 21:10',anchor:'小鱼',text:'运营提醒你今日维护还没回传'}]},
+ evidence:{ok:true,
+  subs:[{kind:'日常维护',anchor_name:'小鱼',created_at:dayAgo(1)+' 22:10'},{kind:'已私信',anchor_name:'小鱼',created_at:dayAgo(2)+' 21:40'},{kind:'日常维护',anchor_name:'小鱼',created_at:dayAgo(3)+' 23:05'},{kind:'已拉群',anchor_name:'小鱼',created_at:dayAgo(5)+' 20:11'},{kind:'日常维护',anchor_name:'小鱼',created_at:dayAgo(6)+' 22:30'}],
+  msgs:[{msg_ts:dayAgo(1)+' 21:00',role:'user',kind:'image',excerpt:'[截图]'},{msg_ts:dayAgo(2)+' 20:00',role:'anchor',kind:'image',excerpt:'[截图]'},{msg_ts:dayAgo(3)+' 19:00',role:'user',kind:'text',excerpt:'好的'}]},
 };
 </script></body></html>
