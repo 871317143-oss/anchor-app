@@ -92,7 +92,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="phone">
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.1.0</b> · 运营工作台</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.2.0</b> · 运营工作台</span></div>
  <div id="wmain" style="display:none">
   <div id="wbody"></div>
   <div id="wnav"><span data-v="ov" class="on">总览</span><span data-v="anchors">主播</span><span data-v="appr">审批</span><span data-v="me">我的</span></div>
@@ -113,26 +113,65 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;',
 function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity='1';clearTimeout(t._x);t._x=setTimeout(()=>t.style.opacity='0',2200);}
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 let TOK=localStorage.getItem('wb_tok')||'',ME=null,TEAMS=[],COMPANY=false,CUR='',VIEW='ov';
-/* ===== 接口契约层(契约按 PRD §7 写死;主控交付后启用真实 fetch,视图只消费 API 对象) ===== */
+/* ===== 接口契约层（v0.2.0 真接口接通；?mock=1 走本地演示；失败→灰态+时间戳） ===== */
+const USE_MOCK=new URLSearchParams(location.search).has('mock');
+async function apiPost(path,body){
+ const r=await fetch('https://fb.menghualu.com.co'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ return r.json();
+}
+/* 真接口→视图模型适配（缺口字段=null 灰态，工单 wo-29a 跟进：name/本月/PCU/开播时刻/记一下动作） */
+function adTeams(d){
+ const ts=(d.teams||[]).map(t=>{
+  const w=t.week||{},p=t.prevWeek||{};
+  const wow=(w.income!=null&&p.income)?Math.round((w.income-p.income)/p.income*100):null;
+  const o=t.offair,n=(t.today&&t.today.sessions)||0;
+  /* offair 无行=今日未收场；有行非 done=收场采集中；done=已结束 */
+  const status=o?(o.status==='done'?{live:false,n,since:'',step:'',canOff:false}:{live:false,n,since:'',step:o.step||'收场采集中',canOff:false}):{live:true,n,since:'',step:'',canOff:true};
+  return {tid:t.tid,name:t.name,yday:t.yesterday?t.yesterday.income:null,month:null,wow,
+   showUv:t.today?t.today.show_uv:null,pcu:null,warnR:(t.warn&&t.warn.red)||0,warnY:(t.warn&&t.warn.yellow)||0,status,
+   wkIncome:w.income||0,pwkIncome:p.income||0};
+ });
+ return {ok:d.ok,name:'运营',company:ts.length>1,teams:ts};
+}
+function adTodo(d){
+ const g=d.groups||{};
+ const mp={
+  icebreak:(g.ice||[]).map(r=>({l:`${r.anchor} · ${r.nick||'?'}`,r:`${r.hours}h 未私信`,ref:r.ref,tid:r.tid})),
+  noreply:(g.noreply||[]).map(r=>({l:`${r.anchor} · ${r.nick||'?'}`,r:'超 48h 未回复',ref:r.ref,tid:r.tid})),
+  maintain:(g.maintain||[]).map(r=>({l:`${r.anchor} · ${r.nick||'?'}`,r:r.lastAction==='从未'?'从未维护':`${r.lastAction.slice(5)} 后未维护`,ref:r.ref,tid:r.tid})),
+  warn:(g.warn||[]).map(r=>({l:r.anchor,r:r.text||(r.level==='red'?'🔴 红档':'🟡 黄档'),ref:r.ref,tid:r.tid})),
+  approve:(g.rest||[]).map(r=>({l:r.anchor,r:`${r.kind||'休息'} ${String(r.date||'').slice(5)}`,ref:r.ref,tid:r.tid})),
+ };
+ const c=d.counts||{};
+ return {ok:d.ok,groups:mp,counts:{icebreak:c.ice,noreply:c.noreply,maintain:c.maintain,warn:c.warn,approve:c.rest}};
+}
 const API={
  async teams(tok){
-  /* 契约:POST /api/ops/teams {token} → {ok,name,role:'boss'|'ops',teams:[{tid,name,anchorCount}],company?:bool} */
-  // const r=await fetch('https://fb.menghualu.com.co/api/ops/teams',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok})});return r.json(); // 主控交付后启用
-  await new Promise(r=>setTimeout(r,240));
-  const m=MOCK.teams[tok];
-  return m?{ok:true,...m}:{ok:false,error:'访问码无效或未开通'};
+  /* 契约:POST /api/ops/teams {token} → {ok,date,teams:[{tid,name,today,yesterday,week,prevWeek,recent,offair,warn,pendingRest}]} */
+  if(USE_MOCK){await new Promise(r=>setTimeout(r,240));const m=MOCK.teams[tok];return m?{ok:true,...m}:{ok:false,error:'访问码无效或未开通'};}
+  const d=await apiPost('/api/ops/teams',{token:tok});
+  if(!d.ok)return {ok:false,error:d.error||'访问码无效或未开通'};
+  return adTeams(d);
  },
  async todo(tok,tid){
-  /* 契约:POST /api/ops/todo {token,tid} → {ok,groups:{icebreak:[],noreply:[],maintain:[],warn:[],approve:[]}} */
-  // const r=await fetch('https://fb.menghualu.com.co/api/ops/todo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok,tid})});return r.json(); // 主控交付后启用
-  await new Promise(r=>setTimeout(r,200));
-  const g=(MOCK.todo[tid]||{}).groups;
-  return g?{ok:true,groups:g}:{ok:true,groups:{icebreak:[],noreply:[],maintain:[],warn:[],approve:[]}};
+  /* 契约:POST /api/ops/todo {token,tid} → {ok,counts,groups:{ice,noreply,maintain,warn,rest}} */
+  if(USE_MOCK){await new Promise(r=>setTimeout(r,200));const g=(MOCK.todo[tid]||{}).groups;return g?{ok:true,groups:g,counts:{}}:{ok:true,groups:{icebreak:[],noreply:[],maintain:[],warn:[],approve:[]},counts:{}};}
+  const d=await apiPost('/api/ops/todo',{token:tok,tid});
+  return d.ok?adTodo(d):{ok:false};
+ },
+ async todoAct(tok,ref,tid,action){ /* 留痕:处理=done 忽略=ignore（记一下动作 wo-29a 待接口） */
+  if(USE_MOCK)return {ok:true,status:action==='done'?'已处理':'已忽略'};
+  return apiPost('/api/ops/todo-act',{token:tok,ref,tid,action});
+ },
+ async offair(tok,tid){ /* 下播收场:真实触发采集一条龙（服务端 dedup 兜底） */
+  if(USE_MOCK)return {ok:true,dedup:false};
+  return apiPost('/api/ops/offair',{token:tok,tid});
  }
 };
 /* ===== P0 登录 ===== */
 async function doLogin(tok){
- const d=await API.teams(tok);
+ let d;
+ try{d=await API.teams(tok);}catch(e){$('#lerr').textContent='网络异常，稍后重试';return;}
  if(!d.ok){$('#lerr').textContent=d.error||'访问码无效或未开通';return;}
  TOK=tok;localStorage.setItem('wb_tok',tok);
  enterMain(d);
@@ -153,7 +192,13 @@ function renderOv(){
   ?`<span class="chip on" id="wTeam">${CUR==='all'?'全部':(TEAMS.find(t=>t.tid===CUR)||{}).name||''}</span>`
   :(TEAMS.length>1?`<span class="chip" id="wTeam">${(TEAMS.find(t=>t.tid===CUR)||{}).name||''}</span>`:`<span class="chip" style="pointer-events:none">${(TEAMS[0]||{}).name||''}</span>`);
  const cards=[...TEAMS];
- if(COMPANY)cards.push({tid:'all',name:'全公司',yday:40300,month:844000,wow:5,showUv:6020,pcu:150,warnR:1,warnY:3,status:{live:false,n:4,since:''}});
+ if(COMPANY){
+  const sy=TEAMS.reduce((a,t)=>a+(t.yday||0),0);
+  const su=TEAMS.reduce((a,t)=>a+(t.showUv||0),0),sn=TEAMS.reduce((a,t)=>a+(t.status.n||0),0);
+  const wr=TEAMS.reduce((a,t)=>a+(t.warnR||0),0),wy=TEAMS.reduce((a,t)=>a+(t.warnY||0),0);
+  const wsum=TEAMS.reduce((a,t)=>a+t.wkIncome,0),psum=TEAMS.reduce((a,t)=>a+t.pwkIncome,0);
+  cards.push({tid:'all',name:'全公司',yday:sy,month:null,wow:psum?Math.round((wsum-psum)/psum*100):null,showUv:su,pcu:null,warnR:wr,warnY:wy,status:{live:false,n:sn,since:'',canOff:false}});
+ }
  w.innerHTML=`<div class="hello"><span class="hi">Hello,</span><div class="av">${(ME||'?')[0]}</div><span class="nm">${esc(ME||'')}</span>${teamChips}</div>
  <div class="tbelt${cards.length===1?' one':''}">${cards.map(t=>tcard(t)).join('')}</div>
  <div class="usec">今日异常待办 · <span id="wTodoN">…</span></div><div id="wTodo"><div class="trow"><div class="tslide"><div class="tmain"><div class="l">…</div></div></div></div></div>`;
@@ -169,15 +214,16 @@ function renderOv(){
 }
 function tcard(t){
  const s=t.status||{};
+ const gv=v=>v==null?'<div class="v" style="opacity:.35">—</div>':`<div class="v">${v}</div>`;
  const nums=`<div class="tgrid">
-  <div class="tg"><div class="v">${fmtW(t.yday)}</div><div class="k">昨日流水</div></div>
-  <div class="tg"><div class="v">${fmtW(t.month)}</div><div class="k">本月流水</div></div>
-  <div class="tg"><div class="v">${t.wow<0?`<i class="dn">↓${-t.wow}%</i>`:`<i class="up">↑${t.wow}%</i>`}</div><div class="k">周环比</div></div>
-  <div class="tg"><div class="v">${t.showUv.toLocaleString()}</div><div class="k">曝光</div></div></div>
+  <div class="tg">${gv(t.yday==null?null:fmtW(t.yday))}<div class="k">昨日流水</div></div>
+  <div class="tg">${gv(t.month==null?null:fmtW(t.month))}<div class="k">本月流水</div></div>
+  <div class="tg">${gv(t.wow==null?null:(t.wow<0?`<i class="dn">↓${-t.wow}%</i>`:`<i class="up">↑${t.wow}%</i>`))}<div class="k">周环比</div></div>
+  <div class="tg">${gv(t.showUv==null?null:t.showUv.toLocaleString())}<div class="k">曝光</div></div></div>
   ${t.pcu?`<div class="tgrid" style="margin-top:8px"><div class="tg"><div class="v">${t.pcu}</div><div class="k">PCU 峰值在线</div></div></div>`:''}`;
  const warn=(t.warnR||t.warnY)?`<div class="warn">${t.warnR?`🔴${t.warnR} `:''}${t.warnY?`🟡${t.warnY}`:''} <span style="color:var(--ink3);font-size:11px">主播预警</span></div>`:'';
- const live=s.live?`第 ${s.n} 场 · 直播中`:`已结束 ${s.n} 场`;
- const offBtn=s.live?`<div class="offbtn" data-off="${t.tid}">下播收场</div>`:'';
+ const live=s.step?`收场中 · ${s.step}`:(s.live?(s.n?`第 ${s.n} 场 · 未收场`:'今日未开播'):`已结束 ${s.n} 场`);
+ const offBtn=s.canOff?`<div class="offbtn" data-off="${t.tid}">下播收场</div>`:'';
  return `<div class="tcard"><div class="th"><span class="tn">${esc(t.name)}</span><span class="td">${bjDay().slice(5)}</span></div>
  <div class="tst">${live}</div>${nums}${warn}${offBtn}</div>`;
 }
@@ -185,38 +231,46 @@ function bindTcards(){
  document.querySelectorAll('[data-off]').forEach(b=>b.onclick=()=>{
   const t=TEAMS.find(x=>x.tid===b.dataset.off);if(!t)return;
   const s=t.status;
-  const mins=Math.round((Date.now()-new Date(bjDay()+'T'+s.since+':00+08:00'))/60000);
+  const mins=s.since?Math.round((Date.now()-new Date(bjDay()+'T'+s.since+':00+08:00'))/60000):NaN;
   const early=mins>=0&&mins<120;
   const dim=document.createElement('div');dim.id='cfmDim';
   const cf=document.createElement('div');cf.id='cfm';
-  cf.innerHTML=`<div class="ct">确认下播收场?</div><div class="cs">${esc(t.name)} · 今天第 ${s.n} 场 · ${s.since} 开播${early?`<br><span class="early">偏早警示:开播不足 2 小时</span>`:''}</div>
+  cf.innerHTML=`<div class="ct">确认下播收场?</div><div class="cs">${esc(t.name)} · 今天第 ${s.n} 场${s.since?` · ${s.since} 开播`:''}${early?`<br><span class="early">偏早警示:开播不足 2 小时</span>`:''}</div>
   <div class="cb"><span class="no">取消</span><span class="ok">确认下播</span></div>`;
   $('#phone').appendChild(dim);$('#phone').appendChild(cf);
   dim.onclick=()=>{dim.remove();cf.remove();};
   cf.querySelector('.no').onclick=()=>{dim.remove();cf.remove();};
-  cf.querySelector('.ok').onclick=()=>{dim.remove();cf.remove();toast('已记录，一条龙启动');/* TODO(wo-21a):真实触发采集收官流水线,主控接口就绪后接 */};
+  cf.querySelector('.ok').onclick=async()=>{dim.remove();cf.remove();
+   const d=await API.offair(TOK,t.tid).catch(()=>null);
+   if(d&&d.ok){toast(d.dedup?'今日已标记过，服务端已去重':'已记录，一条龙启动');
+    t.status={live:false,n:s.n,since:s.since,step:'收场采集中',canOff:false};renderOv();}
+   else toast('收场失败:'+((d&&d.error)||'网络异常'));
+  };
  });
 }
 /* ===== B 区待办 ===== */
 const TODO_DEF=[['icebreak','🔴 破冰'],['noreply','🔴 未回复'],['maintain','🟡 该维护'],['warn','🟡 主播预警'],['approve','🔵 待审批']];
 async function loadTodo(){
  const box=$('#wTodo');if(!box)return;
- const d=await API.todo(TOK,CUR);
- const g=(d&&d.groups)||{};
+ let d;
+ try{d=await API.todo(TOK,CUR);}catch(e){d=null;}
+ if(!d||!d.ok){box.innerHTML=emptyState('待办加载失败',new Date().toTimeString().slice(0,8)+' · 点按重试');
+  box.onclick=()=>{box.onclick=null;loadTodo();};$('#wTodoN').textContent='!';return;}
+ const g=d.groups||{},cnt=d.counts||{};
  let n=0;
  const html=TODO_DEF.map(([k,name])=>{
   const list=g[k]||[];
   if(!list.length)return '';
   n+=list.length;
-  return `<div class="usec">${name} · ${list.length}</div>`+list.map(r=>trow(r)).join('');
+  return `<div class="usec">${name} · ${cnt[k]||list.length}</div>`+list.map(r=>trow(r)).join('');
  }).join('');
  $('#wTodoN').textContent=n;
  box.innerHTML=html||emptyState('今日无异常','各团运转正常');
  bindTrows();
 }
 function trow(r){
- return `<div class="trow"><div class="tslide"><div class="tmain"><div class="l">${esc(r.l)}</div><div class="r">${esc(r.r)}</div></div>
- <div class="tacts"><span class="a1" data-a="处理">处理</span><span class="a2" data-a="记一下">记一下</span><span class="a3" data-a="忽略">忽略</span></div></div></div>`;
+ return `<div class="trow" data-ref="${esc(r.ref||'')}" data-tid="${esc(r.tid||'')}"><div class="tslide"><div class="tmain"><div class="l">${esc(r.l)}</div><div class="r">${esc(r.r)}</div></div>
+ <div class="tacts"><span class="a1" data-a="done">处理</span><span class="a2" data-a="note">记一下</span><span class="a3" data-a="ignore">忽略</span></div></div></div>`;
 }
 function bindTrows(){
  document.querySelectorAll('#wTodo .trow').forEach(row=>{
@@ -230,9 +284,14 @@ function bindTrows(){
    if(dx>60&&!open){closeOthers();open=true;sl.style.transform='translateX(-192px)';}
   },{passive:true});
   row.addEventListener('touchend',()=>{setTimeout(()=>moved=false,50);},{passive:true});
-  row.querySelectorAll('.tacts span').forEach(b=>b.onclick=()=>{
+  row.querySelectorAll('.tacts span').forEach(b=>b.onclick=async()=>{
    sl.style.transform='';open=false;
-   toast(`已留痕:${b.dataset.a}(演示)`); /* TODO(后续单):留痕接口 */
+   const act=b.dataset.a,ref=row.dataset.ref,tid=row.dataset.tid;
+   if(act==='note'){toast('记一下留痕待 wo-29a 接口');return;} /* 记一下=留痕不消条，待服务端支持 note 动作 */
+   const d=await API.todoAct(TOK,ref,tid,act).catch(()=>null);
+   if(d&&d.ok){toast(act==='done'?'已留痕:已处理':'已留痕:已忽略');row.remove();
+    const nEl=$('#wTodoN');const cur=parseInt(nEl.textContent)||0;nEl.textContent=Math.max(0,cur-1);}
+   else toast('留痕失败:'+((d&&d.error)||'网络异常'));
   });
   row.querySelector('.tmain').onclick=()=>{
    if(open){sl.style.transform='';open=false;return;}
@@ -261,17 +320,17 @@ function emptyState(t,s){return `<div class="empty2"><div class="et">${t}</div><
 document.querySelectorAll('#wnav span').forEach(s=>s.onclick=()=>switchView(s.dataset.v));
 $('#lgo').onclick=()=>{const v=$('#lcode').value.trim();if(!v){$('#lerr').textContent='请输入访问码';return;}$('#lerr').textContent='';doLogin(v);};
 $('#lcode').addEventListener('keydown',e=>{if(e.key==='Enter')$('#lgo').click();});
-(async()=>{if(TOK){const d=await API.teams(TOK);if(d.ok){enterMain(d);return;}localStorage.removeItem('wb_tok');}})();
+(async()=>{if(TOK){let d=null;try{d=await API.teams(TOK);}catch(e){}if(d&&d.ok){enterMain(d);return;}if(d&&!d.ok)localStorage.removeItem('wb_tok');}})();
 /* ===== mock(结构=契约;主控交付后删) ===== */
 const hmAgo=m=>{const d=new Date(Date.now()-m*60000);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
 const MOCK={
  teams:{
   boss:{name:'老板',role:'boss',company:true,teams:[
-   {tid:'sy',name:'水月团',anchorCount:6,yday:21400,month:483000,wow:12,showUv:3240,pcu:86,warnR:1,warnY:2,status:{live:true,n:2,since:hmAgo(40)}},
-   {tid:'xz',name:'行舟团',anchorCount:4,yday:18900,month:361000,wow:-5,showUv:2780,pcu:64,warnR:0,warnY:1,status:{live:false,n:2,since:''}},
+   {tid:'sy',name:'水月团',anchorCount:6,yday:21400,month:483000,wow:12,showUv:3240,pcu:86,warnR:1,warnY:2,status:{live:true,n:2,since:hmAgo(40),step:'',canOff:true}},
+   {tid:'xz',name:'行舟团',anchorCount:4,yday:18900,month:361000,wow:-5,showUv:2780,pcu:64,warnR:0,warnY:1,status:{live:false,n:2,since:'',step:'',canOff:false}},
   ]},
   ops:{name:'运营小赵',role:'ops',teams:[
-   {tid:'sy',name:'水月团',anchorCount:6,yday:21400,month:483000,wow:12,showUv:3240,pcu:86,warnR:1,warnY:2,status:{live:true,n:2,since:hmAgo(40)}},
+   {tid:'sy',name:'水月团',anchorCount:6,yday:21400,month:483000,wow:12,showUv:3240,pcu:86,warnR:1,warnY:2,status:{live:true,n:2,since:hmAgo(40),step:'',canOff:true}},
   ]}
  },
  todo:{
