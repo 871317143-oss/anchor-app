@@ -208,7 +208,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="phone">
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.5.0</b> · 运营工作台</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.5.1</b> · 运营工作台</span></div>
  <div id="wmain" style="display:none">
   <div id="wbody"></div>
   <div id="wnav"><span data-v="ov" class="on">总览</span><span data-v="anchors">主播</span><span data-v="plan">规划</span><span data-v="appr">审批</span><span data-v="me">我的</span></div>
@@ -287,6 +287,23 @@ function adTodo(d){
  };
  const c=d.counts||{};
  return {ok:d.ok,groups:mp,counts:{icebreak:c.ice,noreply:c.noreply,maintain:c.maintain,warn:c.warn,approve:c.rest}};
+}
+/* 规划页存量行适配（wo-32a）：team 空→从 title「梦华录·寻音」解团；people 空→[]，字符串「小猪|朱业聪」→按名单解岗位；end 空→卡片只显开播点 */
+function adPlanRows(rows){
+ const roster=(typeof PLAN!=='undefined'&&PLAN.staff)||[];
+ const tidOf=r=>{
+  if(r.tid)return r.tid;
+  const hay=String(r.team||'')+String(r.title||'');
+  for(const t of TEAMS){const short=t.name.replace('梦华录','');if(short&&hay.includes(short))return t.tid;}
+  return '';
+ };
+ const staffOf=r=>{
+  if(Array.isArray(r.staff))return r.staff;
+  const p=r.people;if(!p)return [];
+  return String(p).split(/[|｜、,，]/).map(s=>s.trim()).filter(Boolean).map(n=>{const m=roster.find(x=>x.name===n);return {name:n,role:m?m.role:'其他'};});
+ };
+ return (rows||[]).map(r=>({id:r.id,date:r.date,tid:tidOf(r),type:r.kind||r.type||'其他',start:r.start||'',end:r.end||'',
+  staff:staffOf(r),venue:r.venue||'',note:r.note||'',status:r.status||''}));
 }
 const API={
  async teams(tok){
@@ -378,11 +395,12 @@ const API={
   const r=await fetch('https://fb.menghualu.com.co/api/ai/extract',{method:'POST',body:fd});
   return r.json();
  },
- /* ===== v0.5.0 规划页契约(wo-32a 配套;未交付灰态) ===== */
+ /* ===== 规划页契约（wo-32a 已交付 2026-10-10；真实字段 team/kind/people/title/status 经 adPlanRows 归一到视图模型 tid/type/staff） ===== */
  async planRead(tok,from,to){
-  /* 契约:POST /api/ops/plan {token,from,to} → {ok,rows:[{id,date,tid,type,start,end,staff:[{name,role}],venue,note}]} 读=全公司可见 */
+  /* 契约:POST /api/ops/plan {token,from,to} → {ok,rows:[{id,date,title,team,kind,start,end,people,venue,note,status}]} 读=全公司可见 */
   if(USE_MOCK)return {ok:true,rows:MOCK.plan.rows.filter(r=>r.date>=from&&r.date<=to)};
-  return {ok:false,error:'wo-32a'}; // 主控交付后启用:return apiPost('/api/ops/plan',{token:tok,from,to});
+  const d=await apiPost('/api/ops/plan',{token:tok,from,to});
+  return d.ok?{ok:true,rows:adPlanRows(d.rows)}:{ok:false};
  },
  async planWrite(tok,action,row,force){
   /* 契约:POST /api/ops/plan {token,action:'create'|'update'|'delete',row,force?} → {ok,id} / 409 {ok:false,conflicts:[{kind:'venue'|'staff',with:'...'}]};单团码仅本团、ro 403、越团 400;写操作全留痕(plan_create/update/delete) */
@@ -391,12 +409,13 @@ const API={
     if(cf.length)return {ok:false,conflicts:cf};}
    return {ok:true,id:row.id||'mock-new'};
   }
-  return {ok:false,error:'wo-32a'}; // 主控交付后启用:return apiPost('/api/ops/plan',{token:tok,action,row,...(force?{force:1}:{})});
+  return apiPost('/api/ops/plan',{token:tok,action,row,...(force?{force:1}:{})});
  },
  async staff(tok){
-  /* 契约:POST /api/ops/staff {token} → {ok,staff:[{name,role}],venues:[...]} 人员名单以 Notion 人员档案库为准 */
+  /* 契约:POST /api/ops/staff {token} → {ok,staff:[{name,role}],anchors:[...],venues:[...]} 人员名单以 Notion 人员档案库为准 */
   if(USE_MOCK)return MOCK.staff;
-  return {ok:false,error:'wo-32a'}; // 主控交付后启用:return apiPost('/api/ops/staff',{token:tok});
+  const d=await apiPost('/api/ops/staff',{token:tok});
+  return d.ok?d:{ok:false};
  }
 };
 /* ===== P0 登录 ===== */
@@ -945,8 +964,10 @@ async function loadPlan(){
 function planCard(r){
  const clr=TYPE_CLR[r.type]||'#6b7f84';
  const staffRow=(r.staff||[]).map(s=>`${ROLE_ICO[s.role]||'👤'}${s.name}`).join(' ');
- return `<div class="planCard" data-id="${esc(r.id)}"><div class="p1"><span class="tk" style="background:${clr}22;color:${clr}">${esc(r.type)}</span>
- <span class="ptm">${esc(r.start)} - ${esc(r.end)}</span><span class="pv">${esc(r.venue||'')}</span></div>
+ const tm=r.end?`${r.start} - ${r.end}`:r.start;
+ const liveDot=r.status==='进行中'?'<span style="color:#7fb069;font-size:10px">●</span> ':'';
+ return `<div class="planCard" data-id="${esc(r.id)}"><div class="p1">${liveDot}<span class="tk" style="background:${clr}22;color:${clr}">${esc(r.type)}</span>
+ <span class="ptm">${esc(tm)}</span><span class="pv">${esc(r.venue||'')}</span></div>
  ${staffRow?`<div class="ps">${staffRow}</div>`:''}${r.note?`<div class="pn">${esc(r.note)}</div>`:''}</div>`;
 }
 /* 冲突判定(前后端同规则):同日+区间重叠+同场地/同人员 */
