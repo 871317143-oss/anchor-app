@@ -91,6 +91,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 .dcard .dv{font-size:24px;font-weight:600;color:var(--ink);letter-spacing:.01em}
 .dcard .dv.sm2{font-size:15.5px;font-weight:500;line-height:1.5}
 .dcard .ds{font-size:11px;color:var(--ink3);margin-top:auto;padding-top:8px}
+#dfoot{text-align:center;font-size:10px;color:var(--ink3);padding:0 0 10px;opacity:.8}
 .dcard .pbar{margin-top:12px;height:4px;border-radius:99px;background:rgba(143,182,201,.18);overflow:hidden}
 .dcard .pbar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--cyan),var(--gold));transition:width .8s var(--spring)}
 .dcard .go{position:absolute;right:14px;top:16px;font-size:17px;color:var(--ink3)}
@@ -282,13 +283,15 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
  <div id="work">
   <div id="whello"><span class="hi">Hello,</span><div class="av" id="wAv">?</div><span class="nm" id="wNm"></span><div class="wsub" id="wSub"></div></div>
   <div id="cards">
+   <div class="dcard" data-act="perf"><div class="dk">今日高光</div><div class="dv" id="cHl">…</div><div class="ds" id="cHlS">…</div><div class="go">›</div></div>
+   <div class="dcard" data-act="sched"><div class="dk">日程安排</div><div class="dv" id="cTodo">…</div><div class="ds" id="cTodoS">今日安排 · 每周时间表</div><div class="go">›</div></div>
    <div class="dcard" data-act="perf"><div class="dk">我的荣誉</div><div class="dv" id="cPerf">…</div><div class="ds" id="cPerfS">保底 …</div><div class="pbar"><i id="cPerfBar"></i></div><div class="go">›</div></div>
    <div class="dcard" data-act="users"><div class="dk">我的粉丝</div><div class="dv" id="cUsers">…</div><div class="ds" id="cUsersS"></div><div class="go">›</div></div>
-   <div class="dcard" data-act="sched"><div class="dk">日程安排</div><div class="dv" id="cTodo">…</div><div class="ds">今日安排 · 每周时间表</div><div class="go">›</div></div>
    <div class="dcard" data-act="gallery"><div class="dk">妆容相册</div><div class="dv sm2">往期每日妆容</div><div class="ds">截图回顾</div><div class="go">›</div></div>
    <div class="dcard" data-act="apply"><div class="dk">申请反馈</div><div class="dv sm2">休息 · 意向 · 直达</div><div class="ds">化妆师优先级</div><div class="go">›</div></div>
    <div class="dcard soon" data-soon="通关打卡"><div class="dk">通关打卡</div><div class="dv sm2">每日作业</div><div class="ds">表管 · 话术 · 资料</div></div>
   </div>
+  <div id="dfoot"></div>
  </div>
  <div id="aibar">
   <div class="cbtn" id="aiPlus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>
@@ -325,7 +328,7 @@ let TOK=qs.get('t')||'';
 if(TOK){try{localStorage.setItem('hm_tok',TOK);}catch(e){}}
 else{try{TOK=localStorage.getItem('hm_tok')||'';}catch(e){TOK='';}}
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v6.7.4';
+const VER='v6.8.0';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
 /* ===== 水波场景加载（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ===== */
 function waterScene(mount){
@@ -363,7 +366,7 @@ const _errSeen=new Map();
 function reportErr(m){try{m=String(m||'').slice(0,180);const n=Date.now();if(_errSeen.has(m)&&n-_errSeen.get(m)<600000)return;_errSeen.set(m,n);track('js_error',m);}catch(e){}}
 window.addEventListener('error',e=>{try{reportErr((e.message||'err')+'@'+String(e.filename||'').split('/').pop()+':'+(e.lineno||0));}catch(_){}});
 window.addEventListener('unhandledrejection',e=>{try{reportErr('rej:'+String((e.reason&&e.reason.message)||e.reason||'').slice(0,150));}catch(_){}});
-let DATA=null,PERF=null,VIDEOS=[],_md=null,_curTier='S',_p=0,_sg=null,_aiBooted=false,PH=0,_vcur=0,_vt=0;
+let DATA=null,PERF=null,VIDEOS=[],_md=null,_curTier='S',_p=0,_sg=null,_aiBooted=false,PH=0,_vcur=0,_vt=0,_dataMod='';
 const ICO={
  spark:'<svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>'};
 const yuan=v=>'¥'+Math.round((v||0)/10).toLocaleString();
@@ -383,7 +386,7 @@ async function boot(){
  const _wl0=waterScene($('#loader'),{panelW:150,logoW:84,top:'38%'});
  try{
   const [dj,vj]=await Promise.all([fetch(`data/${TOK}.json`),fetch('assets/videos/videos.json')]);
-  if(!dj.ok)throw 0;DATA=await dj.json();VIDEOS=vj.ok?await vj.json():[];
+  if(!dj.ok)throw 0;_dataMod=dj.headers.get('Last-Modified')||'';DATA=await dj.json();VIDEOS=vj.ok?await vj.json():[];
  }catch(e){document.body.innerHTML='<div class="sk">访问码无效或数据未生成</div>';return;}
  render();
  track('open',VER);
@@ -432,6 +435,25 @@ function render(){
  $('#hAv').innerHTML=avHtml;$('#hNm').textContent=a.name||'';
  $('#wAv').innerHTML=avHtml;$('#wNm').textContent=a.name||'';
  $('#wSub').textContent=`今日 ${pending} 件事待办${c.bday?` · 🎂 ×${c.bday}`:''}`;
+ /* wo-34a A:今日高光卡(收获先行)+日程卡机会话术 */
+ const us=DATA.users||{},day=bjToday();
+ const wkAgoDay=new Date(Date.now()+8*3600e3-7*86400e3).toISOString().slice(0,10);
+ const r10=DATA.recent10||[];
+ const todayRow=r10.find(r=>r.date===day),wkRow=r10.find(r=>r.date===wkAgoDay);
+ const todayCnt=Object.values(us).filter(u=>u.last===day).length;
+ const nfCnt=Object.values(us).filter(u=>u.nf&&u.last===day).length;
+ $('#cHl').textContent=todayRow?('¥'+Math.round(todayRow.income||0).toLocaleString()):'待开播';
+ let hlSub=`今日到场 ${todayCnt} · 新粉 ${nfCnt}`;
+ if(todayRow&&wkRow&&wkRow.income>0){const pct=Math.round((todayRow.income-wkRow.income)/wkRow.income*100);hlSub+=` · 比上周同期 ${pct>=0?'+':''}${pct}%`;}
+ $('#cHlS').textContent=hlSub;
+ const l3=DATA.l3||[];
+ const l3came=l3.filter(s=>us[s]&&us[s].last===day).length;
+ const bd=(DATA.bday||[]).map(x=>x[1]).sort((a,b)=>a-b)[0];
+ const seg=[];
+ if(l3.length)seg.push(`L3 大哥 ${l3.length} 人今天来了 ${l3came} 个`);
+ if(bd!=null)seg.push(bd===0?'他生日就是今天':`他生日还有 ${bd} 天`);
+ $('#cTodoS').textContent=seg.join(' · ')||'今日安排 · 每周时间表';
+ if(_dataMod){const d=new Date(_dataMod);$('#dfoot').textContent='数据更新于 '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
  if(VIDEOS.length){applyVid(0);if(VIDEOS.length>1)armV();}
  $('#cTodo').textContent=pending;
  $('#cUsers').textContent=total;
@@ -676,7 +698,7 @@ function paintToday(ub){
   +grp(DATA.l2,'L2 拉群 · 本场 ≥¥9.9','L2 拉群',u=>`${yuan(u.tv)}<small>本场</small>`)
   +grp(DATA.l1,'L1 本场支持','L1 本场支持',u=>`${yuan(u.tv)}<small>本场</small>`)
   +grp(DATA.greet,'主动问候 · S/A/B 本场没来','主动问候',u=>`${yuan(u.sv)}<small>累计</small>`)
-  +(()=>{const rows=(DATA.bday||[]).filter(([s])=>has(s)).map(([s,d])=>{const u=U[s];return urow(s,u,`<small>${d===0?'今天':d+' 天后'}</small>`,'🎂 生日');}).join('');return rows?usecHTML('生日提醒 · 未来一周')+rows:'';})();
+  +(()=>{const rows=(DATA.bday||[]).filter(([s])=>has(s)).map(([s,d])=>{const u=U[s];return urow(s,u,`<small>${d===0?'今天生日':d+' 天后'}${u.tv?` · 上次刷了 ${yuan(u.tv)}`:''}</small>`,'🎂 生日');}).join('');return rows?usecHTML('生日提醒 · 未来一周')+rows:'';})();
  ub.innerHTML=h||emptyState('今日清爽','没有待办，好好休息');
 }
 function paintTiers(ub){
@@ -754,7 +776,13 @@ function submitActions(sec,u,chips,sub,note){
  if(!actions.length&&!unflags.length&&!note)return;
  sub.textContent='提交中…';sub.style.pointerEvents='none';
  postFeedback(sec,u,actions,unflags,note,ok=>{
-  if(ok){sub.textContent='已回传 ✓';toast('已回传，运营可见');}
+  if(ok){
+   const key='fbN_'+bjToday();
+   const n=(parseInt(localStorage.getItem(key))||0)+1;localStorage.setItem(key,n);
+   const intel=(u.tv>0)?`他今天给你刷了 ${yuan(u.tv)}`:(u.w>0?`他今天看你 ${Math.round(u.w/60)} 分钟`:(u.sv>0?`他累计给你刷了 ${yuan(u.sv)}`:''));
+   sub.textContent='已回传 ✓';
+   toast(`今天你已经抓住了 ${n} 个${intel?' · '+intel:''}`);
+  }
   else{sub.textContent='提交回传';sub.style.pointerEvents='';toast('网络异常，稍后再试');}
  });
 }
@@ -1060,12 +1088,22 @@ function bootChips(){
  $('#aiChips').innerHTML=chips.map(([k,t])=>`<span class="chip" data-q="${k}">${t}</span>`).join('');
  $('#aiChips').querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{ask(ch.textContent,ch.dataset.q);});
  const a=DATA.anchor;$('#aiGreet').textContent=`${a.name||''}，今天我能帮你什么？`;
+ rotateHint();
 }
 function openAI(){
  $('#aisheet').classList.add('on');
+ const key='mg_push_'+bjToday();
+ if(!localStorage.getItem(key)){
+  const s=(DATA.greet||[])[0];
+  const u=s&&(DATA.users||{})[s];
+  if(u&&u.n){localStorage.setItem(key,'1');pushA(`${DATA.anchor.name||''}，${esc(u.n)} 今天还没来哦，要问问我吗`);}
+ }
  setTimeout(()=>{if(!RM)$('#aiFld2').focus();},380);
 }
-function closeAI(){$('#aisheet').classList.remove('on');}
+function closeAI(){$('#aisheet').classList.remove('on');rotateHint();}
+/* wo-34a B4:胶囊引导语轮换真问题 */
+const AI_HINTS=['今天谁没来？','那个大哥怎么开口？','今天状态怎么调？','谁最近掉得快？'];
+function rotateHint(){const f=$('#aiFld');if(f)f.placeholder=AI_HINTS[Math.floor(Math.random()*AI_HINTS.length)];}
 /* wo-34c P0：小梦下滑关闭——头部抓带（抓把/问候/副标/ chips 区）下拉 >60 且纵向主导即收；消息区与输入区不拦（各滚各的）；点击抓把照旧 */
 (function(){
  const sh=$('#aisheet');if(!sh)return;
@@ -1140,11 +1178,11 @@ function ask(text,q){
  if(_asking)return;_asking=true;
  pushU(text);
  working(true,'小梦在翻你的数据…');
- const steps=q==='free'?['小梦在翻你的数据…']:['正在翻你的榜单…','核对生日与待办…'];
- let i=0;const step=()=>{
-  if(i<steps.length){working(true,steps[i++]);setTimeout(step,RM?60:620);}
-  else{working(false);pushA(answer(q),()=>{actionCard();_asking=false;});}
- };step();
+ fetch('https://fb.menghualu.com.co/api/ai/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOK,question:text})})
+  .then(r=>r.json()).then(d=>{
+   const ans=(d&&d.answer)||'';
+   working(false);pushA(ans||answer(q),()=>{actionCard();_asking=false;});
+  }).catch(()=>{working(false);pushA(answer(q),()=>{actionCard();_asking=false;});});
 }
 /* ===== 诊断行 ===== */
 function diagLine(){
