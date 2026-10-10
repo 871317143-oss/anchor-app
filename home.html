@@ -319,9 +319,13 @@ const $=s=>document.querySelector(s);
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity='1';clearTimeout(t._x);t._x=setTimeout(()=>t.style.opacity='0',2200);}
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
-const qs=new URLSearchParams(location.search),TOK=qs.get('t')||'';
+const qs=new URLSearchParams(location.search);
+/* 访问码记忆（PWA 主屏启动不带 ?t=）：网址进一次终身记住；缺码给输入框不死胡同 */
+let TOK=qs.get('t')||'';
+if(TOK){try{localStorage.setItem('hm_tok',TOK);}catch(e){}}
+else{try{TOK=localStorage.getItem('hm_tok')||'';}catch(e){TOK='';}}
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v6.7.2';
+const VER='v6.7.3';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
 /* ===== 水波场景加载（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ===== */
 function waterScene(mount){
@@ -364,7 +368,15 @@ const ICO={
  spark:'<svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>'};
 const yuan=v=>'¥'+Math.round((v||0)/10).toLocaleString();
 const yuanW=v=>'¥'+Math.round(v||0).toLocaleString();
-if(!TOK){document.body.innerHTML='<div class="sk">缺访问码：链接后加 ?t=你的码</div>';}
+if(!TOK){document.body.innerHTML=`<div class="sk" style="padding-top:26vh">
+ <img src="assets/water/logo.png" alt="梦华录" style="width:118px;opacity:.92;margin-bottom:18px">
+ <div style="color:var(--ink);font-size:15px;margin-bottom:16px">小梦助手 · 主播版</div>
+ <input id="tkIn" placeholder="输入你的访问码" style="width:min(64vw,240px);border-radius:14px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:var(--ink);font-family:inherit;font-size:15px;padding:12px 14px;text-align:center;outline:0">
+ <div id="tkGo" style="width:min(64vw,240px);margin:12px auto 0;padding:12px;border-radius:14px;background:var(--ink);color:#0c141a;font-weight:600;cursor:pointer">进入</div>
+ <div style="margin-top:18px;font-size:11px">访问码找运营领取</div></div>`;
+ const go=()=>{const v=(document.getElementById('tkIn').value||'').trim();if(!v)return;try{localStorage.setItem('hm_tok',v);}catch(e){}location.href='home.html';};
+ document.getElementById('tkGo').onclick=go;
+ document.getElementById('tkIn').addEventListener('keydown',e=>{if(e.key==='Enter')go();});}
 else boot();
 /* ===== 启动：数据+视频+加载动画 ===== */
 async function boot(){
