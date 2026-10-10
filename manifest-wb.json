@@ -1,7 +1,7 @@
 {
  "id": "workbench.html",
- "name": "梦华录·运营",
- "short_name": "运营",
+ "name": "小梦助手（运营版）",
+ "short_name": "小梦助手（运营版）",
  "display": "standalone",
  "orientation": "portrait",
  "theme_color": "#0c141a",

@@ -1,6 +1,7 @@
 <!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="小梦助手（主播版）">
 <meta name="theme-color" content="#0c141a">
 <link rel="manifest" href="manifest-home.json">
 <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -320,7 +321,7 @@ function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity='1';clearT
 const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const qs=new URLSearchParams(location.search),TOK=qs.get('t')||'';
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v6.7.1';
+const VER='v6.7.2';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
 /* ===== 水波场景加载（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ===== */
 function waterScene(mount){
