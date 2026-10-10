@@ -325,7 +325,7 @@ let TOK=qs.get('t')||'';
 if(TOK){try{localStorage.setItem('hm_tok',TOK);}catch(e){}}
 else{try{TOK=localStorage.getItem('hm_tok')||'';}catch(e){TOK='';}}
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v6.7.3';
+const VER='v6.7.4';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
 /* ===== 水波场景加载（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ===== */
 function waterScene(mount){
@@ -1066,6 +1066,22 @@ function openAI(){
  setTimeout(()=>{if(!RM)$('#aiFld2').focus();},380);
 }
 function closeAI(){$('#aisheet').classList.remove('on');}
+/* wo-34c P0：小梦下滑关闭——头部抓带（抓把/问候/副标/ chips 区）下拉 >60 且纵向主导即收；消息区与输入区不拦（各滚各的）；点击抓把照旧 */
+(function(){
+ const sh=$('#aisheet');if(!sh)return;
+ let sx=0,sy=0,armed=false;
+ sh.addEventListener('touchstart',e=>{
+  if(e.touches.length!==1){armed=false;return;}
+  const t=e.target;
+  armed=!!(t.closest('#aigrab')||t.closest('.ai-greet')||t.closest('.ai-sub')||t.closest('#aiChips'));
+  if(armed){sy=e.touches[0].clientY;sx=e.touches[0].clientX;}
+ },{passive:true});
+ sh.addEventListener('touchend',e=>{
+  if(!armed)return;armed=false;
+  const dy=e.changedTouches[0].clientY-sy,dx=e.changedTouches[0].clientX-sx;
+  if(dy>60&&Math.abs(dx)<dy*.6)closeAI();
+ },{passive:true});
+})();
 $('#aibar').addEventListener('click',e=>{if(e.target.closest('#aiPlus')){toast('图片/语音输入：小梦本体接入后开放');return;}openAI();});
 $('#aigrab').addEventListener('click',closeAI);
 $('#aiPlus2').addEventListener('click',()=>toast('图片/语音输入：小梦本体接入后开放'));
