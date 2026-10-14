@@ -1,4 +1,4 @@
-const CACHE='anchor-v100';
+const CACHE='anchor-v101';
 // 2026-10-04 v58：①SHELL 加入 live.html/radar-probe.js（主持雷达 v0.1 上线）与 ops.html；
 // ②HTML 缓存键修 bug——此前任何 HTML 导航都覆写 'app.html' 键（多页面后离线兜底会串页），改为按 URL 各自缓存、app.html 作最终兜底。
 // 2026-10-08 v100（wo-sw404 缓存投毒 P0）：四处写缓存前一律查 r.ok——404 永缓存会让新资产永久加载失败（2026-10-05 老板手机无动画事故根因）。
@@ -6,7 +6,7 @@ const SHELL=['app.html','ops.html','live.html','home.html','radar-probe.js','man
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE)
   .then(c=>Promise.all(SHELL.map(s=>fetch(s,{cache:'reload'}).then(r=>{if(r.ok)return c.put(s,r);}))))
   .then(()=>self.skipWaiting()));});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k))))).then(()=>self.clients.claim()));});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k))))).then(()=>self.clients.claim());});
 self.addEventListener('fetch',e=>{
   const u=new URL(e.request.url);
   if(e.request.method!=='GET')return;

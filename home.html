@@ -313,7 +313,7 @@ let TOK=qs.get('t')||'';
 if(!TOK){try{TOK=localStorage.getItem('hm_tok')||'';}catch(e){TOK='';}}
 /* hm_tok 只在 boot 数据加载成功后写入（错码永不覆盖好码，见 boot 自愈段） */
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v7.0.8';
+const VER='v7.0.9';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
 /* ===== 水波场景加载（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ===== */
 function waterScene(mount){
@@ -359,7 +359,7 @@ const yuanW=v=>'¥'+Math.round(v||0).toLocaleString();
 /* ===== 登录页（wo-35a：!TOK 与双码双失败共用；hint=失效红字提示） ===== */
 function showLoginLite(hint){
  document.body.innerHTML=`<div class="sk" style="padding-top:26vh">
- <img src="assets/water/logo.png" alt="梦华录" style="width:118px;opacity:.92;margin-bottom:18px">
+ <img src="assets/icon-192.png?v=101" alt="" onerror="this.style.display='none'" style="width:118px;opacity:.92;margin-bottom:18px;border-radius:26px">
  <div style="color:var(--ink);font-size:15px;margin-bottom:16px">小梦助手 · 主播版</div>
  ${hint?`<div style="color:#d64f18;font-size:12px;margin-bottom:12px">${hint}</div>`:''}
  <input id="tkIn" placeholder="输入你的访问码" style="width:min(64vw,240px);border-radius:14px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:var(--ink);font-family:inherit;font-size:15px;padding:12px 14px;text-align:center;outline:0">
@@ -1178,7 +1178,8 @@ function renderMeTab(){
  <div class="meRow" id="meApply">申请反馈<span class="r">›</span></div>
  <div class="meRow" id="mePass">通关打卡<span class="r">›</span></div>
  <div id="meOut">退出登录</div>
- <div style="text-align:center;font-size:10px;color:var(--ink3);padding:16px 0 4px">${_dataMod?('数据更新于 '+fmtHM(_dataMod))+' · ':''}${VER} · 梦华录</div>`;
+ <div style="text-align:center;font-size:10px;color:var(--ink3);padding:16px 0 4px">${_dataMod?('数据更新于 '+fmtHM(_dataMod))+' · ':''}${VER} · 梦华录 <span id="diagTgl" style="text-decoration:underline;cursor:pointer;opacity:.7">诊断</span></div>`;
+ $('#diagTgl').onclick=()=>{try{localStorage.getItem('hm_diag')?localStorage.removeItem('hm_diag'):localStorage.setItem('hm_diag','1');}catch(e){}location.reload();};
  $('#mePerf').onclick=()=>openModal('perf');
  $('#meApply').onclick=()=>openModal('apply');
  $('#mePass').onclick=()=>toast('通关打卡，点灯在即');
