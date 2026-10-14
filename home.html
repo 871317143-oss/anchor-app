@@ -313,7 +313,7 @@ let TOK=qs.get('t')||'';
 if(!TOK){try{TOK=localStorage.getItem('hm_tok')||'';}catch(e){TOK='';}}
 /* hm_tok 只在 boot 数据加载成功后写入（错码永不覆盖好码，见 boot 自愈段） */
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v7.0.7';
+const VER='v7.0.8';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
 /* ===== 水波场景加载（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ===== */
 function waterScene(mount){
@@ -356,15 +356,20 @@ const ICO={
  spark:'<svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>'};
 const yuan=v=>'¥'+Math.round((v||0)/10).toLocaleString();
 const yuanW=v=>'¥'+Math.round(v||0).toLocaleString();
-if(!TOK){document.body.innerHTML=`<div class="sk" style="padding-top:26vh">
+/* ===== 登录页（wo-35a：!TOK 与双码双失败共用；hint=失效红字提示） ===== */
+function showLoginLite(hint){
+ document.body.innerHTML=`<div class="sk" style="padding-top:26vh">
  <img src="assets/water/logo.png" alt="梦华录" style="width:118px;opacity:.92;margin-bottom:18px">
  <div style="color:var(--ink);font-size:15px;margin-bottom:16px">小梦助手 · 主播版</div>
+ ${hint?`<div style="color:#d64f18;font-size:12px;margin-bottom:12px">${hint}</div>`:''}
  <input id="tkIn" placeholder="输入你的访问码" style="width:min(64vw,240px);border-radius:14px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:var(--ink);font-family:inherit;font-size:15px;padding:12px 14px;text-align:center;outline:0">
  <div id="tkGo" style="width:min(64vw,240px);margin:12px auto 0;padding:12px;border-radius:14px;background:var(--ink);color:#0c141a;font-weight:600;cursor:pointer">进入</div>
  <div style="margin-top:18px;font-size:11px">访问码找运营领取</div></div>`;
  const go=()=>{const v=(document.getElementById('tkIn').value||'').trim();if(!v)return;try{localStorage.setItem('hm_tok',v);}catch(e){}location.href='home.html';};
  document.getElementById('tkGo').onclick=go;
- document.getElementById('tkIn').addEventListener('keydown',e=>{if(e.key==='Enter')go();});}
+ document.getElementById('tkIn').addEventListener('keydown',e=>{if(e.key==='Enter')go();});
+}
+if(!TOK){showLoginLite('');}
 else boot();
 /* ===== ?diag=1 视口几何探针（排查用） ===== */
 /* diag 记忆：带 diag=1 进一次终身挂上探针（图标启动也显）；diag=0 摘除 */
@@ -395,7 +400,7 @@ async function boot(){
  if(!(await loadData(TOK))){
   const stored=(()=>{try{return localStorage.getItem('hm_tok')||'';}catch(e){return '';}})();
   if(stored&&stored!==TOK&&await loadData(stored)){TOK=stored;}
-  else{document.body.innerHTML='<div class="sk">访问码无效或数据未生成</div>';return;}
+  else{showLoginLite('原访问码已失效，请重新输入');return;} /* wo-35a：双失败给登录框+失效提示，替代死文字 */
  }
  try{localStorage.setItem('hm_tok',TOK);}catch(e){}
  render();
