@@ -313,7 +313,7 @@ let TOK=qs.get('t')||'';
 if(!TOK){try{TOK=localStorage.getItem('hm_tok')||'';}catch(e){TOK='';}}
 /* hm_tok 只在 boot 数据加载成功后写入（错码永不覆盖好码，见 boot 自愈段） */
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v7.0.9';
+const VER='v7.0.10';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
 /* ===== 水波场景加载（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ===== */
 function waterScene(mount){
@@ -467,7 +467,8 @@ function setP(p){
  /* 戏台收上（六卡时代口径）：不 display:none——最后 10% 手势把视频滑出屏幕顶（连续可逆不闪烁；落定暂停规矩不动） */
  const up=p<0.9?0:Math.min(1,(p-0.9)/0.1);
  vf.style.display='';
- vf.style.transform=`translate3d(0,${-0.06*PH*p}px,0) scale(${1-0.30*p}) translateY(${-115*up}%)`;
+ vf.style.transform=`translate3d(0,${-0.06*PH*p}px,0) scale(${1-0.30*p}) translateY(${-135*up}%)`;
+ vf.style.opacity=String(1-up); /* 末段淡出，35px 小尾巴也看不见 */
  // 视频后台暂停：落定主页即停，回戏台续播（发烫元凶;规矩不动)
  const vact=p<0.98;
  if(vact&&vv.paused)vv.play().catch(()=>{});else if(!vact&&!vv.paused)vv.pause();
