@@ -310,10 +310,10 @@ const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const qs=new URLSearchParams(location.search);
 /* 访问码记忆（PWA 主屏启动不带 ?t=）：网址进一次终身记住；缺码给输入框不死胡同 */
 let TOK=qs.get('t')||'';
-if(TOK){try{localStorage.setItem('hm_tok',TOK);}catch(e){}}
-else{try{TOK=localStorage.getItem('hm_tok')||'';}catch(e){TOK='';}}
+if(!TOK){try{TOK=localStorage.getItem('hm_tok')||'';}catch(e){TOK='';}}
+/* hm_tok 只在 boot 数据加载成功后写入（错码永不覆盖好码，见 boot 自愈段） */
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v7.0.6';
+const VER='v7.0.7';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
 /* ===== 水波场景加载（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ===== */
 function waterScene(mount){
@@ -385,10 +385,19 @@ if(_diagOn){
 /* ===== 启动：数据+视频+加载动画 ===== */
 async function boot(){
  const _wl0=waterScene($('#loader'),{panelW:150,logoW:84,top:'38%'});
- try{
-  const [dj,vj]=await Promise.all([fetch(`data/${TOK}.json`),fetch('assets/videos/videos.json')]);
-  if(!dj.ok)throw 0;_dataMod=dj.headers.get('Last-Modified')||'';DATA=await dj.json();VIDEOS=vj.ok?await vj.json():[];
- }catch(e){document.body.innerHTML='<div class="sk">访问码无效或数据未生成</div>';return;}
+ /* 访问码自愈：URL 码无效时回退本地好码（旧逻辑=错码覆盖好码一错全错）；成功才写记忆 */
+ const loadData=async(tok)=>{
+  try{
+   const [dj,vj]=await Promise.all([fetch(`data/${tok}.json`),fetch('assets/videos/videos.json')]);
+   if(!dj.ok)return false;_dataMod=dj.headers.get('Last-Modified')||'';DATA=await dj.json();VIDEOS=vj.ok?await vj.json():[];return true;
+  }catch(e){return false;}
+ };
+ if(!(await loadData(TOK))){
+  const stored=(()=>{try{return localStorage.getItem('hm_tok')||'';}catch(e){return '';}})();
+  if(stored&&stored!==TOK&&await loadData(stored)){TOK=stored;}
+  else{document.body.innerHTML='<div class="sk">访问码无效或数据未生成</div>';return;}
+ }
+ try{localStorage.setItem('hm_tok',TOK);}catch(e){}
  render();
  track('open',VER);
  const vv=$('#vv');
