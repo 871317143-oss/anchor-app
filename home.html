@@ -24,6 +24,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 #phone{position:relative;height:100%;height:100dvh;max-width:none;margin:0 auto;overflow:hidden;background:var(--paper)}
 #phone::before{content:'';position:absolute;inset:0;background:radial-gradient(120% 70% at 20% 0%,rgba(64,90,104,.35),transparent 55%),radial-gradient(100% 60% at 90% 95%,rgba(46,66,86,.4),transparent 60%),linear-gradient(180deg,#101a20,#0c141a)}
 @media(min-width:560px){
+ /* NAVDOCK:桌面框内回落 */ #tabBar{position:absolute;left:14px;right:14px;width:auto;transform:none;bottom:calc(14px + env(safe-area-inset-bottom));}
  body{display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 50% 0%,#16241f 0%,#0a1210 62%)}
  #phone{width:406px;height:min(880px,94vh);border-radius:46px;border:1px solid rgba(255,255,255,.1);box-shadow:0 46px 120px -30px rgba(0,0,0,.85),0 0 0 10px #141d22}
 }
@@ -75,8 +76,8 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 /* ---- 画框（骑行层 · 56vh） ---- */
 #vfly{position:absolute;top:calc(env(safe-area-inset-top) + 46px);left:16px;right:16px;height:56vh;min-height:430px;z-index:12;will-change:transform,opacity}
 #vfly.docked{top:calc(env(safe-area-inset-top) + 102px);height:38vh;min-height:0;transition:top .3s var(--spring),height .3s var(--spring)}
-.vwin{position:absolute;inset:0;border-radius:26px;overflow:hidden;background:#16221f;border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 18px 46px rgba(0,0,0,.5)}
-.vwin video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;will-change:transform;transition:opacity .3s ease}
+.vwin{pointer-events:none;position:absolute;inset:0;border-radius:26px;overflow:hidden;background:#16221f;border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 18px 46px rgba(0,0,0,.5)}
+.vwin video{pointer-events:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;will-change:transform;transition:opacity .3s ease}
 .vwin .dur{position:absolute;right:14px;bottom:12px;font-size:10px;color:rgba(255,255,255,.8);letter-spacing:.08em;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 /* ---- 工作台（Hello 置顶 + 六盘厚玻璃 · 深色配方） ---- */
 #work{position:absolute;inset:0;z-index:11;padding-top:calc(env(safe-area-inset-top) + 50px);opacity:0;pointer-events:none;display:flex;flex-direction:column}
@@ -100,7 +101,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 /* ---- 四 Tab 体系(v7.0.0 结构重构) ---- */
 #tabBody{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:0 0 calc(90px + env(safe-area-inset-bottom))}
 #tabBody::-webkit-scrollbar{display:none}
-#tabBar{position:absolute;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:21;display:flex;align-items:center;gap:4px;padding:7px;border-radius:30px;background:rgba(10,16,20,.55);border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 12px 40px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4)}
+#tabBar{position:fixed;left:50%;transform:translateX(-50%);width:min(calc(100% - 28px),378px);bottom:calc(10px + env(safe-area-inset-bottom));z-index:21;display:flex;align-items:center;gap:4px;padding:7px;border-radius:30px;background:rgba(10,16,20,.55);border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 12px 40px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4)}
 #tabBar span{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;padding:7px 0;border-radius:22px;color:var(--ink3);cursor:pointer}
 #tabBar span svg{width:18px;height:18px;stroke:var(--ink3);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 #tabBar span.on{background:rgba(143,182,201,.18);color:var(--ink);font-weight:600}
@@ -312,7 +313,7 @@ let TOK=qs.get('t')||'';
 if(TOK){try{localStorage.setItem('hm_tok',TOK);}catch(e){}}
 else{try{TOK=localStorage.getItem('hm_tok')||'';}catch(e){TOK='';}}
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v7.0.0';
+const VER='v7.0.1';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
 /* ===== 水波场景加载（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ===== */
 function waterScene(mount){
