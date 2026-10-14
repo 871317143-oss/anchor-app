@@ -215,7 +215,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="phone">
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.5.6</b> · 运营工作台</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.5.7</b> · 运营工作台</span></div>
  <div id="wmain" style="display:none">
   <div id="wbody"></div>
   <div id="wnav"><span data-v="ov" class="on">总览</span><span data-v="anchors">主播</span><span data-v="plan">规划</span><span data-v="appr">审批</span><span data-v="me">我的</span></div>
@@ -578,7 +578,7 @@ document.addEventListener('touchstart',e=>{
  open.forEach(s=>s.style.transform='');
 },{passive:true});
 /* ===== P2 主播全员页(列表+详情下钻) ===== */
-const TID_NAME={'menghualu_shuiyue':'水月','menghualu_xingzhou':'行舟','menghualu_xunyin':'寻音','menghualu_test':'测试',sy:'水月',xz:'行舟',xy:'寻音',test:'测试'};
+const TID_NAME={'menghualu_shuiyue':'水月','menghualu_xingzhou':'行舟','menghualu_xunyin':'寻音','menghualu_hanjiangxue':'寒江雪','menghualu_test':'测试',sy:'水月',xz:'行舟',xy:'寻音',test:'测试'};
 const STC={'上播中':'#7fb069','休假中':'#c9a35c','停播中':'#6b7f84','已淘汰':'#8a3a2a'};
 const ST_ORD=['上播中','休假中','停播中','已淘汰'];
 let ANCHORS=[],RD={},ATID='all',APANEL=null;
