@@ -75,7 +75,6 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 @keyframes ihint{50%{transform:translateY(-5px);opacity:.55}}
 /* ---- 画框（骑行层 · 56vh） ---- */
 #vfly{position:absolute;top:calc(env(safe-area-inset-top) + 46px);left:16px;right:16px;height:56vh;min-height:430px;z-index:12;will-change:transform,opacity}
-#vfly.docked{top:calc(env(safe-area-inset-top) + 102px);height:38vh;min-height:0}
 .vwin{pointer-events:none;position:absolute;inset:0;border-radius:26px;overflow:hidden;background:#16221f;border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 18px 46px rgba(0,0,0,.5)}
 .vwin video{pointer-events:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;will-change:transform;transition:opacity .3s ease}
 .vwin .dur{position:absolute;right:14px;bottom:12px;font-size:10px;color:rgba(255,255,255,.8);letter-spacing:.08em;text-shadow:0 1px 6px rgba(0,0,0,.6)}
@@ -108,7 +107,6 @@ body.working #tabBar{opacity:1;pointer-events:auto}
 #tabBar span.on{background:rgba(143,182,201,.18);color:var(--ink);font-weight:600}
 #tabBar span.on svg{stroke:var(--ink)}
 /* 主页 */
-.vspace{height:calc(38vh + 4px)}
 .hbelt{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;padding:2px 16px 4px;scrollbar-width:none}
 .hbelt::-webkit-scrollbar{display:none}
 .hcard{flex:0 0 78%;scroll-snap-align:center;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 10px 30px rgba(0,0,0,.35);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6);cursor:pointer}
@@ -314,7 +312,7 @@ let TOK=qs.get('t')||'';
 if(TOK){try{localStorage.setItem('hm_tok',TOK);}catch(e){}}
 else{try{TOK=localStorage.getItem('hm_tok')||'';}catch(e){TOK='';}}
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v7.0.3';
+const VER='v7.0.4';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
 /* ===== 水波场景加载（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ===== */
 function waterScene(mount){
@@ -446,7 +444,8 @@ function setP(p){
  vf.style.transform=`translate3d(0,${-0.06*PH*p}px,0) scale(${1-0.30*p})`;
  vf.style.opacity='1';
  vv.style.transform=`scale(${1+0.06*p}) translateY(${-1.2*p}%)`;
- vf.classList.toggle('docked',p>=0.98);
+ /* 戏台落定：视频框整个收上去隐藏（老板 10-15 口径=六卡时代：主页不留视频条；回戏台还原） */
+ vf.style.display=p>=0.98?'none':'';
  if(p>=0.98)vf.style.transform='';
  // 视频后台暂停：落定主页即停，回戏台续播（发烫元凶;规矩不动)
  const vact=p<0.98;
@@ -1041,7 +1040,7 @@ function fmtHM(s){const d=new Date(s);return String(d.getHours()).padStart(2,'0'
 function switchTab(t){
  TAB=t;
  document.querySelectorAll('#tabBar span').forEach(s=>s.classList.toggle('on',s.dataset.t===t));
- const vf=$('#vfly');if(vf)vf.style.display=t==='home'?'':'none'; /* 视频框=主页组件，他 Tab 让位 */
+
  if(t==='home')renderHomeTab();
  else if(t==='fans')renderFansTab();
  else if(t==='sched')renderSched($('#tabBody'));
@@ -1055,7 +1054,7 @@ function renderHomeTab(){
   .sort((a,b)=>((b[1].tv||0)-(a[1].tv||0))||((b[1].w||0)-(a[1].w||0))).slice(0,30);
  const tb=$('#tabBody');
  tb.innerHTML=`<div class="hello" style="position:static"><span class="hi">Hello,</span><div class="av">${avHtml}</div><span class="nm">${esc(a.name||'')}</span></div>
- <div class="vspace"></div>
+ 
  <div class="hbelt">
   <div class="hcard" id="hcEarn"><div class="hc-top"><div class="hc-ico">💰</div><div class="hc-eb">本月收益</div></div>
    <div class="hc-v" id="earnV">…</div><div class="hc-s" id="earnS"></div></div>
