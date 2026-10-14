@@ -313,7 +313,7 @@ let TOK=qs.get('t')||'';
 if(TOK){try{localStorage.setItem('hm_tok',TOK);}catch(e){}}
 else{try{TOK=localStorage.getItem('hm_tok')||'';}catch(e){TOK='';}}
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v7.0.5';
+const VER='v7.0.6';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
 /* ===== 水波场景加载（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ===== */
 function waterScene(mount){
@@ -367,7 +367,12 @@ if(!TOK){document.body.innerHTML=`<div class="sk" style="padding-top:26vh">
  document.getElementById('tkIn').addEventListener('keydown',e=>{if(e.key==='Enter')go();});}
 else boot();
 /* ===== ?diag=1 视口几何探针（排查用） ===== */
-if(new URLSearchParams(location.search).has('diag')){
+/* diag 记忆：带 diag=1 进一次终身挂上探针（图标启动也显）；diag=0 摘除 */
+const _qs=new URLSearchParams(location.search);
+if(_qs.get('diag')==='1'){try{localStorage.setItem('hm_diag','1');}catch(e){}}
+if(_qs.get('diag')==='0'){try{localStorage.removeItem('hm_diag');}catch(e){}}
+let _diagOn=_qs.get('diag')==='1';if(!_diagOn){try{_diagOn=localStorage.getItem('hm_diag')==='1';}catch(e){}}
+if(_diagOn){
  window.addEventListener('load',()=>{const d=document.createElement('pre');d.id='diagbox';
  d.style.cssText='position:fixed;left:8px;top:60px;z-index:9999;background:rgba(0,0,0,.82);color:#8fffb0;font:11px/1.5 monospace;padding:8px 10px;border-radius:8px;max-width:94vw;white-space:pre-wrap';
  document.body.appendChild(d);
