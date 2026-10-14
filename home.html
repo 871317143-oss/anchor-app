@@ -75,7 +75,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 @keyframes ihint{50%{transform:translateY(-5px);opacity:.55}}
 /* ---- 画框（骑行层 · 56vh） ---- */
 #vfly{position:absolute;top:calc(env(safe-area-inset-top) + 46px);left:16px;right:16px;height:56vh;min-height:430px;z-index:12;will-change:transform,opacity}
-#vfly.docked{top:calc(env(safe-area-inset-top) + 102px);height:38vh;min-height:0;transition:top .3s var(--spring),height .3s var(--spring)}
+#vfly.docked{top:calc(env(safe-area-inset-top) + 102px);height:38vh;min-height:0}
 .vwin{pointer-events:none;position:absolute;inset:0;border-radius:26px;overflow:hidden;background:#16221f;border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 18px 46px rgba(0,0,0,.5)}
 .vwin video{pointer-events:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;will-change:transform;transition:opacity .3s ease}
 .vwin .dur{position:absolute;right:14px;bottom:12px;font-size:10px;color:rgba(255,255,255,.8);letter-spacing:.08em;text-shadow:0 1px 6px rgba(0,0,0,.6)}
@@ -314,7 +314,7 @@ let TOK=qs.get('t')||'';
 if(TOK){try{localStorage.setItem('hm_tok',TOK);}catch(e){}}
 else{try{TOK=localStorage.getItem('hm_tok')||'';}catch(e){TOK='';}}
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v7.0.2';
+const VER='v7.0.3';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
 /* ===== 水波场景加载（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ===== */
 function waterScene(mount){
@@ -374,7 +374,8 @@ if(new URLSearchParams(location.search).has('diag')){
  document.body.appendChild(d);
  const r=()=>{const b=document.querySelector('#tabBar');const rc=b?b.getBoundingClientRect():{};
   let chain=[],n=b&&b.offsetParent;while(n){chain.push(n.id||n.tagName);n=n.offsetParent;}
-  d.textContent='innerH='+innerHeight+' clientH='+document.documentElement.clientHeight+' vvH='+(window.visualViewport?Math.round(visualViewport.height):'-')+' scrH='+screen.height+'\n'+(b?('tabRect.top='+Math.round(rc.top)+' .bottom='+Math.round(rc.bottom)+' offset链='+chain.join('<')):'tabBar 不在');};
+  const vf=document.querySelector('#vfly');const vr=vf?vf.getBoundingClientRect():{};
+ d.textContent='vfly top='+Math.round(vr.top||0)+' h='+Math.round(vr.height||0)+' cls='+(vf?vf.className:'-')+'\ninnerH='+innerHeight+' clientH='+document.documentElement.clientHeight+' vvH='+(window.visualViewport?Math.round(visualViewport.height):'-')+' scrH='+screen.height+'\n'+(b?('tabRect.top='+Math.round(rc.top)+' .bottom='+Math.round(rc.bottom)+' offset链='+chain.join('<')):'tabBar 不在');};
  setTimeout(r,1500);window.addEventListener('resize',r);});}
 
 /* ===== 启动：数据+视频+加载动画 ===== */
