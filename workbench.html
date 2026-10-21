@@ -215,7 +215,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="phone">
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.5.8</b> · 运营工作台</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.5.9</b> · 运营工作台</span></div>
  <div id="wmain" style="display:none">
   <div id="wbody"></div>
   <div id="wnav"><span data-v="ov" class="on">总览</span><span data-v="anchors">主播</span><span data-v="plan">规划</span><span data-v="appr">审批</span><span data-v="me">我的</span></div>
@@ -247,7 +247,7 @@ async function apiPost(path,body){
 function adPerf(d){
  const list=(d.list||[]).map(r=>({name:r.name||'?',tid:r.tid||null,pid:r.anchor_pid||null,st:r.st||r.status||'',
   month_income:r.month_income||0,month_days:r.month_days==null?null:r.month_days,base_progress:r.base_progress==null?null:r.base_progress,
-  last_income:r.last_income||'',last_live:r.last_live||'',warn:r.warn||'',star_guard:r.star_guard==null?null:r.star_guard}));
+  last_income:r.last_income||'',last_live:r.last_live||'',warn:r.warn||'',star_guard:(r.month_star_guard!=null?r.month_star_guard:r.star_guard)||null}));
  return {ok:d.ok,list};
 }
 /* 保底进度：真接口是 0-1 小数（非字符串），渲染一律走 fmtBp 转百分比（字符串兼容原样） */
@@ -412,6 +412,12 @@ const API={
  async planWrite(tok,action,row,force){
   /* 契约:POST /api/ops/plan {token,action:'create'|'update'|'delete',row,force?} → {ok,id} / 409 {ok:false,conflicts:[{kind:'venue'|'staff',with:'...'}]};单团码仅本团、ro 403、越团 400;写操作全留痕(plan_create/update/delete) */
   if(USE_MOCK){
+   if(row&&row.type==='统筹'){
+    const i=MOCK.plan.rows.findIndex(r=>r.id===row.id||(r.type==='统筹'&&r.date===row.date&&r.tid===row.tid));
+    const nr={...row,id:row.id||('co'+Date.now())};
+    if(i>=0)MOCK.plan.rows[i]=nr;else MOCK.plan.rows.push(nr);
+    return {ok:true,id:nr.id};
+   }
    if(!force){const cf=planConflicts(row,MOCK.plan.rows.filter(r=>r.id!==row.id));
     if(cf.length)return {ok:false,conflicts:cf};}
    return {ok:true,id:row.id||'mock-new'};
@@ -696,7 +702,7 @@ function openAnchorPanel(a,row){
  API.anchorDetail(TOK,a.pid||'').then(d=>{
   if(!APANEL||APANEL.a!==a)return;
   if(d&&d.ok){
-   $('#apRecent').innerHTML=d.recent10.length?d.recent10.map(x=>`<div class="r10"><span>${esc(x.date)}</span><span class="rr">${typeof x.income==='number'?'¥'+x.income.toLocaleString():esc(x.income)} · ACU ${x.acu}${x.star_guard?' · 星守 ¥'+x.star_guard.toLocaleString():''}${x.giftMiss?' ⚠️':''}</span></div>`).join(''):'<div class="gbox">近期无场次</div>';
+   $('#apRecent').innerHTML=d.recent10.length?d.recent10.map(x=>`<div class="r10"><span>${esc(x.date)}</span><span class="rr">${typeof x.income==='number'?'¥'+x.income.toLocaleString():esc(x.income)} · ACU ${x.acu}${x.starGuard?' · 星守 ¥'+x.starGuard.toLocaleString():''}${x.giftMiss?' ⚠️':''}</span></div>`).join(''):'<div class="gbox">近期无场次</div>';
    const T=d.tiers||{};$('#apTiers').innerHTML=`<div class="tcapRow">${['S','A','B','C','D','L3'].map(k=>`<span class="tcap">${k} ×${T[k]||0}</span>`).join('')}</div>`;
   }
  }).catch(()=>{});
@@ -845,7 +851,7 @@ function renderMe(){
  <div class="sub">名下 ${TEAMS.length} 团:${TEAMS.map(t=>esc(t.name)).join('/')||'—'}${ROLE?` · ${ROLE_LABEL[ROLE]||ROLE}`:''}</div></div></div>
  <div class="meRow" id="meMsg">通知中心<span class="r">›</span></div>
  <div class="meRow" id="meCal">活动日历<span class="r">›</span></div>
- <div class="verLine">v0.5.3 · 运营工作台</div>
+ <div class="verLine">v0.6.0 · 运营工作台</div>
  <div id="meOut">退出切换账号</div>`;
  $('#meOut').onclick=()=>{localStorage.removeItem('wb_tok');TOK='';location.reload();};
  $('#meMsg').onclick=()=>openMsgCenter();
@@ -948,9 +954,15 @@ async function renderPlan(){
  ${multiTeam?`<div class="dchips" id="planTeams">${TEAMS.map(t=>`<span class="chip${PLAN.tid===t.tid?' on':''}" data-t="${t.tid}">${esc(TID_NAME[t.tid]||t.name)}</span>`).join('')}<span class="chip${PLAN.tid==='all'?' on':''}" data-t="all">全部</span></div>`:''}
  <div id="planList"><div class="sk">…</div><div class="sk">…</div></div>`;
  $('#planAdd').onclick=()=>openPlanSheet(null);
+ document.querySelectorAll('#planViews .chip').forEach(c=>c.onclick=()=>{
+  PLAN.view=c.dataset.v;
+  document.querySelectorAll('#planViews .chip').forEach(x=>x.classList.toggle('on',x===c));
+  renderPlan();
+ });
  document.querySelectorAll('#planDays .chip[data-d]').forEach(c=>c.onclick=()=>{
   PLAN.date=c.dataset.d;
   document.querySelectorAll('#planDays .chip').forEach(x=>x.classList.toggle('on',x===c));
+ if(PLAN.view==='ov'){renderOvView();return;}
   loadPlan();
  });
  const din=$('#planDateIn');
@@ -984,6 +996,90 @@ async function loadDevBar(){
   const off=()=>{dim.remove();cf.remove();};
   dim.onclick=off;cf.querySelector('.ok').onclick=off;
  };
+}
+/* ===== 统筹视图(v0.6.0 wo-39a④):一团一页四块卡+22点警示 ===== */
+const OV_BLOCKS=[['dance','练舞'],['makeup','化妆'],['shoot','拍摄'],['live','直播']];
+function ovSummary(k,c){
+ if(!c)return '点我排';
+ const t=(c.start&&c.end)?(c.start+'-'+c.end):'';
+ const who=c.teacher||c.artist||c.op||'';
+ const extra=k==='live'?(c.content?' · '+c.content:''):'';
+ const txt=[t,who].filter(Boolean).join(' · ')+extra;
+ return txt||'点我排';
+}
+function renderOvView(){
+ const box=$('#planList');if(!box)return;
+ const rows=(PLAN.rows||[]).filter(r=>r.date===PLAN.date&&(PLAN.tid==='all'||r.tid===PLAN.tid));
+ const co=rows.find(r=>r.type==='统筹'&&r.coord)||null;
+ const teamName=PLAN.tid==='all'?'全公司':(TEAMS.find(t=>t.tid===PLAN.tid)||{}).name||'';
+ const c=co?co.coord:{};
+ const miss=[];
+ if(!(c.dance&&c.dance.start&&c.dance.teacher))miss.push('练舞');
+ if(!(c.makeup&&c.makeup.start&&c.makeup.artist))miss.push('化妆');
+ if(!(c.live&&c.live.start&&c.live.op&&c.live.content))miss.push('直播');
+ const late=new Date().getHours()>=22&&miss.length>0;
+ let html=`<div class="usec">${esc(teamName)} · ${PLAN.date.slice(5)} 统筹</div>`;
+ if(late)html+=`<div class="confWarn" style="margin:8px 16px 0">统筹未齐，22 点已过（缺：${miss.join('、')}）</div>`;
+ if(!co)html+=`<div class="gbox">统筹字段在途 · wo-39a</div>`;
+ html+=OV_BLOCKS.map(([k,name])=>{
+  const b=c[k]||{};
+  const sum=ovSummary(k,b);
+  return `<div class="planCard" data-ov="${k}"><div class="p1"><span class="tk" style="background:#8fb6c922;color:var(--cyan)">${name}</span>
+  <span class="ptm" style="font-size:12px;font-weight:400;color:${b&&Object.keys(b).length?'var(--ink)':'var(--ink3)'}">${esc(sum)}</span></div></div>`;
+ }).join('');
+ html+=`<div class="saveBtn" style="margin:12px 18px" id="ovSave">保存统筹</div>`;
+ box.innerHTML=html;
+ box.querySelectorAll('[data-ov]').forEach(el=>el.onclick=()=>openOvSheet(el.dataset.ov,c));
+ $('#ovSave').onclick=()=>saveOv(c);
+}
+function openOvSheet(k,coord){
+ if($('#planSheet'))return;
+ const b0=(coord&&coord[k])?{...coord[k]}:{start:'',end:''};
+ const isLive=k==='live';
+ const roles={dance:['舞蹈'],makeup:['化妆'],shoot:['运镜'],live:['运镜']}[k];
+ const list=PLAN.staff.filter(s=>!roles||roles.includes(s.role));
+ const el=document.createElement('div');el.id='planSheet';
+ const name={dance:'练舞',makeup:'化妆',shoot:'拍摄',live:'直播'}[k];
+ el.innerHTML=`<div class="psh"><div class="xback" id="ovsX">✕</div><div class="pst">${name} · 编辑</div><span style="width:32px"></span></div>
+ <div class="psb">
+  <div class="flb">起止时间(任意分钟)</div><div class="timeRow"><input type="time" id="ovsS" value="${b0.start}"><input type="time" id="ovsE" value="${b0.end}"></div>
+  <div class="flb">${isLive?'运镜':name+'师'}${k==='shoot'?'(可空=不拍)':''}</div><div class="dchips" id="ovsWho">${list.map(s=>`<span class="chip${(b0.teacher||b0.artist||b0.op)===s.name?' on':''}" data-v="${s.name}">${ROLE_ICO[s.role]||'👤'} ${s.name}</span>`).join('')}</div>
+  ${isLive?`<div class="flb">直播内容(必填)</div><div style="padding:0 18px"><textarea id="ovsContent" rows="2" placeholder="如:起流+人气王">${esc(b0.content||'')}</textarea></div>
+  <div class="flb">周赛内容(可空)</div><div style="padding:0 18px"><textarea id="ovsWeekly" rows="2" placeholder="周赛玩法(可空)">${esc(b0.weekly||'')}</textarea></div>`:''}
+  <div class="saveBtn" id="ovsSave">确定</div>
+ </div>`;
+ $('#phone').appendChild(el);
+ PLAN.sheet=el;
+ $('#ovsX').onclick=()=>{el.remove();PLAN.sheet=null;};
+ bindSwipeBackWb(el,()=>{el.remove();PLAN.sheet=null;},t=>!t.closest('textarea,input,select,.chip,.saveBtn'));
+ el.querySelectorAll('#ovsWho .chip').forEach(c=>c.onclick=()=>{
+  const was=c.classList.contains('on');
+  el.querySelectorAll('#ovsWho .chip').forEach(x=>x.classList.remove('on'));
+  if(!was)c.classList.add('on');
+ });
+ $('#ovsSave').onclick=()=>{
+  const st=el.__st||{};
+  st.start=el.querySelector('#ovsS').value;st.end=el.querySelector('#ovsE').value;
+  const who=el.querySelector('#ovsWho .chip.on');
+  const nm=who?who.dataset.v:'';
+  if(k==='dance')st.teacher=nm;else if(k==='makeup')st.artist=nm;else st.op=nm;
+  if(isLive){st.content=el.querySelector('#ovsContent').value.trim();st.weekly=el.querySelector('#ovsWeekly').value.trim();
+   if(!st.content){toast('直播内容必填');return;}}
+  coord[k]=st;
+  el.remove();PLAN.sheet=null;
+  renderOvView();
+};
+}
+async function saveOv(c0){
+ const rows=(PLAN.rows||[]).filter(r=>r.date===PLAN.date&&(PLAN.tid==='all'||r.tid===PLAN.tid));
+ const co=rows.find(r=>r.type==='统筹'&&r.coord)||null;
+ const tid=co?co.tid:(PLAN.tid==='all'?(TEAMS[0]||{}).tid:PLAN.tid);
+ const coord=c0&&Object.keys(c0).length?c0:null;
+ if(!coord){toast('先点开四块卡填内容');return;}
+ const row={id:co?co.id:undefined,date:PLAN.date,tid,type:'统筹',coord};
+ const d=await API.planWrite(TOK,co?'update':'create',row,true).catch(()=>null);
+ if(d&&d.ok){toast('已保存统筹');renderOvView();}
+ else toast((d&&d.error)||'网络异常,稍后再试');
 }
 async function loadPlan(){
  const box=$('#planList');if(!box)return;
@@ -1226,6 +1322,8 @@ const MOCK={
   {id:'pl4',date:dayAgo(-1),tid:'xz',type:'会议',start:'18:00',end:'19:00',staff:[{name:'阿灿',role:'主持'}],venue:'会议室',note:'周复盘'},
   {id:'pl5',date:dayAgo(-1),tid:'xz',type:'其他',start:'20:00',end:'21:00',staff:[],venue:'',note:'设备检修'},
   {id:'pl6',date:dayAgo(-1),tid:'xy',type:'直播',start:'21:00',end:'23:59',staff:[{name:'老周',role:'运镜'}],venue:'棚C',note:'人气王'},
+  {id:'co1',date:dayAgo(-1),tid:'sy',type:'统筹',coord:{dance:{start:'19:00',end:'20:30',teacher:'小也'},makeup:{start:'',end:'',artist:''},shoot:{start:'',end:'',op:''},live:{start:'21:00',end:'23:00',op:'阿豪',content:'起流+人气王',weekly:''}}},
+  {id:'co2',date:dayAgo(-1),tid:'xz',type:'统筹',coord:{dance:{start:'19:00',end:'20:30',teacher:'娜娜'},makeup:{start:'18:00',end:'18:45',artist:'小月'},shoot:{start:'',end:'',op:''},live:{start:'21:00',end:'23:00',op:'小K',content:'人气王',weekly:'周赛A'}}},
  ]},
  staff:{ok:true,staff:[{name:'阿豪',role:'运镜'},{name:'老白',role:'灯光'},{name:'小也',role:'舞蹈'},{name:'娜娜',role:'舞蹈'},{name:'阿灿',role:'主持'},{name:'小K',role:'运镜'},{name:'老M',role:'灯光'}],venues:['棚A','棚B','棚C','会议室']},
  /* v0.5.3 mock:今日偏差 2 条(真接口 0 条不显条) */
