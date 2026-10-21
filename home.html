@@ -313,7 +313,7 @@ let TOK=qs.get('t')||'';
 if(!TOK){try{TOK=localStorage.getItem('hm_tok')||'';}catch(e){TOK='';}}
 /* hm_tok 只在 boot 数据加载成功后写入（错码永不覆盖好码，见 boot 自愈段） */
 /* ===== wo-24a 底座：版本同源 + 错误自动上报（track 范式照生产 app.html） ===== */
-const VER='v7.0.11';
+const VER='v7.0.12';
 try{Object.keys(localStorage).filter(k=>k.startsWith('gbroken_')).forEach(k=>localStorage.removeItem(k));}catch(e){}
 /* ===== 水波场景加载（老板亲制雾蝶水面 iframe 一比一原样挂载 · #loader 与 #gfWater 双挂） ===== */
 function waterScene(mount){
@@ -796,7 +796,7 @@ function renderPerf(body){
  const bp=Math.round((p.base_progress||0)*100);
  const enc=bp>=100?'保底达标线已拿下，后面每一场都是净赚——保持这个节奏。':bp>=50?'进度过半，稳稳的——下场再冲一把就摸线了。':'流水在稳步涨，把常来的几位维护好，进度条会自己爬。';
  body.innerHTML=`<div class="stats">
-  <div class="stat"><div class="v">${yuanW(p.month_income)}</div><div class="k">本月流水</div></div>
+  <div class="stat"><div class="v">${yuanW(p.month_income)}</div><div class="k">本月流水</div>${p.star_guard?`<div class="k" style="opacity:.65">含星守 ${yuanW(p.star_guard)}</div>`:''}</div>
   <div class="stat"><div class="v">${bp}%</div><div class="k">保底进度（达标线=保底×4）</div></div>
   <div class="stat"><div class="v">${p.month_days||0} 天</div><div class="k">本月开播</div></div>
   <div class="stat"><div class="v">${(()=>{const n=parseFloat(String(p.last_income??'').replace(/[^\d.]/g,''));return isNaN(n)?'—':yuanW(n);})()}</div><div class="k">上一场</div></div></div>
@@ -983,11 +983,30 @@ function closeGallery(){
 }
 const HEART='<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
 const gfavK=(d,i)=>'gfav_'+String(d).replace(/-/g,'')+'_'+i;
+/* 最爱妆造服务端化（wo-38a①/wo-39a）：真库 fav 字段优先，localStorage 兜底（接口在途时行为同旧；写失败回滚） */
+function favOf(g,i){return g.fav?true:!!localStorage.getItem(gfavK(g.date,i));}
+async function setFav(g,i,el){
+ const on=!favOf(g,i);
+ g.fav=on?1:0;
+ if(on)localStorage.setItem(gfavK(g.date,i),'1');else localStorage.removeItem(gfavK(g.date,i));
+ el.classList.toggle('on',on);
+ if(window._favApiDown)return; /* 接口在途：纯本地模式（行为同旧 gfav_ 时代） */
+ try{
+  const r=await fetch('https://fb.menghualu.com.co/api/anchor/gallery-fav',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:TOK,date:g.date,on:on?1:0})});
+  if(r.status===404){window._favApiDown=true;return;}
+  const d=await r.json();if(!d||!d.ok)throw 0;
+ }catch(e){
+  g.fav=on?0:1;
+  if(on)localStorage.removeItem(gfavK(g.date,i));else localStorage.setItem(gfavK(g.date,i),'1');
+  el.classList.toggle('on',!on);
+  toast('标记失败，稍后再试');
+ }
+}
 function paintGfull(){
  const body=$('#gfBody');if(!body||!_gf)return;
  const rows=(_gf.rows||[]).filter(g=>(g.imgs||[]).length);
  $('#gfN').textContent='共 '+rows.length+' 场';
- const show=_gf.favOnly?rows.filter(g=>localStorage.getItem(gfavK(g.date,0))):rows;
+ const show=_gf.favOnly?rows.filter(g=>favOf(g,0)):rows;
  if(!rows.length){body.innerHTML=`<div style="grid-column:1/-1">${emptyState('还没有妆容照片','每日妆容归档后自动出现在这里')}</div>`;return;}
  if(!show.length){body.innerHTML=`<div style="grid-column:1/-1">${emptyState('还没有最爱妆造','点右下角小心心，把最好看的妆收进来')}</div>`;return;}
  body.innerHTML=show.map(g=>{
@@ -996,7 +1015,7 @@ function paintGfull(){
   const imgs=g.imgs.length>1
    ?`<div class="gsnap">${g.imgs.map(u=>`<img src="${u}" loading="lazy" onerror="this.remove()">`).join('')}</div>`
    :`<img src="${g.imgs[0]}" loading="lazy" onerror="this.remove()">`;
-  return `<div class="gcard" data-d="${g.date}"><div class="gf">${imgs}</div><div class="ginfo"><div class="gl"><div class="gd">${esc(md)}</div><div class="gs">${esc(sub)}</div></div><div class="gfav${localStorage.getItem(gfavK(g.date,0))?' on':''}" data-k="${gfavK(g.date,0)}">${HEART}</div></div></div>`;
+  return `<div class="gcard" data-d="${g.date}"><div class="gf">${imgs}</div><div class="ginfo"><div class="gl"><div class="gd">${esc(md)}</div><div class="gs">${esc(sub)}</div></div><div class="gfav${favOf(g,0)?' on':''}" data-k="${gfavK(g.date,0)}">${HEART}</div></div></div>`;
  }).join('');
  body.querySelectorAll('.gcard').forEach(c=>{
   const g=show.find(x=>x.date===c.dataset.d);
@@ -1008,8 +1027,7 @@ function paintGfull(){
   const fv=c.querySelector('.gfav');
   fv.onclick=e=>{
    e.stopPropagation();
-   const on=fv.classList.toggle('on');
-   if(on)localStorage.setItem(fv.dataset.k,'1');else localStorage.removeItem(fv.dataset.k);
+   setFav(g,0,fv);
   };
   const gi=c.querySelector('.ginfo');
   let tm=null,lp=false;
@@ -1126,7 +1144,7 @@ function paintGallPeek(){
   const rows=(d&&d.rows)||[];
   if(!rows.length)return;
   let fav=null;
-  rows.forEach(r=>(r.imgs||[]).forEach((u,i)=>{if(!fav&&localStorage.getItem(gfavK(r.date,i)))fav=u;}));
+  rows.forEach(r=>{if(!fav&&favOf(r,0)&&r.imgs&&r.imgs[0])fav=r.imgs[0];});
   const first=rows.find(r=>(r.imgs||[]).length);
   if(!first)return;
   let imgs=first.imgs.slice();

@@ -215,7 +215,7 @@ body{position:fixed;inset:0;width:100%;font-family:"Noto Sans SC",-apple-system,
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="phone">
- <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.5.7</b> · 运营工作台</span></div>
+ <div id="stbar"><span class="pill" id="pillDate">—</span><span class="pill"><b>v0.5.8</b> · 运营工作台</span></div>
  <div id="wmain" style="display:none">
   <div id="wbody"></div>
   <div id="wnav"><span data-v="ov" class="on">总览</span><span data-v="anchors">主播</span><span data-v="plan">规划</span><span data-v="appr">审批</span><span data-v="me">我的</span></div>
@@ -247,7 +247,7 @@ async function apiPost(path,body){
 function adPerf(d){
  const list=(d.list||[]).map(r=>({name:r.name||'?',tid:r.tid||null,pid:r.anchor_pid||null,st:r.st||r.status||'',
   month_income:r.month_income||0,month_days:r.month_days==null?null:r.month_days,base_progress:r.base_progress==null?null:r.base_progress,
-  last_income:r.last_income||'',last_live:r.last_live||'',warn:r.warn||''}));
+  last_income:r.last_income||'',last_live:r.last_live||'',warn:r.warn||'',star_guard:r.star_guard==null?null:r.star_guard}));
  return {ok:d.ok,list};
 }
 /* 保底进度：真接口是 0-1 小数（非字符串），渲染一律走 fmtBp 转百分比（字符串兼容原样） */
@@ -652,7 +652,7 @@ function openAnchorPanel(a,row){
  <div class="abody">
   <div class="usec">业绩</div>
   <div class="stats4">
-   <div class="st4"><div class="v">${a.month_income?'¥'+a.month_income.toLocaleString():'—'}</div><div class="k">本月流水</div></div>
+   <div class="st4"><div class="v">${a.month_income?'¥'+a.month_income.toLocaleString():'—'}</div><div class="k">本月流水</div>${a.star_guard?`<div class="k" style="opacity:.65">含星守 ¥${a.star_guard.toLocaleString()}</div>`:''}</div>
    <div class="st4"><div class="v">${a.month_days==null?'—':a.month_days+' 天'}</div><div class="k">本月开播</div></div>
    <div class="st4"><div class="v" style="font-size:14px">${a.base_progress==null?'—':fmtBp(a.base_progress)}</div><div class="k">保底进度</div></div>
    <div class="st4"><div class="v" style="font-size:14px">${a.last_income||'—'}</div><div class="k">最近一场${a.last_live?' · '+a.last_live:''}</div></div>
@@ -696,7 +696,7 @@ function openAnchorPanel(a,row){
  API.anchorDetail(TOK,a.pid||'').then(d=>{
   if(!APANEL||APANEL.a!==a)return;
   if(d&&d.ok){
-   $('#apRecent').innerHTML=d.recent10.length?d.recent10.map(x=>`<div class="r10"><span>${esc(x.date)}</span><span class="rr">${typeof x.income==='number'?'¥'+x.income.toLocaleString():esc(x.income)} · ACU ${x.acu}${x.giftMiss?' ⚠️':''}</span></div>`).join(''):'<div class="gbox">近期无场次</div>';
+   $('#apRecent').innerHTML=d.recent10.length?d.recent10.map(x=>`<div class="r10"><span>${esc(x.date)}</span><span class="rr">${typeof x.income==='number'?'¥'+x.income.toLocaleString():esc(x.income)} · ACU ${x.acu}${x.star_guard?' · 星守 ¥'+x.star_guard.toLocaleString():''}${x.giftMiss?' ⚠️':''}</span></div>`).join(''):'<div class="gbox">近期无场次</div>';
    const T=d.tiers||{};$('#apTiers').innerHTML=`<div class="tcapRow">${['S','A','B','C','D','L3'].map(k=>`<span class="tcap">${k} ×${T[k]||0}</span>`).join('')}</div>`;
   }
  }).catch(()=>{});
@@ -942,6 +942,7 @@ async function renderPlan(){
  const canWrite=TEAMS.length>0;
  const multiTeam=TEAMS.length>1||COMPANY;
  w.innerHTML=`<div class="planTop"><span class="pt">规划 · 排期</span><div class="planAdd" id="planAdd">+</div></div>
+ <div class="dchips" id="planViews"><span class="chip${(PLAN.view||'plan')==='plan'?' on':''}" data-v="plan">排期</span><span class="chip${PLAN.view==='ov'?' on':''}" data-v="ov">统筹</span></div>
  <div id="devBar"></div>
  <div class="dchips" id="planDays"><span class="chip" data-d="${planDay(0)}">今天</span><span class="chip on" data-d="${planDay(1)}">明天</span><span class="chip" data-d="${planDay(2)}">后天</span><span class="chip" id="planPick">📅 选日</span><input type="date" id="planDateIn"></div>
  ${multiTeam?`<div class="dchips" id="planTeams">${TEAMS.map(t=>`<span class="chip${PLAN.tid===t.tid?' on':''}" data-t="${t.tid}">${esc(TID_NAME[t.tid]||t.name)}</span>`).join('')}<span class="chip${PLAN.tid==='all'?' on':''}" data-t="all">全部</span></div>`:''}
