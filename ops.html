@@ -277,7 +277,7 @@ function whaleCard(){   // 工单⑯：头部大哥档案完整度（近30天≥
    g.users.forEach(u=>{
     const tags=u.ok?'<span class="tag t-green">✓ 全齐</span>':`${u.no_card?'<span class="tag t-red">未建档</span>':''}${u.missing.length?`<span class="tag t-amber">缺 ${u.missing.join('、')}</span>`:''}`;
     h+=`<div class="urow" style="cursor:default;padding-top:8px;padding-bottom:8px"><div class="u-main"><div class="u-line1"><span class="u-nick">${esc(u.nick)}</span><span class="u-val">¥${fmtM(u.v/10)}</span></div>${tags?`<div class="u-tags">${tags}</div>`:''}</div></div>`;});});});
- return h+'</div><div class="foot" style="margin-top:6px">口径：近30天对该主播消费 ≥¥5000 · 五字段=生日/爱好/关键事件/地域（老家或地址）/职业（用户档案库）· 每日随管线更新</div>';}
+ return h+'</div><div class="foot" style="margin-top:6px">口径：近30天对该主播消费 ≥¥5000 · 五字段=生日/爱好/关键事件/地域（老家或地址）/职业（用户档案库 🟡）· 每日随管线更新</div>';}
 function radarCard(name){const r=_radar[name];if(!r)return '';
  const CX=100,CY=104,R=66,AX=['稳定','流水','趋势','留存','新客'],V=[r.stability,r.income,r.trend,r.retention,r.newcus];
  const pt=(i,p)=>{const a=(-90+i*72)*Math.PI/180;return [CX+R*p*Math.cos(a),CY+R*p*Math.sin(a)];};
@@ -676,7 +676,7 @@ function vAdmin(){
    <div class="mrow dim"><div class="mi">诉</div>主播申诉处理<span class="ms">筹备中</span></div>
    <div class="mrow dim"><div class="mi">讯</div>主播信息维护<span class="ms">筹备中</span></div></div>
   <div class="tier"><div class="mrow" id="logoutBtn" style="cursor:pointer"><div class="mi" style="background:var(--red-bg);color:var(--red)">出</div>切换账号<span class="ms">退出当前运营码</span></div></div>
-  <div class="foot">运营工作台 ${OPS_VERSION} · 明细与归档在 Notion 回传库</div></div>`;}
+  <div class="foot">运营工作台 ${OPS_VERSION} · 明细与归档在 Notion 主播回传 🟡</div></div>`;}
 
 /* ===== v3.13 通知中心（D1 messages，未回复介入/采集完成直达） ===== */
 let _d1Notifs=[],_ncShowRead=false;
