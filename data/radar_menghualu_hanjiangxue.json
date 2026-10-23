@@ -1,5 +1,5 @@
 {
- "date": "2026-10-23",
+ "date": "2026-10-24",
  "tid": "menghualu_hanjiangxue",
  "anchors": {
   "茉莉": {
@@ -9,17 +9,17 @@
    "stability": 12,
    "trend": 50,
    "coop": 67,
-   "retention": 12,
+   "retention": 0,
    "newc_n": 34,
    "top1nick": "恹尘",
    "top1pct": 41,
    "avg7": 427,
    "days30": 3,
    "fb": "2天/17条",
-   "retention_n": "1/8",
+   "retention_n": "0/9",
    "income": 86,
    "newcus": 93,
-   "overall": 51
+   "overall": 48
   },
   "越越": {
    "name": "越越",
@@ -35,7 +35,7 @@
    "avg7": 316,
    "days30": 3,
    "fb": "1天/38条",
-   "retention_n": "0/9",
+   "retention_n": "0/10",
    "income": 71,
    "newcus": 79,
    "overall": 42
@@ -54,7 +54,7 @@
    "avg7": 276,
    "days30": 3,
    "fb": "2天/15条",
-   "retention_n": "0/6",
+   "retention_n": "0/7",
    "income": 57,
    "newcus": 64,
    "overall": 37
@@ -66,17 +66,17 @@
    "stability": 12,
    "trend": 50,
    "coop": 67,
-   "retention": 20,
+   "retention": 0,
    "newc_n": 15,
    "top1nick": "TT (退网版)",
    "top1pct": 53,
    "avg7": 25,
    "days30": 3,
    "fb": "2天/15条",
-   "retention_n": "1/5",
+   "retention_n": "0/5",
    "income": 43,
    "newcus": 36,
-   "overall": 32
+   "overall": 28
   },
   "壹一": {
    "name": "壹一",
@@ -130,7 +130,7 @@
    "avg7": 12,
    "days30": 3,
    "fb": "2天/25条",
-   "retention_n": "0/2",
+   "retention_n": "0/3",
    "income": 14,
    "newcus": 7,
    "overall": 17
