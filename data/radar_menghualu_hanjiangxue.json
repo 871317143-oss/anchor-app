@@ -1,5 +1,5 @@
 {
- "date": "2026-10-30",
+ "date": "2026-10-31",
  "tid": "menghualu_hanjiangxue",
  "anchors": {
   "茉莉": {
@@ -10,7 +10,7 @@
    "trend": 50,
    "coop": 0,
    "retention": 0,
-   "newc_n": 8,
+   "newc_n": 0,
    "top1nick": "恹尘",
    "top1pct": 41,
    "avg7": 427,
@@ -18,8 +18,8 @@
    "fb": "0天/0条",
    "retention_n": "0/9",
    "income": 86,
-   "newcus": 93,
-   "overall": 48
+   "newcus": 50,
+   "overall": 40
   },
   "越越": {
    "name": "越越",
@@ -29,7 +29,7 @@
    "trend": 50,
    "coop": 0,
    "retention": 0,
-   "newc_n": 4,
+   "newc_n": 0,
    "top1nick": "老抽（贴脸开大版）",
    "top1pct": 55,
    "avg7": 316,
@@ -37,8 +37,8 @@
    "fb": "0天/0条",
    "retention_n": "0/10",
    "income": 71,
-   "newcus": 57,
-   "overall": 38
+   "newcus": 50,
+   "overall": 37
   },
   "莞莞": {
    "name": "莞莞",
@@ -48,7 +48,7 @@
    "trend": 50,
    "coop": 0,
    "retention": 0,
-   "newc_n": 4,
+   "newc_n": 0,
    "top1nick": "老抽（贴脸开大版）",
    "top1pct": 63,
    "avg7": 276,
@@ -56,8 +56,8 @@
    "fb": "0天/0条",
    "retention_n": "0/7",
    "income": 57,
-   "newcus": 57,
-   "overall": 35
+   "newcus": 50,
+   "overall": 34
   },
   "糕糕": {
    "name": "糕糕",
@@ -67,7 +67,7 @@
    "trend": 50,
    "coop": 0,
    "retention": 0,
-   "newc_n": 4,
+   "newc_n": 0,
    "top1nick": "TT (退网版)",
    "top1pct": 53,
    "avg7": 25,
@@ -75,27 +75,8 @@
    "fb": "0天/0条",
    "retention_n": "0/5",
    "income": 43,
-   "newcus": 57,
-   "overall": 32
-  },
-  "桃子": {
-   "name": "桃子",
-   "gid": "7693571745190020145",
-   "av": "",
-   "stability": 12,
-   "trend": 50,
-   "coop": 0,
-   "retention": 0,
-   "newc_n": 4,
-   "top1nick": ".负川.",
-   "top1pct": 26,
-   "avg7": 12,
-   "days30": 3,
-   "fb": "0天/0条",
-   "retention_n": "0/3",
-   "income": 14,
-   "newcus": 57,
-   "overall": 27
+   "newcus": 50,
+   "overall": 31
   },
   "壹一": {
    "name": "壹一",
@@ -105,7 +86,7 @@
    "trend": 50,
    "coop": 0,
    "retention": 0,
-   "newc_n": 3,
+   "newc_n": 0,
    "top1nick": "家有好运",
    "top1pct": 18,
    "avg7": 18,
@@ -113,8 +94,27 @@
    "fb": "0天/0条",
    "retention_n": "0/4",
    "income": 29,
-   "newcus": 14,
-   "overall": 21
+   "newcus": 50,
+   "overall": 28
+  },
+  "桃子": {
+   "name": "桃子",
+   "gid": "7693571745190020145",
+   "av": "",
+   "stability": 12,
+   "trend": 50,
+   "coop": 0,
+   "retention": 0,
+   "newc_n": 0,
+   "top1nick": ".负川.",
+   "top1pct": 26,
+   "avg7": 12,
+   "days30": 3,
+   "fb": "0天/0条",
+   "retention_n": "0/3",
+   "income": 14,
+   "newcus": 50,
+   "overall": 25
   },
   "紫紫": {
    "name": "紫紫",
@@ -124,7 +124,7 @@
    "trend": 50,
    "coop": 0,
    "retention": 0,
-   "newc_n": 3,
+   "newc_n": 0,
    "top1nick": "家有好运",
    "top1pct": 51,
    "avg7": 6,
@@ -132,8 +132,8 @@
    "fb": "0天/0条",
    "retention_n": "0/3",
    "income": 0,
-   "newcus": 14,
-   "overall": 15
+   "newcus": 50,
+   "overall": 22
   }
  }
 }
