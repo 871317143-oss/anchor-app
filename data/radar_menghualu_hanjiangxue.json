@@ -17,9 +17,9 @@
    "days30": 6,
    "fb": "0天/0条",
    "retention_n": "5/10",
-   "income": 86,
-   "newcus": 93,
-   "overall": 64
+   "income": 89,
+   "newcus": 94,
+   "overall": 65
   },
   "莞莞": {
    "name": "莞莞",
@@ -36,9 +36,9 @@
    "days30": 6,
    "fb": "0天/0条",
    "retention_n": "1/8",
-   "income": 71,
-   "newcus": 79,
-   "overall": 48
+   "income": 78,
+   "newcus": 83,
+   "overall": 51
   },
   "糕糕": {
    "name": "糕糕",
@@ -50,33 +50,14 @@
    "retention": 20,
    "newc_n": 19,
    "top1nick": "TT (退网版)",
-   "top1pct": 36,
+   "top1pct": 37,
    "avg7": 24,
    "days30": 6,
    "fb": "0天/0条",
    "retention_n": "1/5",
-   "income": 57,
-   "newcus": 64,
-   "overall": 47
-  },
-  "桃子": {
-   "name": "桃子",
-   "gid": "7693571745190020145",
-   "av": "",
-   "stability": 23,
-   "trend": 65,
-   "coop": 0,
-   "retention": 0,
-   "newc_n": 16,
-   "top1nick": "有亿点点的聪明蛋",
-   "top1pct": 30,
-   "avg7": 19,
-   "days30": 6,
-   "fb": "0天/0条",
-   "retention_n": "0/3",
-   "income": 29,
-   "newcus": 50,
-   "overall": 33
+   "income": 44,
+   "newcus": 61,
+   "overall": 44
   },
   "越越": {
    "name": "越越",
@@ -93,9 +74,47 @@
    "days30": 3,
    "fb": "0天/0条",
    "retention_n": "0/11",
-   "income": 71,
-   "newcus": 14,
-   "overall": 29
+   "income": 78,
+   "newcus": 11,
+   "overall": 30
+  },
+  "桃子": {
+   "name": "桃子",
+   "gid": "7693571745190020145",
+   "av": "",
+   "stability": 23,
+   "trend": 65,
+   "coop": 0,
+   "retention": 0,
+   "newc_n": 16,
+   "top1nick": "有亿点点的聪明蛋",
+   "top1pct": 30,
+   "avg7": 19,
+   "days30": 6,
+   "fb": "0天/0条",
+   "retention_n": "0/3",
+   "income": 22,
+   "newcus": 50,
+   "overall": 32
+  },
+  "壹一": {
+   "name": "壹一",
+   "gid": "3107654253944323",
+   "av": "",
+   "stability": 12,
+   "trend": 50,
+   "coop": 0,
+   "retention": 0,
+   "newc_n": 0,
+   "top1nick": "家有好运",
+   "top1pct": 18,
+   "avg7": 18,
+   "days30": 3,
+   "fb": "0天/0条",
+   "retention_n": "0/5",
+   "income": 11,
+   "newcus": 11,
+   "overall": 17
   },
   "紫紫": {
    "name": "紫紫",
@@ -113,27 +132,8 @@
    "fb": "0天/0条",
    "retention_n": "0/3",
    "income": 0,
-   "newcus": 36,
-   "overall": 26
-  },
-  "壹一": {
-   "name": "壹一",
-   "gid": "3107654253944323",
-   "av": "",
-   "stability": 12,
-   "trend": 50,
-   "coop": 0,
-   "retention": 0,
-   "newc_n": 0,
-   "top1nick": "家有好运",
-   "top1pct": 18,
-   "avg7": 18,
-   "days30": 3,
-   "fb": "0天/0条",
-   "retention_n": "0/4",
-   "income": 14,
-   "newcus": 14,
-   "overall": 18
+   "newcus": 39,
+   "overall": 27
   }
  }
 }
