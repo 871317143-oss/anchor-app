@@ -1,1 +1,0 @@
-import{r as t,s as f}from"./index-Cgm5091V.js";function k(e,o){const[n,c]=t.useState(null),[u,r]=t.useState(""),[i,a]=t.useState(!0),s=t.useCallback(async()=>{if(!e.token){r("登录态缺失"),a(!1);return}a(!0),r("");try{c(await f(o,e.token))}catch(l){r(String(l))}finally{a(!1)}},[e.token,o]);return t.useEffect(()=>{s()},[s]),{data:n,error:u,loading:i,retry:s}}export{k as u};
