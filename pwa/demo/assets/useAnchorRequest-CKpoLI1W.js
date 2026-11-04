@@ -1,0 +1,1 @@
+import{r as t,n as f}from"./index-COGI7Uy2.js";function k(e,n){const[o,c]=t.useState(null),[u,r]=t.useState(""),[i,a]=t.useState(!0),s=t.useCallback(async()=>{if(!e.token){r("登录态缺失"),a(!1);return}a(!0),r("");try{c(await f(n,e.token))}catch(l){r(String(l))}finally{a(!1)}},[e.token,n]);return t.useEffect(()=>{s()},[s]),{data:o,error:u,loading:i,retry:s}}export{k as u};
