@@ -1,4 +1,4 @@
-const CACHE = 'mhl-shell-v2'
+const CACHE = 'mhl-shell-v9'
 const SHELL = [
   './',
   './index.html',
