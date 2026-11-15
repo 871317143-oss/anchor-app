@@ -18,8 +18,8 @@
    "fb": "0天/0条",
    "retention_n": "0/94",
    "income": 100,
-   "newcus": 89,
-   "overall": 62
+   "newcus": 81,
+   "overall": 61
   },
   "九月": {
    "name": "九月",
@@ -36,9 +36,9 @@
    "days30": 10,
    "fb": "0天/0条",
    "retention_n": "0/79",
-   "income": 86,
-   "newcus": 96,
-   "overall": 57
+   "income": 75,
+   "newcus": 94,
+   "overall": 54
   },
   "火火": {
    "name": "火火",
@@ -55,9 +55,9 @@
    "days30": 8,
    "fb": "0天/0条",
    "retention_n": "0/21",
-   "income": 79,
-   "newcus": 82,
-   "overall": 46
+   "income": 62,
+   "newcus": 69,
+   "overall": 40
   },
   "小柒": {
    "name": "小柒",
@@ -74,28 +74,9 @@
    "days30": 8,
    "fb": "0天/0条",
    "retention_n": "0/24",
-   "income": 29,
-   "newcus": 39,
-   "overall": 40
-  },
-  "南婉": {
-   "name": "南婉",
-   "gid": "62798138044",
-   "av": "https://p3.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-avt-0015_6bc81d9533659e41d6c2f5841ed6a9a4.jpeg?from=3835648678",
-   "stability": 0,
-   "trend": 100,
-   "coop": 0,
-   "retention": 0,
-   "newc_n": 0,
-   "top1nick": "",
-   "top1pct": 0,
-   "avg7": 3246,
-   "days30": 0,
-   "fb": "0天/0条",
-   "retention_n": "0/0",
-   "income": 57,
-   "newcus": 39,
-   "overall": 39
+   "income": 25,
+   "newcus": 31,
+   "overall": 37
   },
   "丸子": {
    "name": "丸子",
@@ -112,47 +93,9 @@
    "days30": 6,
    "fb": "0天/0条",
    "retention_n": "0/97",
-   "income": 79,
-   "newcus": 39,
-   "overall": 37
-  },
-  "青霓": {
-   "name": "青霓",
-   "gid": "7532450680075273275",
-   "av": "https://p3.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-avt-0015_c948603a1aac6ead79ebf7df2075baaa.jpeg?from=3835648678",
-   "stability": 4,
-   "trend": 47,
-   "coop": 0,
-   "retention": 0,
-   "newc_n": 0,
-   "top1nick": "不着调",
-   "top1pct": 54,
-   "avg7": 3418,
-   "days30": 1,
-   "fb": "0天/0条",
-   "retention_n": "0/28",
-   "income": 71,
-   "newcus": 39,
+   "income": 62,
+   "newcus": 31,
    "overall": 32
-  },
-  "云兮": {
-   "name": "云兮",
-   "gid": "7495434273957102651",
-   "av": "https://p11.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-avt-0015_f33b4175adfb535f8b7ecc89db48001f.jpeg?from=3835648678",
-   "stability": 15,
-   "trend": 46,
-   "coop": 0,
-   "retention": 0,
-   "newc_n": 0,
-   "top1nick": "抚琴揽月君（筑基丹）",
-   "top1pct": 50,
-   "avg7": 1803,
-   "days30": 4,
-   "fb": "0天/0条",
-   "retention_n": "0/52",
-   "income": 50,
-   "newcus": 39,
-   "overall": 30
   },
   "小桉": {
    "name": "小桉",
@@ -169,66 +112,9 @@
    "days30": 1,
    "fb": "0天/0条",
    "retention_n": "0/24",
-   "income": 57,
-   "newcus": 39,
-   "overall": 30
-  },
-  "柚子": {
-   "name": "柚子",
-   "gid": "7581808305803772987",
-   "av": "https://p11.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-avt-0015_4b68796d9f4b51d4eef47072cc6323d2.jpeg?from=3835648678",
-   "stability": 15,
-   "trend": 34,
-   "coop": 0,
-   "retention": 0,
-   "newc_n": 0,
-   "top1nick": "卟栗熊",
-   "top1pct": 33,
-   "avg7": 1324,
-   "days30": 4,
-   "fb": "0天/0条",
-   "retention_n": "0/42",
-   "income": 43,
-   "newcus": 39,
-   "overall": 26
-  },
-  "诺妍": {
-   "name": "诺妍",
-   "gid": "7522457855833031737",
-   "av": "",
-   "stability": 0,
-   "trend": 50,
-   "coop": 0,
-   "retention": 0,
-   "newc_n": 0,
-   "top1nick": "",
-   "top1pct": 0,
-   "avg7": 759,
-   "days30": 0,
-   "fb": "0天/0条",
-   "retention_n": "0/0",
-   "income": 21,
-   "newcus": 39,
-   "overall": 22
-  },
-  "璐璐": {
-   "name": "璐璐",
-   "gid": "7491689462259582012",
-   "av": "https://p11.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-avt-0015_04dcf4374964b7b0a4dd4a94e4de8c1f.jpeg?from=3835648678",
-   "stability": 0,
-   "trend": 43,
-   "coop": 0,
-   "retention": 0,
-   "newc_n": 0,
-   "top1nick": "",
-   "top1pct": 0,
-   "avg7": 572,
-   "days30": 0,
-   "fb": "0天/0条",
-   "retention_n": "0/0",
-   "income": 14,
-   "newcus": 39,
-   "overall": 19
+   "income": 50,
+   "newcus": 31,
+   "overall": 27
   },
   "暖暖": {
    "name": "暖暖",
@@ -245,8 +131,8 @@
    "days30": 0,
    "fb": "0天/0条",
    "retention_n": "0/0",
-   "income": 7,
-   "newcus": 39,
+   "income": 12,
+   "newcus": 31,
    "overall": 19
   },
   "绵绵": {
@@ -264,8 +150,8 @@
    "days30": 0,
    "fb": "0天/0条",
    "retention_n": "0/0",
-   "income": 7,
-   "newcus": 39,
+   "income": 12,
+   "newcus": 31,
    "overall": 19
   }
  }
