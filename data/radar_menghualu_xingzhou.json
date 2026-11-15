@@ -18,7 +18,7 @@
    "fb": "0天/0条",
    "retention_n": "0/94",
    "income": 100,
-   "newcus": 86,
+   "newcus": 89,
    "overall": 62
   },
   "九月": {
@@ -36,9 +36,9 @@
    "days30": 10,
    "fb": "0天/0条",
    "retention_n": "0/79",
-   "income": 82,
-   "newcus": 95,
-   "overall": 56
+   "income": 86,
+   "newcus": 96,
+   "overall": 57
   },
   "火火": {
    "name": "火火",
@@ -55,9 +55,9 @@
    "days30": 8,
    "fb": "0天/0条",
    "retention_n": "0/21",
-   "income": 73,
-   "newcus": 77,
-   "overall": 43
+   "income": 79,
+   "newcus": 82,
+   "overall": 46
   },
   "小柒": {
    "name": "小柒",
@@ -74,9 +74,9 @@
    "days30": 8,
    "fb": "0天/0条",
    "retention_n": "0/24",
-   "income": 18,
-   "newcus": 36,
-   "overall": 37
+   "income": 29,
+   "newcus": 39,
+   "overall": 40
   },
   "南婉": {
    "name": "南婉",
@@ -93,9 +93,9 @@
    "days30": 0,
    "fb": "0天/0条",
    "retention_n": "0/0",
-   "income": 45,
-   "newcus": 36,
-   "overall": 36
+   "income": 57,
+   "newcus": 39,
+   "overall": 39
   },
   "丸子": {
    "name": "丸子",
@@ -112,9 +112,9 @@
    "days30": 6,
    "fb": "0天/0条",
    "retention_n": "0/97",
-   "income": 73,
-   "newcus": 36,
-   "overall": 36
+   "income": 79,
+   "newcus": 39,
+   "overall": 37
   },
   "青霓": {
    "name": "青霓",
@@ -131,9 +131,9 @@
    "days30": 1,
    "fb": "0天/0条",
    "retention_n": "0/28",
-   "income": 64,
-   "newcus": 36,
-   "overall": 30
+   "income": 71,
+   "newcus": 39,
+   "overall": 32
   },
   "云兮": {
    "name": "云兮",
@@ -150,9 +150,28 @@
    "days30": 4,
    "fb": "0天/0条",
    "retention_n": "0/52",
-   "income": 45,
-   "newcus": 36,
-   "overall": 28
+   "income": 50,
+   "newcus": 39,
+   "overall": 30
+  },
+  "小桉": {
+   "name": "小桉",
+   "gid": "4421564609858297",
+   "av": "https://p3.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-avt-0015_cc2cefd33f0b8660d725c652f5ae0e6e.jpeg?from=3835648678",
+   "stability": 4,
+   "trend": 50,
+   "coop": 0,
+   "retention": 0,
+   "newc_n": 0,
+   "top1nick": "沪江",
+   "top1pct": 34,
+   "avg7": 2320,
+   "days30": 1,
+   "fb": "0天/0条",
+   "retention_n": "0/24",
+   "income": 57,
+   "newcus": 39,
+   "overall": 30
   },
   "柚子": {
    "name": "柚子",
@@ -169,9 +188,9 @@
    "days30": 4,
    "fb": "0天/0条",
    "retention_n": "0/42",
-   "income": 36,
-   "newcus": 36,
-   "overall": 24
+   "income": 43,
+   "newcus": 39,
+   "overall": 26
   },
   "诺妍": {
    "name": "诺妍",
@@ -188,9 +207,9 @@
    "days30": 0,
    "fb": "0天/0条",
    "retention_n": "0/0",
-   "income": 9,
-   "newcus": 36,
-   "overall": 19
+   "income": 21,
+   "newcus": 39,
+   "overall": 22
   },
   "璐璐": {
    "name": "璐璐",
@@ -207,9 +226,47 @@
    "days30": 0,
    "fb": "0天/0条",
    "retention_n": "0/0",
-   "income": 0,
-   "newcus": 36,
-   "overall": 16
+   "income": 14,
+   "newcus": 39,
+   "overall": 19
+  },
+  "暖暖": {
+   "name": "暖暖",
+   "gid": "4351241805629692",
+   "av": "",
+   "stability": 0,
+   "trend": 50,
+   "coop": 0,
+   "retention": 0,
+   "newc_n": 0,
+   "top1nick": "",
+   "top1pct": 0,
+   "avg7": 0,
+   "days30": 0,
+   "fb": "0天/0条",
+   "retention_n": "0/0",
+   "income": 7,
+   "newcus": 39,
+   "overall": 19
+  },
+  "绵绵": {
+   "name": "绵绵",
+   "gid": "1572713993084944",
+   "av": "",
+   "stability": 0,
+   "trend": 50,
+   "coop": 0,
+   "retention": 0,
+   "newc_n": 0,
+   "top1nick": "",
+   "top1pct": 0,
+   "avg7": 0,
+   "days30": 0,
+   "fb": "0天/0条",
+   "retention_n": "0/0",
+   "income": 7,
+   "newcus": 39,
+   "overall": 19
   }
  }
 }
