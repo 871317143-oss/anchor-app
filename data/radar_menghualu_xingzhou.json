@@ -1,63 +1,44 @@
 {
- "date": "2026-11-16",
+ "date": "2026-11-18",
  "tid": "menghualu_xingzhou",
  "anchors": {
   "盈盈": {
    "name": "盈盈",
    "gid": "1524351324153977",
    "av": "https://p11.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-i-0813_oAEM19CqGqqr2F2TfSCDZgAADbAfAdhA5IAlEq.jpeg?from=3835648678",
-   "stability": 39,
+   "stability": 35,
    "trend": 83,
    "coop": 0,
    "retention": 0,
-   "newc_n": 3,
+   "newc_n": 0,
    "top1nick": "月明空照影💤",
-   "top1pct": 58,
+   "top1pct": 57,
    "avg7": 13078,
-   "days30": 11,
-   "fb": "0天/0条",
-   "retention_n": "0/94",
+   "days30": 9,
+   "fb": "1天/1条",
+   "retention_n": "0/85",
    "income": 100,
-   "newcus": 81,
-   "overall": 61
+   "newcus": 50,
+   "overall": 54
   },
   "九月": {
    "name": "九月",
    "gid": "2280806304725415",
    "av": "https://p26.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-avt-0015_982b308da6daf5a4d91fdfeda358ed6f.jpeg?from=3835648678",
-   "stability": 38,
+   "stability": 31,
    "trend": 63,
    "coop": 0,
    "retention": 0,
-   "newc_n": 5,
-   "top1nick": "神秘人六阶",
-   "top1pct": 20,
+   "newc_n": 0,
+   "top1nick": "抚琴揽月君（筑基丹）",
+   "top1pct": 22,
    "avg7": 7259,
-   "days30": 10,
-   "fb": "0天/0条",
-   "retention_n": "0/79",
-   "income": 75,
-   "newcus": 94,
-   "overall": 54
-  },
-  "火火": {
-   "name": "火火",
-   "gid": "3739901076966204",
-   "av": "",
-   "stability": 31,
-   "trend": 36,
-   "coop": 0,
-   "retention": 0,
-   "newc_n": 1,
-   "top1nick": "dou6572283",
-   "top1pct": 52,
-   "avg7": 6051,
    "days30": 8,
    "fb": "0天/0条",
-   "retention_n": "0/21",
-   "income": 62,
-   "newcus": 69,
-   "overall": 40
+   "retention_n": "0/71",
+   "income": 75,
+   "newcus": 50,
+   "overall": 44
   },
   "小柒": {
    "name": "小柒",
@@ -75,27 +56,46 @@
    "fb": "0天/0条",
    "retention_n": "0/24",
    "income": 25,
-   "newcus": 31,
-   "overall": 37
+   "newcus": 50,
+   "overall": 41
+  },
+  "火火": {
+   "name": "火火",
+   "gid": "3739901076966204",
+   "av": "",
+   "stability": 31,
+   "trend": 36,
+   "coop": 0,
+   "retention": 0,
+   "newc_n": 0,
+   "top1nick": "dou6572283",
+   "top1pct": 52,
+   "avg7": 6051,
+   "days30": 8,
+   "fb": "0天/0条",
+   "retention_n": "0/21",
+   "income": 62,
+   "newcus": 50,
+   "overall": 36
   },
   "丸子": {
    "name": "丸子",
    "gid": "7499419290455819321",
    "av": "https://p11.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-avt-0015_12d0d515f1b32c0a5a1d41ef71393861.jpeg?from=3835648678",
-   "stability": 23,
+   "stability": 15,
    "trend": 46,
    "coop": 0,
    "retention": 0,
    "newc_n": 0,
-   "top1nick": "洛辰   🐰",
-   "top1pct": 38,
+   "top1nick": "晨曦将至666",
+   "top1pct": 20,
    "avg7": 4190,
-   "days30": 6,
+   "days30": 4,
    "fb": "0天/0条",
-   "retention_n": "0/97",
+   "retention_n": "0/71",
    "income": 62,
-   "newcus": 31,
-   "overall": 32
+   "newcus": 50,
+   "overall": 35
   },
   "小桉": {
    "name": "小桉",
@@ -113,8 +113,8 @@
    "fb": "0天/0条",
    "retention_n": "0/24",
    "income": 50,
-   "newcus": 31,
-   "overall": 27
+   "newcus": 50,
+   "overall": 31
   },
   "暖暖": {
    "name": "暖暖",
@@ -132,8 +132,8 @@
    "fb": "0天/0条",
    "retention_n": "0/0",
    "income": 12,
-   "newcus": 31,
-   "overall": 19
+   "newcus": 50,
+   "overall": 22
   },
   "绵绵": {
    "name": "绵绵",
@@ -151,8 +151,8 @@
    "fb": "0天/0条",
    "retention_n": "0/0",
    "income": 12,
-   "newcus": 31,
-   "overall": 19
+   "newcus": 50,
+   "overall": 22
   }
  }
 }
